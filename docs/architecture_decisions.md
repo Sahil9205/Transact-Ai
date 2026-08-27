@@ -1,6 +1,7 @@
 # Architecture Decisions
 
-> **👋 New to the project?** Please read the [Beginner's Developer Guide](developer_guide.md) first for a comprehensive overview of how to set up the project and understand every dependency!
+> **👋 New to the project?** Please read the [Beginner's Developer Guide](developer_guide.md) first!
+> **🔄 Looking for our Tech Debt / Upgrade Roadmap?** See the [Prototype vs Production Guide](prototype_vs_production.md).
 
 The initial phase of Transact AI (Phase 0) focuses on establishing a robust, scalable, and provider-independent foundation. This document captures the key architectural decisions made during this phase.
 
