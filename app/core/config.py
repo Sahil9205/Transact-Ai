@@ -12,6 +12,16 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     LOG_LEVEL: str = "INFO"
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/commerce.db"
+    
+    # Qdrant Vector DB
+    QDRANT_URL: str = ""
+    QDRANT_API_KEY: str = ""
+    QDRANT_COLLECTION: str = "products"
+    
+    # LangSmith / LangChain Tracing
+    LANGSMITH_API_KEY: str = ""
+    LANGSMITH_PROJECT: str = "transact-ai"
+    LANGCHAIN_TRACING_V2: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 

@@ -198,7 +198,7 @@ Here is every single package we use, explained simply.
 - **What it is**: A fully featured HTTP client for Python.
 - **Why we use it**: Our app needs to talk to other apps over the internet (like the Razorpay API or LLM APIs).
 - **Why this over alternatives (requests)**: The famous `requests` library is synchronous. `httpx` is async-first, meaning it doesn't block our server while waiting for an external API response.
-- **Where it's used**: Will be used in provider adapters and payment service (future phases).
+- **Where it's used**: Will be used in provider adapters and payment service.
 - **Example**:
   ```python
   import httpx
@@ -206,29 +206,52 @@ Here is every single package we use, explained simply.
       response = await client.get("https://api.razorpay.com/...")
   ```
 
+#### 10. `qdrant-client>=1.9.0`
+- **What it is**: The official Python client for Qdrant Vector Database.
+- **Why we use it**: It connects our app to Qdrant Cloud to store product vectors and perform fast semantic search with metadata filters (price, stock, pincode).
+- **Why this over alternatives (Pinecone, ChromaDB)**: Qdrant offers rich payload filtering (e.g., semantic match + price <= ₹500 filter) and native async support.
+- **Where it's used**: `app/services/vector_service.py`
+- **Example**:
+  ```python
+  from qdrant_client import QdrantClient
+  client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+  ```
+
+#### 11. `fastembed>=0.3.0`
+- **What it is**: A fast, lightweight library for generating text embeddings locally on CPU using ONNX Runtime.
+- **Why we use it**: Converts product names and user queries into dense mathematical vectors (using `BAAI/bge-small-en-v1.5`) without requiring paid external embedding API calls.
+- **Why this over alternatives (sentence-transformers, OpenAI API)**: 10x lighter than PyTorch, fast CPU inference, zero cost, completely local.
+- **Where it's used**: `app/services/vector_service.py`
+- **Example**:
+  ```python
+  from fastembed import TextEmbedding
+  embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+  vectors = list(embedding_model.embed(["Sharma Sweets Rasgulla"]))
+  ```
+
 ---
 
 ### Dev Dependencies (Only used while coding/testing)
 
-#### 10. `pytest`
+#### 12. `pytest`
 - **What it is**: A framework that makes it easy to write small tests.
 - **Why we use it**: To write automated tests ensuring our commerce logic never breaks when we add new features.
 - **Why this over alternatives (unittest)**: `unittest` requires lots of boilerplate code. `pytest` is clean, simple, and powerful.
 
-#### 11. `pytest-asyncio`
+#### 13. `pytest-asyncio`
 - **What it is**: A plugin for `pytest` that allows us to test asynchronous functions natively.
 - **Why we use it**: Because FastAPI and our database are async, our tests must be async too.
 
-#### 12. `httpx` (Dev mode)
+#### 14. `httpx` (Dev mode)
 - **What it is**: The same HTTP client mentioned above.
 - **Why we use it here**: FastAPI uses `httpx` internally as a "Test Client" to simulate HTTP requests to our app during tests without actually starting the server.
 
-#### 13. `ruff`
+#### 15. `ruff`
 - **What it is**: An extremely fast Python linter and code formatter written in Rust.
 - **Why we use it**: It automatically catches mistakes in our code (like unused variables) and formats our code to look clean and consistent.
 - **Why this over alternatives (flake8, black, isort)**: Ruff replaces all three of those tools combined and is 10-100x faster.
 
-#### 14. `mypy`
+#### 16. `mypy`
 - **What it is**: A static type checker for Python.
 - **Why we use it**: Python usually lets you put any type of data in a variable. `mypy` checks our type hints (`def add(a: int, b: int)`) and warns us if we try to pass a string instead of an int, preventing bugs *before* we run the code.
 
@@ -236,19 +259,15 @@ Here is every single package we use, explained simply.
 
 ### Future Dependencies (Coming Soon 🚀)
 
-#### 15. `langgraph`
+#### 17. `langgraph`
 - **What it is**: A library for building stateful, multi-actor applications with LLMs.
 - **Why we will use it**: Instead of a simple AI chatbot, we need a reliable state machine. LangGraph explicitly routes the AI through different states (e.g., "gathering info" -> "confirming order"), allowing for strict control and fallbacks if the AI gets confused.
 
-#### 16. `langchain-core`
+#### 18. `langchain-core`
 - **What it is**: The base abstractions for LangChain.
 - **Why we will use it**: It provides a unified interface. By writing our code using LangChain's abstractions, we avoid "vendor lock-in" and can easily switch between OpenAI, Gemini, or local models.
 
-#### 17. `qdrant-client`
-- **What it is**: A vector database client.
-- **Why we will use it**: To allow users to do "semantic search". If a user types "I want something to wear in the rain", Qdrant can mathematically match that to a "Waterproof Jacket" in our database.
-
-#### 18. `razorpay`
+#### 19. `razorpay`
 - **What it is**: The official Python SDK for the Razorpay payment gateway.
 - **Why we will use it**: To securely generate payment links, process payments, and verify webhooks. This is the financial engine of our app.
 
