@@ -54,6 +54,8 @@ class AuditEventType(str, enum.Enum):
     VERIFICATION_STARTED = "verification_started"
     VERIFICATION_PASSED = "verification_passed"
     VERIFICATION_FAILED = "verification_failed"
+    POLICY_CHECK_PASSED = "policy_check_passed"
+    POLICY_CHECK_FAILED = "policy_check_failed"
     RECOMMENDATION_CREATED = "recommendation_created"
     USER_CONFIRMATION = "user_confirmation"
     FINAL_REVALIDATION = "final_revalidation"
