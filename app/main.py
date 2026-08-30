@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
-from app.api.v1 import merchants, products
+from app.api.v1 import api_v1_router
 from app.core.config import get_settings
 from app.core.exceptions import CommerceAgentError
 from app.core.logging import get_logger, setup_logging
@@ -72,8 +72,7 @@ def create_app() -> FastAPI:
     )
     
     app_instance.include_router(health_router)
-    app_instance.include_router(merchants.router, prefix="/api/v1")
-    app_instance.include_router(products.router, prefix="/api/v1")
+    app_instance.include_router(api_v1_router)
     
     @app_instance.exception_handler(CommerceAgentError)
     async def commerce_agent_error_handler(request: Request, exc: CommerceAgentError) -> JSONResponse:
