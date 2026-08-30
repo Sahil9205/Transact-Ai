@@ -16,6 +16,8 @@ from .payment_service import (
     PaymentVerificationResult,
     WebhookProcessingResult,
 )
+from .audit_service import AuditService, AuditEventResponse, OrderTimelineResponse
+from .order_service import OrderService, OrderSummaryResponse
 
 __all__ = [
     "MerchantService",
@@ -37,4 +39,9 @@ __all__ = [
     "PaymentOrderResponse",
     "PaymentVerificationResult",
     "WebhookProcessingResult",
+    "AuditService",
+    "AuditEventResponse",
+    "OrderTimelineResponse",
+    "OrderService",
+    "OrderSummaryResponse",
 ]
