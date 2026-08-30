@@ -30,7 +30,7 @@ SEED_PROVIDERS = [
         ),
         "products": [
             ProductCreateSchema(
-                name="Rasgulla",
+                name="Traditional Rasgulla",
                 description="Fresh, soft, spongy cottage cheese balls soaked in chilled aromatic sugar syrup (1 kg).",
                 category=ProductCategory.SWEETS,
                 price_amount=45000,  # ₹450
@@ -38,15 +38,15 @@ SEED_PROVIDERS = [
                 quantity=50,
                 availability_status=AvailabilityStatus.IN_STOCK,
                 fulfillment_type=FulfillmentType.PICKUP,
-                prep_time_minutes=20,
+                prep_time_minutes=15,
                 slot_capacity=10,
                 pincode="110001",
             ),
             ProductCreateSchema(
-                name="Gulab Jamun",
+                name="Traditional Gulab Jamun",
                 description="Traditional deep-fried milk solid dumplings soaked in rose-flavored cardamom syrup (1 kg).",
                 category=ProductCategory.SWEETS,
-                price_amount=40000,  # ₹400
+                price_amount=25000,  # ₹250
                 price_currency="INR",
                 quantity=30,
                 availability_status=AvailabilityStatus.IN_STOCK,
@@ -69,38 +69,12 @@ SEED_PROVIDERS = [
                 pincode="110001",
             ),
             ProductCreateSchema(
-                name="Jalebi",
-                description="Crispy, golden, piping hot spiral sweets soaked in saffron sugar syrup (500g).",
-                category=ProductCategory.SWEETS,
-                price_amount=30000,  # ₹300
+                name="Fresh Samosa",
+                description="Crispy golden pastry filled with spicy potato and green peas (2 pcs).",
+                category=ProductCategory.FOOD,
+                price_amount=4000,  # ₹40
                 price_currency="INR",
                 quantity=100,
-                availability_status=AvailabilityStatus.IN_STOCK,
-                fulfillment_type=FulfillmentType.PICKUP,
-                prep_time_minutes=15,
-                slot_capacity=20,
-                pincode="110001",
-            ),
-            ProductCreateSchema(
-                name="Samosa",
-                description="Crispy golden pastry filled with spicy spiced potato and green peas (2 pcs).",
-                category=ProductCategory.FOOD,
-                price_amount=2000,  # ₹20
-                price_currency="INR",
-                quantity=200,
-                availability_status=AvailabilityStatus.IN_STOCK,
-                fulfillment_type=FulfillmentType.PICKUP,
-                prep_time_minutes=5,
-                slot_capacity=50,
-                pincode="110001",
-            ),
-            ProductCreateSchema(
-                name="Sweet Lassi",
-                description="Thick, creamy traditional yogurt drink topped with rich malai and saffron (300ml).",
-                category=ProductCategory.BEVERAGES,
-                price_amount=6000,  # ₹60
-                price_currency="INR",
-                quantity=50,
                 availability_status=AvailabilityStatus.IN_STOCK,
                 fulfillment_type=FulfillmentType.PICKUP,
                 prep_time_minutes=5,
@@ -113,16 +87,42 @@ SEED_PROVIDERS = [
         "merchant": ProviderCreateSchema(
             name="Blinkit (CP Dark Store)",
             type=ProviderType.ENTERPRISE,
-            description="Blinkit quick-commerce fulfillment node serving central Delhi.",
+            description="Blinkit 10-minute quick-commerce fulfillment node serving central Delhi.",
             location="Connaught Place Outer Circle, Delhi",
             pincode="110001",
         ),
         "products": [
             ProductCreateSchema(
-                name="Haldiram Rasgulla Tin",
-                description="Packaged Haldiram's Bengali Rasgulla Tin (1 kg) delivered in 10 minutes.",
+                name="Nescafe Classic Instant Coffee Powder (100g Jar)",
+                description="100% pure instant coffee powder offering rich aroma and bold coffee flavor.",
+                category=ProductCategory.GROCERIES,
+                price_amount=29000,  # ₹290
+                price_currency="INR",
+                quantity=50,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=10,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Amul Taaza Homogenised Toned Milk (1 Litre)",
+                description="Fresh pasteurised toned milk rich in calcium and protein.",
+                category=ProductCategory.GROCERIES,
+                price_amount=5400,  # ₹54
+                price_currency="INR",
+                quantity=60,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=10,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Haldiram Bengali Rasgulla Tin (1 kg)",
+                description="Packaged Haldiram's traditional soft sponge Rasgulla Tin delivered in 10 minutes.",
                 category=ProductCategory.SWEETS,
-                price_amount=38000,  # ₹380
+                price_amount=34000,  # ₹340
                 price_currency="INR",
                 quantity=40,
                 availability_status=AvailabilityStatus.IN_STOCK,
@@ -137,14 +137,14 @@ SEED_PROVIDERS = [
         "merchant": ProviderCreateSchema(
             name="Zepto (CP Hub)",
             type=ProviderType.ENTERPRISE,
-            description="Zepto 10-minute delivery dark store node.",
+            description="Zepto 8-minute delivery quick-commerce dark store node.",
             location="Barakhamba Road, Delhi",
             pincode="110001",
         ),
         "products": [
             ProductCreateSchema(
-                name="Bikano Rasgulla Tin",
-                description="Bikano Premium Rasgulla Tin (1 kg) with lightning-fast 8-minute delivery.",
+                name="Bikano Rasgulla Tin (1 kg)",
+                description="Bikano Premium Rasgulla Tin with lightning-fast 8-minute delivery.",
                 category=ProductCategory.SWEETS,
                 price_amount=35000,  # ₹350
                 price_currency="INR",
@@ -153,6 +153,106 @@ SEED_PROVIDERS = [
                 fulfillment_type=FulfillmentType.DELIVERY,
                 prep_time_minutes=8,
                 slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Nescafe Gold Premium Freeze-Dried Coffee (50g Glass Jar)",
+                description="Crafted with Arabica beans for a smoother, richer taste experience.",
+                category=ProductCategory.GROCERIES,
+                price_amount=39000,  # ₹390
+                price_currency="INR",
+                quantity=20,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=8,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Chilled Classic Cold Coffee Can (250ml)",
+                description="Ready-to-drink chilled creamy cold coffee beverage.",
+                category=ProductCategory.BEVERAGES,
+                price_amount=6000,  # ₹60
+                price_currency="INR",
+                quantity=40,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=8,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+        ],
+    },
+    {
+        "merchant": ProviderCreateSchema(
+            name="Amazon India",
+            type=ProviderType.MARKETPLACE,
+            description="E-commerce marketplace hub offering comprehensive pantry & appliances.",
+            location="New Delhi Fulfillment Center",
+            pincode="110001",
+        ),
+        "products": [
+            ProductCreateSchema(
+                name="Nescafe Classic Instant Coffee Jar (200g)",
+                description="Economy 200g glass jar of 100% pure instant coffee.",
+                category=ProductCategory.GROCERIES,
+                price_amount=58000,  # ₹580
+                price_currency="INR",
+                quantity=100,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=1440,  # 1 day
+                slot_capacity=500,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Handheld Electric Milk Frother for Cold Coffee",
+                description="Battery operated stainless steel whisk frother for café style cold coffee.",
+                category=ProductCategory.GENERAL,
+                price_amount=29900,  # ₹299
+                price_currency="INR",
+                quantity=50,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=1440,
+                slot_capacity=500,
+                pincode="110001",
+            ),
+        ],
+    },
+    {
+        "merchant": ProviderCreateSchema(
+            name="Apollo Pharmacy",
+            type=ProviderType.LOCAL_MERCHANT,
+            description="24x7 verified retail pharmacy and healthcare supply.",
+            location="Janpath, New Delhi",
+            pincode="110001",
+        ),
+        "products": [
+            ProductCreateSchema(
+                name="Crocin Advance 650mg (Strip of 15 Tablets)",
+                description="Fast pain and fever relief paracetamol tablets.",
+                category=ProductCategory.GENERAL,
+                price_amount=3000,  # ₹30
+                price_currency="INR",
+                quantity=150,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.PICKUP,
+                prep_time_minutes=10,
+                slot_capacity=50,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Electral ORS Powder (21.8g Sachet)",
+                description="WHO based oral rehydration salt for instant energy and hydration.",
+                category=ProductCategory.GENERAL,
+                price_amount=2200,  # ₹22
+                price_currency="INR",
+                quantity=200,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.PICKUP,
+                prep_time_minutes=5,
+                slot_capacity=50,
                 pincode="110001",
             ),
         ],
