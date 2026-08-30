@@ -10,6 +10,12 @@ from .verification_service import VerificationService, VerificationResult
 from .policy_service import PolicyService, PolicyEvaluationResult
 from .gatekeeper_service import GatekeeperService, GatekeeperDecision
 from .agent_service import AgentService
+from .payment_service import (
+    PaymentService,
+    PaymentOrderResponse,
+    PaymentVerificationResult,
+    WebhookProcessingResult,
+)
 
 __all__ = [
     "MerchantService",
@@ -27,4 +33,8 @@ __all__ = [
     "GatekeeperService",
     "GatekeeperDecision",
     "AgentService",
+    "PaymentService",
+    "PaymentOrderResponse",
+    "PaymentVerificationResult",
+    "WebhookProcessingResult",
 ]
