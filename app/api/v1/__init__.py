@@ -12,6 +12,8 @@ from app.api.v1.policies import router as policies_router
 from app.api.v1.verification import router as verification_router
 from app.api.v1.agent import router as agent_router
 from app.api.v1.payments import router as payments_router
+from app.api.v1.orders import router as orders_router
+from app.api.v1.audit import router as audit_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(merchants_router)
@@ -24,6 +26,8 @@ api_v1_router.include_router(policies_router)
 api_v1_router.include_router(verification_router)
 api_v1_router.include_router(agent_router)
 api_v1_router.include_router(payments_router)
+api_v1_router.include_router(orders_router)
+api_v1_router.include_router(audit_router)
 
 __all__ = [
     "api_v1_router",
@@ -37,4 +41,6 @@ __all__ = [
     "verification_router",
     "agent_router",
     "payments_router",
+    "orders_router",
+    "audit_router",
 ]
