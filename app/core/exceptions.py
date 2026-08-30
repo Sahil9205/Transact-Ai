@@ -47,6 +47,11 @@ class PaymentError(CommerceAgentError):
     code = "PAYMENT_ERROR"
 
 
+class PaymentVerificationError(PaymentError):
+    """Exception raised when payment signature or webhook signature verification fails."""
+    code = "PAYMENT_VERIFICATION_FAILED"
+
+
 class StaleDataError(CommerceAgentError):
     """Exception raised when operating on stale data."""
     code = "STALE_DATA"

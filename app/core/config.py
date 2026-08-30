@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     LANGSMITH_API_KEY: str = ""
     LANGSMITH_PROJECT: str = "transact-ai"
     LANGCHAIN_TRACING_V2: bool = True
+    
+    # Razorpay Payment Gateway (Test Mode default)
+    RAZORPAY_KEY_ID: str = "rzp_test_mock_transact_ai"
+    RAZORPAY_KEY_SECRET: str = "mock_secret_key_123456"
+    RAZORPAY_WEBHOOK_SECRET: str = "mock_webhook_secret_123456"
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
