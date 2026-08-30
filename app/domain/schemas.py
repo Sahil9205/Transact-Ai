@@ -93,7 +93,7 @@ class ProductCreateSchema(BaseModel):
     category: ProductCategory
     price_amount: int = Field(ge=0, description="Price in paise")
     price_currency: str = "INR"
-    quantity: int = Field(ge=0)
+    quantity: int = Field(default=0, ge=0)
     availability_status: AvailabilityStatus = AvailabilityStatus.IN_STOCK
     fulfillment_type: FulfillmentType = FulfillmentType.PICKUP
     prep_time_minutes: int = Field(ge=0, default=0)
