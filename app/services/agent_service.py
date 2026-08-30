@@ -35,6 +35,7 @@ class AgentService:
             "selected_candidate": None,
             "gatekeeper_decision": None,
             "order_proposal": None,
+            "alternatives": [],
             "status": "started",
             "agent_message": "",
             "error_details": [],

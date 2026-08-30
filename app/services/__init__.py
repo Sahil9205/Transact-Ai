@@ -18,6 +18,8 @@ from .payment_service import (
 )
 from .audit_service import AuditService, AuditEventResponse, OrderTimelineResponse
 from .order_service import OrderService, OrderSummaryResponse
+from .recovery_service import AlternativeOptionSchema, FailureDiagnosis, RecoveryService
+from .external_host_service import CANONICAL_COMMERCE_TOOLS, ExternalHostService
 
 __all__ = [
     "MerchantService",
@@ -44,4 +46,9 @@ __all__ = [
     "OrderTimelineResponse",
     "OrderService",
     "OrderSummaryResponse",
+    "RecoveryService",
+    "AlternativeOptionSchema",
+    "FailureDiagnosis",
+    "ExternalHostService",
+    "CANONICAL_COMMERCE_TOOLS",
 ]

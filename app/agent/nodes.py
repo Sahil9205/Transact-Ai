@@ -10,6 +10,7 @@ from app.domain.enums import AuditEventType
 from app.services.discovery_service import DiscoveryService
 from app.services.gatekeeper_service import GatekeeperService
 from app.services.intent_service import IntentService
+from app.services.recovery_service import AlternativeOptionSchema, RecoveryService
 from app.services.vector_service import VectorService
 
 logger = get_logger(__name__)
@@ -199,31 +200,51 @@ async def node_handle_failure(
     state: CommerceAgentState,
     session: AsyncSession,
 ) -> dict[str, Any]:
-    """Node 5: Formulates clear, informative failure messages when requests cannot be fulfilled."""
+    """Node 5: Formulates clear, informative failure messages with multi-dimensional smart alternatives."""
     status = state.get("status", "failed")
     error_details = state.get("error_details", [])
+    intent = state.get("parsed_intent")
+    if not intent:
+        intent = IntentService.parse_intent(state.get("raw_prompt", ""))
+
     logger.info("LangGraph Node: handle_failure", status=status, errors=error_details)
 
+    # Search for multi-dimensional smart alternatives
+    alternatives = await RecoveryService.find_smart_alternatives(
+        session=session,
+        intent=intent,
+        limit=3,
+    )
+
     if status == "no_candidates":
-        msg = (
-            "😔 Sorry, I couldn't find any available products matching your search criteria, "
-            "budget, or location. Try broadening your budget or checking back shortly."
-        )
+        base_msg = "😔 Aapke exact search criteria (budget / location) par direct match nahi mila."
     elif status == "blocked":
         reasons_formatted = "\n- ".join(error_details) if error_details else "Policy or verification failure"
-        msg = (
-            f"🚫 I found a match, but cannot proceed due to the following security & policy checks:\n"
-            f"- {reasons_formatted}\n\n"
-            f"Please update your spending policy or try another search."
+        base_msg = (
+            f"🚫 Direct order proceed nahi ho sakta due to security & spending checks:\n"
+            f"- {reasons_formatted}"
         )
     else:
-        msg = f"⚠️ An unexpected issue occurred during processing: {'; '.join(error_details)}"
+        base_msg = f"⚠️ Issue occurred: {'; '.join(error_details)}"
+
+    # If alternatives exist, append rich comparison
+    if alternatives:
+        alt_lines = []
+        for i, alt in enumerate(alternatives, start=1):
+            alt_lines.append(
+                f"{i}. **{alt.product.name}** via **{alt.merchant_name}** — **₹{alt.price_inr:.2f}** ({alt.fulfillment_sla})\n   _{alt.difference_explanation}_"
+            )
+        alt_text = "\n\n💡 **Maine yeh best alternatives dhoondhe hain:**\n" + "\n".join(alt_lines) + "\n\nKya aap inme se koi choose karna chahenge?"
+        full_msg = f"{base_msg}{alt_text}"
+    else:
+        full_msg = f"{base_msg}\n\nTry broadening your budget or checking back shortly."
 
     steps = list(state.get("step_history", []))
-    steps.append(f"handle_failure: {status}")
+    steps.append(f"handle_failure: {status} (proposed {len(alternatives)} alternative(s))")
 
     return {
-        "agent_message": msg,
+        "agent_message": full_msg,
+        "alternatives": alternatives,
         "status": status,
         "step_history": steps,
     }

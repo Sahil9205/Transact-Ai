@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from app.domain.schemas import BuyerIntentSchema
 from app.services.discovery_service import RankedCandidateSchema
 from app.services.gatekeeper_service import GatekeeperDecision
+from app.services.recovery_service import AlternativeOptionSchema
 
 
 class OrderProposal(BaseModel):
@@ -34,6 +35,7 @@ class CommerceAgentState(TypedDict):
     selected_candidate: RankedCandidateSchema | None
     gatekeeper_decision: GatekeeperDecision | None
     order_proposal: OrderProposal | None
+    alternatives: list[AlternativeOptionSchema]
     status: str  # "intent_parsed" | "discovered" | "verified" | "proposed" | "blocked" | "failed"
     agent_message: str
     error_details: list[str]
