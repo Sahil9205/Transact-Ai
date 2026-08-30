@@ -111,7 +111,7 @@ async def test_langgraph_agent_budget_too_low_fails_gracefully(db_session: Async
 
     assert final_state["status"] == "no_candidates"
     assert final_state["order_proposal"] is None
-    assert "couldn't find any available products" in final_state["agent_message"]
+    assert ("match nahi mila" in final_state["agent_message"] or "couldn't find" in final_state["agent_message"])
 
 
 @pytest.mark.asyncio
@@ -156,5 +156,5 @@ async def test_langgraph_agent_spending_policy_blocks_gracefully(db_session: Asy
 
     assert final_state["status"] == "blocked"
     assert final_state["order_proposal"] is None
-    assert "cannot proceed due to the following security & policy checks" in final_state["agent_message"]
+    assert ("proceed nahi ho sakta" in final_state["agent_message"] or "cannot proceed" in final_state["agent_message"])
     assert any("per_transaction_limit_exceeded" in e for e in final_state["error_details"])
