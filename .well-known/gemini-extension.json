@@ -1,0 +1,97 @@
+{
+  "extension_version": "1.0",
+  "name": "transact_ai",
+  "display_name": "Transact AI Shopping Extension",
+  "description": "Autonomous commerce extension for Google Gemini. Enables natural language product discovery, live warehouse stock check, spending policy enforcement, and Razorpay test checkout.",
+  "endpoint": "/api/v1/hosts/execute-tool",
+  "tools": [
+    {
+      "name": "search_products",
+      "description": "Searches products across local merchants, quick-commerce dark stores (Blinkit, Zepto), and marketplaces (Amazon).",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "query": {
+            "type": "STRING",
+            "description": "Product search query (e.g. '1kg Rasgulla', 'Nescafe coffee powder', 'Crocin')."
+          },
+          "max_price_inr": {
+            "type": "NUMBER",
+            "description": "Maximum budget ceiling in Indian Rupees (INR)."
+          },
+          "pincode": {
+            "type": "STRING",
+            "description": "Delivery postal code (e.g. '110001')."
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "verify_order_preflight",
+      "description": "Performs live pre-flight check: verifies warehouse stock availability, current price, and checks user spending policy limit.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "product_id": {
+            "type": "STRING",
+            "description": "UUID of the product to verify."
+          },
+          "quantity": {
+            "type": "INTEGER",
+            "description": "Quantity to purchase (default: 1)."
+          },
+          "user_id": {
+            "type": "STRING",
+            "description": "Unique user ID."
+          }
+        },
+        "required": ["product_id"]
+      }
+    },
+    {
+      "name": "create_payment_order",
+      "description": "Initializes a Razorpay test-mode payment order and generates the customer payment checkout link URL.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "product_id": {
+            "type": "STRING",
+            "description": "UUID of the verified product to order."
+          },
+          "quantity": {
+            "type": "INTEGER",
+            "description": "Quantity to order."
+          },
+          "user_id": {
+            "type": "STRING",
+            "description": "Unique user ID."
+          }
+        },
+        "required": ["product_id"]
+      }
+    },
+    {
+      "name": "find_smart_alternatives",
+      "description": "Searches for compliant alternative products by relaxing constraints across 4 recovery dimensions (price headroom, delivery SLA extension, cross-platform switching, and category substitutes).",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "product_query": {
+            "type": "STRING",
+            "description": "Original user query."
+          },
+          "max_price_inr": {
+            "type": "NUMBER",
+            "description": "Original budget ceiling."
+          },
+          "pincode": {
+            "type": "STRING",
+            "description": "Delivery postal code."
+          }
+        },
+        "required": ["product_query"]
+      }
+    }
+  ]
+}

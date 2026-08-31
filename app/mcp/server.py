@@ -57,6 +57,8 @@ class MCPServer:
                     ],
                     "isError": False,
                 }
+            elif method in ["notifications/initialized", "initialized"]:
+                return None
             elif method == "ping":
                 result = {}
             else:
@@ -125,11 +127,22 @@ class MCPServer:
 
 async def run_stdio_server() -> None:
     """Runs the MCP server over standard input/output (stdio) for desktop AI hosts."""
+    from app.core.logging import setup_logging
+    # Send all logging to stderr so stdout is strictly JSON-RPC messages
+    setup_logging(log_level="INFO", environment="development", stream=sys.stderr)
+
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8")
+
     settings = get_settings()
     db_manager = init_database_manager(settings.DATABASE_URL)
     await db_manager.init_db()
 
-    logger.info("Transact AI MCP Server running on stdio...")
+    sys.stderr.write("Transact AI MCP Server running on stdio for Claude Desktop...\n")
+    sys.stderr.flush()
+
     loop = asyncio.get_event_loop()
 
     while True:
@@ -138,16 +151,29 @@ async def run_stdio_server() -> None:
             if not line:
                 break
 
-            request = json.loads(line)
+            line_str = line.strip()
+            if not line_str:
+                continue
+
+            request = json.loads(line_str)
+            req_id = request.get("id")
+            method = request.get("method")
+
+            # Skip notifications where response is not expected
+            if req_id is None and method and method.startswith("notifications/"):
+                continue
+
             async for session in db_manager.get_session():
                 response = await MCPServer.handle_request(session, request)
-                sys.stdout.write(json.dumps(response) + "\n")
-                sys.stdout.flush()
+                if response is not None:
+                    sys.stdout.write(json.dumps(response) + "\n")
+                    sys.stdout.flush()
                 break
         except json.JSONDecodeError:
             continue
         except Exception as e:
-            logger.error(f"stdio MCP error: {e}")
+            sys.stderr.write(f"stdio MCP error: {e}\n")
+            sys.stderr.flush()
 
     await db_manager.close()
 

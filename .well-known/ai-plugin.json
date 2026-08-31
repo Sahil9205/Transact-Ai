@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Transact AI Shopping Assistant",
+  "name_for_model": "transact_ai",
+  "description_for_human": "Search, compare, and instantly order from local sweet shops, Blinkit, Zepto, and Amazon with live stock check and Razorpay checkout.",
+  "description_for_model": "Plugin for autonomous commerce. Search products across multiple providers (local merchants, quick-commerce dark stores, marketplaces), check live warehouse inventory, enforce spending policy limits, generate Razorpay test-mode payment links, and track real-time orders.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "/.well-known/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://img.icons8.com/color/512/shopping-cart--v1.png",
+  "contact_email": "support@transact-ai.com",
+  "legal_info_url": "https://transact-ai.com/legal"
+}

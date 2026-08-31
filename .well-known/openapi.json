@@ -1,0 +1,113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Transact AI Commerce Gateway",
+    "description": "Autonomous commerce actions for ChatGPT & Gemini. Allows natural language product discovery, live warehouse stock check, spending limit enforcement, and Razorpay test checkout generation.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.transact-ai.com",
+      "description": "Production Gateway"
+    },
+    {
+      "url": "http://127.0.0.1:8000",
+      "description": "Local Development / Ngrok"
+    }
+  ],
+  "paths": {
+    "/api/v1/hosts/execute-tool": {
+      "post": {
+        "operationId": "executeCommerceTool",
+        "summary": "Execute an autonomous commerce tool",
+        "description": "Dispatches a verified commerce operation: search_products, get_product_details, verify_order_preflight, create_payment_order, find_smart_alternatives, or get_order_timeline.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tool_name", "arguments"],
+                "properties": {
+                  "tool_name": {
+                    "type": "string",
+                    "enum": [
+                      "search_products",
+                      "get_product_details",
+                      "verify_order_preflight",
+                      "create_payment_order",
+                      "find_smart_alternatives",
+                      "get_order_timeline"
+                    ],
+                    "description": "The name of the commerce tool to run."
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "description": "Key-value arguments matching the specified tool."
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "default": "chatgpt_user",
+                    "description": "Unique user identifier."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool execution result with live verified stock, prices, or payment links.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agent/chat": {
+      "post": {
+        "operationId": "chatCommerceAgent",
+        "summary": "Run full autonomous commerce workflow for a user prompt",
+        "description": "Takes a natural language prompt (English, Hindi, Hinglish), parses intent, searches Qdrant vectors, verifies stock via Gatekeeper, and generates an order proposal.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "default": "chatgpt_user"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "example": "1kg Rasgulla under 500 in 110001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Orchestrated proposal or smart recovery alternatives.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

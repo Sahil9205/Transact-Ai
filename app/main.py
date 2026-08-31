@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
@@ -96,6 +96,27 @@ def create_app() -> FastAPI:
             content={"error_code": "INTERNAL_ERROR", "message": "An unexpected error occurred."},
         )
         
+    @app_instance.get("/.well-known/ai-plugin.json", include_in_schema=False)
+    async def get_ai_plugin_manifest() -> FileResponse:
+        """Serve ChatGPT Plugin Manifest."""
+        from pathlib import Path
+        path = Path(__file__).parent.parent / ".well-known" / "ai-plugin.json"
+        return FileResponse(path, media_type="application/json")
+
+    @app_instance.get("/.well-known/openapi.json", include_in_schema=False)
+    async def get_plugin_openapi() -> FileResponse:
+        """Serve Plugin OpenAPI Specification."""
+        from pathlib import Path
+        path = Path(__file__).parent.parent / ".well-known" / "openapi.json"
+        return FileResponse(path, media_type="application/json")
+
+    @app_instance.get("/.well-known/gemini-extension.json", include_in_schema=False)
+    async def get_gemini_extension_manifest() -> FileResponse:
+        """Serve Google Gemini Extension Manifest."""
+        from pathlib import Path
+        path = Path(__file__).parent.parent / ".well-known" / "gemini-extension.json"
+        return FileResponse(path, media_type="application/json")
+
     @app_instance.get("/", include_in_schema=False)
     async def root() -> RedirectResponse:
         """Redirect root to documentation."""

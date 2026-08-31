@@ -5,14 +5,11 @@ import sys
 import structlog
 
 
-def setup_logging(log_level: str, environment: str) -> None:
-    """Configure structured logging for the application.
-    
-    Args:
-        log_level: The base logging level.
-        environment: The application environment ('development' or 'production').
-    """
-    logging.basicConfig(format="%(message)s", stream=sys.stdout, level=log_level.upper())
+def setup_logging(log_level: str, environment: str, stream: Any = None) -> None:
+    """Configure structured logging for the application."""
+    if stream is None:
+        stream = sys.stdout
+    logging.basicConfig(format="%(message)s", stream=stream, level=log_level.upper(), force=True)
     
     processors = [
         structlog.contextvars.merge_contextvars,
