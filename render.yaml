@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: transact-ai
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./data/commerce.db
+      - key: QDRANT_COLLECTION
+        value: transact_products

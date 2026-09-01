@@ -1,0 +1,26 @@
+# Git & IDE
+.git/
+.github/
+.vscode/
+.idea/
+
+# Python Virtualenv & Cache
+.venv/
+razorpay/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Local Environment & Secrets
+.env
+.env.local
+
+# Docs & Tests (not needed in lean runtime container)
+tests/

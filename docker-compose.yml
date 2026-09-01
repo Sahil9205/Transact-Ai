@@ -1,0 +1,23 @@
+services:
+  transact-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transact_ai_app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=sqlite+aiosqlite:///./data/commerce.db
+      - QDRANT_COLLECTION=transact_products
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-rzp_test_mock_transact_ai}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET:-mock_secret_key_123456}
+      - RAZORPAY_WEBHOOK_SECRET=${RAZORPAY_WEBHOOK_SECRET:-mock_webhook_secret_123456}
+      - QDRANT_URL=${QDRANT_URL:-}
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGSMITH_PROJECT=transact-ai
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
