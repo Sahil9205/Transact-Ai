@@ -33,3 +33,32 @@ async def test_gemini_extension_manifest_endpoint(client: AsyncClient) -> None:
     data = res.json()
     assert data["name"] == "transact_ai"
     assert len(data["tools"]) >= 4
+
+
+@pytest.mark.asyncio
+async def test_remote_mcp_http_endpoints(client: AsyncClient) -> None:
+    """Test remote Claude Streamable HTTP / JSON-RPC endpoints on /mcp."""
+    # 1. Test tools list endpoint
+    tools_res = await client.get("/mcp/tools")
+    assert tools_res.status_code == 200
+    tools_data = tools_res.json()
+    assert "tools" in tools_data
+    assert len(tools_data["tools"]) >= 4
+
+    # 2. Test JSON-RPC initialize handshake on root /mcp
+    rpc_res = await client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/list",
+            "params": {},
+        },
+    )
+    assert rpc_res.status_code == 200
+    rpc_data = rpc_res.json()
+    assert rpc_data["jsonrpc"] == "2.0"
+    assert rpc_data["id"] == 1
+    assert "result" in rpc_data
+    assert "tools" in rpc_data["result"]
+

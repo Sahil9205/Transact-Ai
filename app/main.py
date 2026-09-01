@@ -71,7 +71,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
+    from app.api.v1.mcp import router as mcp_router
     app_instance.include_router(health_router)
+    app_instance.include_router(mcp_router)
     app_instance.include_router(api_v1_router)
     
     @app_instance.exception_handler(CommerceAgentError)

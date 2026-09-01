@@ -42,14 +42,19 @@ class DatabaseManager:
 
     async def init_db(self) -> None:
         """Create all tables from Base.metadata."""
-        # Ensure the directory for SQLite file exists
+        # Ensure the directory for SQLite file exists safely
         url_str = str(self.engine.url)
         if url_str.startswith("sqlite"):
             import os
             # Extract file path from SQLite URL (after :///)
             db_path = url_str.split("///")[-1] if "///" in url_str else None
             if db_path and db_path != ":memory:":
-                os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
+                try:
+                    dir_name = os.path.dirname(os.path.abspath(db_path))
+                    if dir_name and not os.path.exists(dir_name):
+                        os.makedirs(dir_name, exist_ok=True)
+                except Exception:
+                    pass
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
