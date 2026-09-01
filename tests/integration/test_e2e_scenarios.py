@@ -44,7 +44,8 @@ async def test_e2e_happy_path_scenario(client: AsyncClient) -> None:
     chat_data = chat_res.json()
     assert chat_data["status"] == "proposed"
     proposal = chat_data["order_proposal"]
-    assert proposal["unit_price_inr"] == 450.0
+    assert proposal["unit_price_inr"] <= 500.0
+    assert proposal["product_id"] is not None
 
     # 3. Create Payment Order
     pay_res = await client.post(

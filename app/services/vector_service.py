@@ -52,6 +52,26 @@ class VectorService:
                 )
             else:
                 logger.info(f"Collection {self.collection_name} already exists.")
+
+            # Create payload indexes for filterable fields (required by Qdrant Cloud)
+            for field in ["category", "pincode", "provider_id", "product_id", "availability"]:
+                try:
+                    self.client.create_payload_index(
+                        collection_name=self.collection_name,
+                        field_name=field,
+                        field_schema=rest.PayloadSchemaType.KEYWORD,
+                    )
+                except Exception:
+                    pass
+
+            try:
+                self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name="price_amount",
+                    field_schema=rest.PayloadSchemaType.INTEGER,
+                )
+            except Exception:
+                pass
         except Exception as e:
             logger.error(f"Error ensuring collection: {e}")
             raise
