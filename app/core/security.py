@@ -4,6 +4,9 @@ from typing import Any
 
 from app.core.config import Settings
 from app.core.exceptions import ConfigurationError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 SENSITIVE_KEYS: set[str] = {"key", "secret", "password", "token", "api_key", "authorization"}
 
@@ -46,3 +49,4 @@ def validate_production_config(settings: Settings) -> None:
                 message="SQLite is not allowed in production environment.",
                 details={"DATABASE_URL": "***REDACTED***"}
             )
+

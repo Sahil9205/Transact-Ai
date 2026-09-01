@@ -25,6 +25,12 @@ class DatabaseManager:
         Args:
             database_url: The database connection URL.
         """
+        # Normalize PostgreSQL URL for asyncpg
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif database_url.startswith("postgresql://") and not database_url.startswith("postgresql+"):
+            database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
         self.engine: AsyncEngine = create_async_engine(
             database_url,
             echo=False,
