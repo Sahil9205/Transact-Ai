@@ -125,7 +125,10 @@ class MCPServer:
             return await MCPCommerceTools.create_order_payment(
                 session=session,
                 product_id=args.get("product_id", ""),
+                pincode=args.get("pincode"),
+                delivery_address=args.get("delivery_address"),
                 quantity=args.get("quantity", 1),
+                platform=args.get("platform"),
                 user_id=args.get("user_id", "buyer_default"),
             )
         elif tool_name == "transact_verify_order_preflight":

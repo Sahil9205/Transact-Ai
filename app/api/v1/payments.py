@@ -24,6 +24,9 @@ class CreatePaymentOrderRequest(BaseModel):
     user_id: str = Field(..., examples=["buyer-1"], description="User ID driving transaction")
     product_id: str = Field(..., description="UUID of product to purchase")
     quantity: int = Field(default=1, ge=1, description="Quantity of items")
+    pincode: str | None = Field(default=None, description="6-digit delivery destination pincode")
+    delivery_address: str | None = Field(default=None, description="Delivery address provided by user")
+    platform: str | None = Field(default=None, description="Calling client platform (e.g. 'claude', 'chatgpt')")
     notes: dict[str, Any] | None = Field(default=None, description="Optional metadata key-values")
 
 
@@ -45,6 +48,9 @@ class OrderDetailsResponse(BaseModel):
     total_amount_paise: int
     currency: str
     status: str
+    pincode: str | None = None
+    delivery_address: str | None = None
+    platform: str | None = None
     razorpay_order_id: str | None = None
     payment_status: str | None = None
 
@@ -58,14 +64,23 @@ class OrderDetailsResponse(BaseModel):
 )
 async def create_payment_order_endpoint(
     payload: CreatePaymentOrderRequest,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> PaymentOrderResponse:
     """Create Razorpay order and payment link."""
+    from app.core.platform import resolve_originating_platform
+    detected_platform = resolve_originating_platform(
+        explicit_platform=payload.platform,
+        headers=request.headers,
+    )
     return await PaymentService.create_payment_order(
         session=session,
         user_id=payload.user_id,
         product_id=payload.product_id,
         quantity=payload.quantity,
+        pincode=payload.pincode,
+        delivery_address=payload.delivery_address,
+        platform=detected_platform,
         notes=payload.notes,
     )
 

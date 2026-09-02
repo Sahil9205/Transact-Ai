@@ -75,3 +75,50 @@ async def test_remote_mcp_http_endpoints(client: AsyncClient) -> None:
     assert notify_data["jsonrpc"] == "2.0"
 
 
+@pytest.mark.asyncio
+async def test_hosted_checkout_page_endpoint(client: AsyncClient) -> None:
+    """Test GET /pay/{order_id} renders responsive HTML Razorpay checkout page."""
+    # 1. Register merchant via API
+    m_res = await client.post(
+        "/api/v1/merchants/",
+        json={"name": "Blinkit Test", "type": "enterprise", "pincode": "110001"},
+    )
+    assert m_res.status_code == 201
+    merchant_id = m_res.json()["provider_id"]
+
+    # 2. Add product via API
+    p_res = await client.post(
+        f"/api/v1/merchants/{merchant_id}/products",
+        json={
+            "name": "Aashirvaad Atta Test 1kg",
+            "category": "groceries",
+            "price_amount": 6500,
+            "quantity": 10,
+            "availability_status": "in_stock",
+            "pincode": "110001",
+        },
+    )
+    assert p_res.status_code == 201
+    product_id = p_res.json()["product_id"]
+
+    # 3. Create payment order via API
+    order_res = await client.post(
+        "/api/v1/payments/create-order",
+        json={"user_id": "test-buyer-checkout", "product_id": product_id, "quantity": 1},
+    )
+    assert order_res.status_code == 201
+    order_id = order_res.json()["order_id"]
+
+    # 4. Hit /pay/{order_id}
+    res = await client.get(f"/pay/{order_id}")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
+    html_text = res.text
+    assert "Aashirvaad Atta Test 1kg" in html_text
+    assert "65.00" in html_text
+    assert "checkout.razorpay.com/v1/checkout.js" in html_text
+    assert "Razorpay Secure" in html_text
+
+
+
+

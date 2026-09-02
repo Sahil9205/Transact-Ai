@@ -106,7 +106,7 @@ MCP_TOOLS_DEFINITIONS: list[dict[str, Any]] = [
     },
     {
         "name": "transact_create_order_payment",
-        "description": "Place a purchase order and generate an instant Razorpay checkout payment link for a confirmed product.",
+        "description": "Place a purchase order and generate an instant Razorpay checkout payment link. MANDATORY: You must ask the user for their delivery address and 6-digit delivery pincode before executing this tool.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -114,16 +114,28 @@ MCP_TOOLS_DEFINITIONS: list[dict[str, Any]] = [
                     "type": "string",
                     "description": "Unique UUID of the product to purchase",
                 },
+                "pincode": {
+                    "type": "string",
+                    "description": "6-digit delivery destination pincode asked from the user (e.g. '110001', '560001')",
+                },
+                "delivery_address": {
+                    "type": "string",
+                    "description": "Complete street, house, or apartment address provided by the user",
+                },
                 "quantity": {
                     "type": "integer",
                     "description": "Number of units to buy (default: 1)",
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "Originating client platform name (e.g. 'claude', 'chatgpt', 'gemini', 'web', 'cli')",
                 },
                 "user_id": {
                     "type": "string",
                     "description": "Optional buyer user ID (default: 'buyer_default')",
                 },
             },
-            "required": ["product_id"],
+            "required": ["product_id", "pincode"],
         },
     },
     {
@@ -292,16 +304,24 @@ class MCPCommerceTools:
     async def create_order_payment(
         session: AsyncSession,
         product_id: str,
+        pincode: str | None = None,
+        delivery_address: str | None = None,
         quantity: int = 1,
+        platform: str | None = None,
         user_id: str = "buyer_default",
     ) -> dict[str, Any]:
         """Tool handler for transact_create_order_payment."""
         from app.services.payment_service import PaymentService
+        from app.core.platform import resolve_originating_platform
+        resolved_platform = resolve_originating_platform(explicit_platform=platform)
         res = await PaymentService.create_payment_order(
             session=session,
             user_id=user_id,
             product_id=product_id,
             quantity=quantity,
+            pincode=pincode,
+            delivery_address=delivery_address,
+            platform=resolved_platform,
         )
         return {
             "order_id": res.order_id,
@@ -313,8 +333,11 @@ class MCPCommerceTools:
             "amount_paise": res.amount_paise,
             "currency": res.currency,
             "status": res.status,
+            "pincode": res.pincode,
+            "delivery_address": res.delivery_address,
+            "platform": res.platform,
             "payment_link_url": res.payment_link_url,
-            "message": f"Order created successfully for {res.product_name}. Pay ₹{res.amount_inr} using the Razorpay payment link to confirm delivery.",
+            "message": f"Order created successfully for {res.product_name}. Pay ₹{res.amount_inr} using the Razorpay payment link to confirm delivery to pincode {res.pincode or 'your location'}.",
         }
 
     @staticmethod

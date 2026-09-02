@@ -57,6 +57,18 @@ class DatabaseManager:
                     pass
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Safe non-breaking column addition for existing tables (SQLite & Postgres)
+            from sqlalchemy import text
+            for col, col_type in [
+                ("pincode", "VARCHAR(10)"),
+                ("delivery_address", "TEXT"),
+                ("platform", "VARCHAR(50) DEFAULT 'unknown'"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE orders ADD COLUMN {col} {col_type}"))
+                except Exception:
+                    pass  # Column already exists
+
 
     async def close(self) -> None:
         """Close the database engine."""

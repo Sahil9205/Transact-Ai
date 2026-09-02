@@ -34,6 +34,9 @@ class PaymentOrderResponse(BaseModel):
     product_name: str
     merchant_id: str
     quantity: int
+    pincode: str | None = None
+    delivery_address: str | None = None
+    platform: str | None = None
 
 
 class PaymentVerificationResult(BaseModel):
@@ -77,10 +80,20 @@ class PaymentService:
         product_id: str,
         quantity: int = 1,
         notes: dict[str, Any] | None = None,
+        pincode: str | None = None,
+        delivery_address: str | None = None,
+        platform: str | None = None,
     ) -> PaymentOrderResponse:
         """Creates an order in the database and initializes a Razorpay checkout session."""
         settings = get_settings()
-        logger.info("Initiating Razorpay payment order", user_id=user_id, product_id=product_id, quantity=quantity)
+        logger.info(
+            "Initiating Razorpay payment order",
+            user_id=user_id,
+            product_id=product_id,
+            quantity=quantity,
+            pincode=pincode,
+            platform=platform,
+        )
 
         # 1. Authoritative Product & Pricing Check
         product = await ProductRepository.get_by_product_id(session, product_id)
@@ -97,6 +110,9 @@ class PaymentService:
             total_amount=total_paise,
             quantity=quantity,
             currency="INR",
+            pincode=pincode,
+            delivery_address=delivery_address,
+            platform=platform,
         )
         order.status = OrderStatus.PAYMENT_PENDING.value
         await session.flush()
@@ -112,7 +128,12 @@ class PaymentService:
                     "amount": total_paise,
                     "currency": "INR",
                     "receipt": order.order_id,
-                    "notes": notes or {"user_id": user_id, "product_id": product_id},
+                    "notes": notes or {
+                        "user_id": user_id,
+                        "product_id": product_id,
+                        "pincode": pincode or "",
+                        "platform": order.platform or "",
+                    },
                 })
                 razorpay_order_id = rzp_res["id"]
         except Exception as e:
@@ -131,22 +152,28 @@ class PaymentService:
         await session.commit()
         await session.refresh(order)
 
-        # 5. Log PAYMENT_INITIATED audit event
+        # 5. Log PAYMENT_INITIATED audit event with rich platform & delivery context
         await AuditRepository.log_event(
             session=session,
             event_type=AuditEventType.PAYMENT_INITIATED,
             user_id=user_id,
             order_id=order.order_id,
             product_id=product_id,
+            provider_id=product.merchant_id,
             amount=total_paise,
-            reason="Razorpay payment order initialized",
+            reason=f"Razorpay payment order initialized via {order.platform}",
             metadata={
+                "platform": order.platform,
+                "pincode": order.pincode,
+                "delivery_address": order.delivery_address,
                 "razorpay_order_id": razorpay_order_id,
                 "amount_inr": total_inr,
+                "product_name": product.name,
+                "quantity": quantity,
             },
         )
 
-        # 5. Determine base domain for hosted user payment page
+        # 6. Determine base domain for hosted user payment page
         import os
         railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
         if railway_domain:
@@ -171,6 +198,9 @@ class PaymentService:
             product_name=product.name,
             merchant_id=product.merchant_id,
             quantity=quantity,
+            pincode=order.pincode,
+            delivery_address=order.delivery_address,
+            platform=order.platform,
         )
 
     @staticmethod

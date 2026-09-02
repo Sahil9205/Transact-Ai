@@ -96,11 +96,14 @@ class OrderModel(Base):
     total_amount: Mapped[int] = mapped_column(Integer, nullable=False)  # paise
     currency: Mapped[str] = mapped_column(String(3), default="INR")
     status: Mapped[str] = mapped_column(String(50), default="discovered")  # OrderStatus value
+    pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    delivery_address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    platform: Mapped[str | None] = mapped_column(String(50), nullable=True, default="unknown")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
-        return f"<Order {self.order_id} status={self.status}>"
+        return f"<Order {self.order_id} status={self.status} platform={self.platform}>"
 
 
 class PaymentModel(Base):

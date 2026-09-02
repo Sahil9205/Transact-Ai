@@ -119,10 +119,16 @@ async def test_mcp_commerce_tools_execution(db_session: AsyncSession) -> None:
     order_res = await MCPCommerceTools.create_order_payment(
         session=db_session,
         product_id=product.product_id,
+        pincode="110001",
+        delivery_address="Connaught Place, New Delhi",
+        platform="claude",
         quantity=1,
     )
     assert order_res["status"] == "payment_pending"
     assert order_res["amount_inr"] == 450.0
+    assert order_res["pincode"] == "110001"
+    assert order_res["delivery_address"] == "Connaught Place, New Delhi"
+    assert order_res["platform"] == "claude"
     assert "payment_link_url" in order_res
     assert order_res["payment_link_url"].startswith("http")
 

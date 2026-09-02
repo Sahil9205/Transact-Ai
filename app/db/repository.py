@@ -121,7 +121,10 @@ class OrderRepository:
         product_id: str,
         total_amount: int,
         quantity: int = 1,
-        currency: str = "INR"
+        currency: str = "INR",
+        pincode: str | None = None,
+        delivery_address: str | None = None,
+        platform: str | None = None,
     ) -> OrderModel:
         order = OrderModel(
             user_id=user_id,
@@ -130,11 +133,14 @@ class OrderRepository:
             quantity=quantity,
             total_amount=total_amount,
             currency=currency,
+            pincode=pincode,
+            delivery_address=delivery_address,
+            platform=platform or "api",
         )
         session.add(order)
         await session.flush()
         await session.refresh(order)
-        logger.info(f"Created order {order.order_id}")
+        logger.info(f"Created order {order.order_id} via {order.platform}")
         return order
     
     @staticmethod

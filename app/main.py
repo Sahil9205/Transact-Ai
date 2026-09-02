@@ -157,7 +157,9 @@ def create_app() -> FastAPI:
         key_id = cfg.RAZORPAY_KEY_ID
         is_paid = order.status in ("payment_success", "confirmed", "order_created", "completed")
         prep_time = getattr(product, "prep_time_minutes", 10) or 10
-        pincode = getattr(product, "pincode", None) or getattr(merchant, "pincode", None) or "110001"
+        pincode = order.pincode or getattr(product, "pincode", None) or getattr(merchant, "pincode", None) or "N/A"
+        delivery_address = order.delivery_address or ""
+        platform_name = (order.platform or "AI Agent").capitalize()
 
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -199,7 +201,9 @@ def create_app() -> FastAPI:
         
         <div class="details-box">
             <div class="row"><span class="label">Quantity</span><span class="value">{order.quantity} unit</span></div>
-            <div class="row"><span class="label">Delivery Location</span><span class="value">Pincode {pincode}</span></div>
+            <div class="row"><span class="label">Ordered Via</span><span class="value" style="color:#60a5fa;font-weight:600;">🤖 {platform_name}</span></div>
+            <div class="row"><span class="label">Destination</span><span class="value">Pincode {pincode}</span></div>
+            {"<div class='row'><span class='label'>Address</span><span class='value' style='font-size:12px;max-width:200px;text-align:right;color:#e5e7eb;'>" + delivery_address + "</span></div>" if delivery_address else ""}
             <div class="row"><span class="label">Order ID</span><span class="value" style="font-family:monospace;font-size:12px;">{order_id[:8]}...{order_id[-4:]}</span></div>
             <div class="row"><span class="label">Total Amount</span><span class="value price">₹{amount_inr}</span></div>
         </div>
