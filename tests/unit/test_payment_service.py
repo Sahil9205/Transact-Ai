@@ -51,7 +51,7 @@ async def test_create_payment_order_and_signature_verification(db_session: Async
     assert order_res.amount_paise == 90000
     assert order_res.status == "payment_pending"
     assert order_res.quantity == 2
-    assert "checkout.razorpay.com" in order_res.payment_link_url
+    assert "/pay/" in order_res.payment_link_url or "razorpay" in order_res.payment_link_url
 
     # 3. Simulate successful frontend checkout with valid cryptographic HMAC-SHA256 signature
     mock_payment_id = "pay_rzp_mock123456"

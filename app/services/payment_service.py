@@ -146,7 +146,17 @@ class PaymentService:
             },
         )
 
-        payment_link = f"https://checkout.razorpay.com/v1/checkout.js?order_id={razorpay_order_id}"
+        # 5. Determine base domain for hosted user payment page
+        import os
+        railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+        if railway_domain:
+            base_url = f"https://{railway_domain}"
+        elif settings.APP_ENV == "production":
+            base_url = "https://transact-ai-production.up.railway.app"
+        else:
+            base_url = "http://localhost:8000"
+
+        payment_link = f"{base_url}/pay/{order.order_id}"
 
         return PaymentOrderResponse(
             order_id=order.order_id,
