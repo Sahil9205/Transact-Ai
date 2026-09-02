@@ -131,6 +131,32 @@ SEED_PROVIDERS = [
                 slot_capacity=100,
                 pincode="110001",
             ),
+            ProductCreateSchema(
+                name="Aashirvaad Superior MP Whole Wheat Atta (1 kg)",
+                description="Premium 100% pure whole wheat chakki atta flour, freshly milled for soft rotis.",
+                category=ProductCategory.GROCERIES,
+                price_amount=6500,  # ₹65
+                price_currency="INR",
+                quantity=50,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=10,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Fortune Sunlite Refined Sunflower Oil (1 Litre)",
+                description="Refined cooking sunflower oil with essential fatty acids.",
+                category=ProductCategory.GROCERIES,
+                price_amount=14500,  # ₹145
+                price_currency="INR",
+                quantity=30,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=10,
+                slot_capacity=100,
+                pincode="110001",
+            ),
         ],
     },
     {
@@ -175,6 +201,19 @@ SEED_PROVIDERS = [
                 price_amount=6000,  # ₹60
                 price_currency="INR",
                 quantity=40,
+                availability_status=AvailabilityStatus.IN_STOCK,
+                fulfillment_type=FulfillmentType.DELIVERY,
+                prep_time_minutes=8,
+                slot_capacity=100,
+                pincode="110001",
+            ),
+            ProductCreateSchema(
+                name="Aashirvaad Shudh Chakki Whole Wheat Atta Flour (1 kg)",
+                description="Natural stone-ground whole wheat chakki atta flour with 8-minute delivery.",
+                category=ProductCategory.GROCERIES,
+                price_amount=6200,  # ₹62
+                price_currency="INR",
+                quantity=45,
                 availability_status=AvailabilityStatus.IN_STOCK,
                 fulfillment_type=FulfillmentType.DELIVERY,
                 prep_time_minutes=8,
@@ -287,7 +326,8 @@ async def seed_database(
             )
             logger.info(f"  -> Seeded product: {product_schema.name} at ₹{product_schema.pricing.amount / 100}")
 
-    logger.info("Database seeding completed successfully.")
+    await session.commit()
+    logger.info("Database seeding completed and committed successfully.")
 
 
 async def main() -> None:

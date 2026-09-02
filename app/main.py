@@ -40,9 +40,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await vector_service.ensure_collection()
     app.state.vector_service = vector_service
     
-    async for session in db_manager.get_session():
+    async with db_manager.async_session_factory() as session:
         await seed_database(session, vector_service)
-        break
     
     logger.info("Starting up application", env=settings.APP_ENV, version=settings.APP_VERSION)
     

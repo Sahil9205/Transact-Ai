@@ -38,6 +38,28 @@ async def list_merchants(
     return await MerchantService.list_merchants(session)
 
 
+@router.post(
+    "/seed",
+    summary="Seed catalog with demo merchants and products",
+    description="Populates the relational database with demo commerce providers (Sharma Sweets, Blinkit, Zepto, Amazon) and essential grocery items.",
+)
+async def seed_merchants(
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Seed catalog with initial merchants and products."""
+    from typing import Any
+    from app.db.seed import seed_database
+    from app.services.vector_service import get_vector_service
+    vs = get_vector_service()
+    await seed_database(session, vs)
+    merchants = await MerchantService.list_merchants(session)
+    return {
+        "status": "success",
+        "total_merchants": len(merchants),
+        "merchants": [m.name for m in merchants],
+    }
+
+
 @router.get(
     "/{merchant_id}",
     response_model=ProviderSchema,
@@ -50,3 +72,4 @@ async def get_merchant(
 ) -> ProviderSchema:
     """Get details of a specific merchant."""
     return await MerchantService.get_merchant(session, merchant_id)
+
