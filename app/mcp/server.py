@@ -121,6 +121,20 @@ class MCPServer:
                 session=session,
                 merchant_id=args.get("merchant_id", ""),
             )
+        elif tool_name == "transact_create_order_payment":
+            return await MCPCommerceTools.create_order_payment(
+                session=session,
+                product_id=args.get("product_id", ""),
+                quantity=args.get("quantity", 1),
+                user_id=args.get("user_id", "buyer_default"),
+            )
+        elif tool_name == "transact_verify_order_preflight":
+            return await MCPCommerceTools.verify_order_preflight(
+                session=session,
+                product_id=args.get("product_id", ""),
+                quantity=args.get("quantity", 1),
+                user_id=args.get("user_id", "buyer_default"),
+            )
         else:
             raise ValueError(f"Unknown MCP tool: '{tool_name}'")
 

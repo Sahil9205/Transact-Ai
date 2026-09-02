@@ -104,6 +104,50 @@ MCP_TOOLS_DEFINITIONS: list[dict[str, Any]] = [
             "required": ["merchant_id"],
         },
     },
+    {
+        "name": "transact_create_order_payment",
+        "description": "Place a purchase order and generate an instant Razorpay checkout payment link for a confirmed product.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {
+                    "type": "string",
+                    "description": "Unique UUID of the product to purchase",
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Number of units to buy (default: 1)",
+                },
+                "user_id": {
+                    "type": "string",
+                    "description": "Optional buyer user ID (default: 'buyer_default')",
+                },
+            },
+            "required": ["product_id"],
+        },
+    },
+    {
+        "name": "transact_verify_order_preflight",
+        "description": "Performs authoritative live DB stock, price freshness, and user daily spending policy checks before placing an order.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "product_id": {
+                    "type": "string",
+                    "description": "Product UUID to verify",
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Number of units to purchase (default: 1)",
+                },
+                "user_id": {
+                    "type": "string",
+                    "description": "Optional buyer user ID",
+                },
+            },
+            "required": ["product_id"],
+        },
+    },
 ]
 
 
@@ -243,3 +287,49 @@ class MCPCommerceTools:
         """Tool handler for transact_get_merchant_manifest."""
         manifest = await ManifestService.generate_merchant_manifest(session, merchant_id)
         return manifest.model_dump(mode="json")
+
+    @staticmethod
+    async def create_order_payment(
+        session: AsyncSession,
+        product_id: str,
+        quantity: int = 1,
+        user_id: str = "buyer_default",
+    ) -> dict[str, Any]:
+        """Tool handler for transact_create_order_payment."""
+        from app.services.payment_service import PaymentService
+        res = await PaymentService.create_payment_order(
+            session=session,
+            user_id=user_id,
+            product_id=product_id,
+            quantity=quantity,
+        )
+        return {
+            "order_id": res.order_id,
+            "razorpay_order_id": res.razorpay_order_id,
+            "product_id": res.product_id,
+            "product_name": res.product_name,
+            "quantity": res.quantity,
+            "amount_inr": res.amount_inr,
+            "amount_paise": res.amount_paise,
+            "currency": res.currency,
+            "status": res.status,
+            "payment_link_url": res.payment_link_url,
+            "message": f"Order created successfully for {res.product_name}. Pay ₹{res.amount_inr} using the Razorpay payment link to confirm delivery.",
+        }
+
+    @staticmethod
+    async def verify_order_preflight(
+        session: AsyncSession,
+        product_id: str,
+        quantity: int = 1,
+        user_id: str = "buyer_default",
+    ) -> dict[str, Any]:
+        """Tool handler for transact_verify_order_preflight."""
+        from app.services.gatekeeper_service import GatekeeperService
+        decision = await GatekeeperService.verify_and_authorize(
+            session=session,
+            user_id=user_id,
+            product_id=product_id,
+            quantity=quantity,
+        )
+        return decision.model_dump(mode="json")

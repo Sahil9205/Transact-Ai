@@ -13,13 +13,15 @@ from app.services.product_service import ProductService
 @pytest.mark.asyncio
 async def test_mcp_tool_definitions() -> None:
     """Test MCP tool definitions conform to MCP specification."""
-    assert len(MCP_TOOLS_DEFINITIONS) == 5
+    assert len(MCP_TOOLS_DEFINITIONS) == 7
     tool_names = [t["name"] for t in MCP_TOOLS_DEFINITIONS]
     assert "transact_discover_merchants" in tool_names
     assert "transact_search_catalog" in tool_names
     assert "transact_get_product" in tool_names
     assert "transact_check_availability" in tool_names
     assert "transact_get_merchant_manifest" in tool_names
+    assert "transact_create_order_payment" in tool_names
+    assert "transact_verify_order_preflight" in tool_names
 
     for tool in MCP_TOOLS_DEFINITIONS:
         assert "name" in tool
@@ -104,3 +106,23 @@ async def test_mcp_commerce_tools_execution(db_session: AsyncSession) -> None:
     )
     assert manifest_res["provider_id"] == merchant.provider_id
     assert manifest_res["name"] == "Sharma Sweets MCP"
+
+    # 7. Test transact_verify_order_preflight
+    preflight_res = await MCPCommerceTools.verify_order_preflight(
+        session=db_session,
+        product_id=product.product_id,
+        quantity=1,
+    )
+    assert preflight_res["is_authorized"] is True
+
+    # 8. Test transact_create_order_payment
+    order_res = await MCPCommerceTools.create_order_payment(
+        session=db_session,
+        product_id=product.product_id,
+        quantity=1,
+    )
+    assert order_res["status"] == "payment_pending"
+    assert order_res["amount_inr"] == 450.0
+    assert "payment_link_url" in order_res
+    assert order_res["payment_link_url"].startswith("http")
+
