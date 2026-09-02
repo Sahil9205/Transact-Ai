@@ -18,14 +18,17 @@ router = APIRouter(tags=["Model Context Protocol (MCP)"])
     "/mcp",
     summary="MCP JSON-RPC Endpoint (Root)",
     description="Standard JSON-RPC 2.0 endpoint implementing Model Context Protocol methods (initialize, tools/list, tools/call) for remote Claude.ai connectors.",
+    operation_id="mcp_jsonrpc_root",
 )
 @router.post(
     "/mcp/rpc",
     summary="MCP JSON-RPC Endpoint (/mcp/rpc)",
+    operation_id="mcp_jsonrpc_rpc",
 )
 @router.post(
     "/api/v1/mcp/rpc",
     summary="MCP JSON-RPC Endpoint (/api/v1/mcp/rpc)",
+    operation_id="mcp_jsonrpc_api_v1",
 )
 async def mcp_jsonrpc_endpoint(
     request_body: dict[str, Any] = Body(
@@ -50,17 +53,23 @@ async def mcp_jsonrpc_endpoint(
     session: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Execute standard MCP JSON-RPC 2.0 request."""
-    return await MCPServer.handle_request(session, request_body)
+    result = await MCPServer.handle_request(session, request_body)
+    if result is None:
+        req_id = request_body.get("id")
+        return {"jsonrpc": "2.0", "id": req_id, "result": {}}
+    return result
 
 
 @router.get(
     "/mcp/tools",
     summary="List Available MCP Tools",
     description="Returns the array of available MCP tool definitions and JSON schemas.",
+    operation_id="mcp_tools_root",
 )
 @router.get(
     "/api/v1/mcp/tools",
     summary="List Available MCP Tools (/api/v1/mcp/tools)",
+    operation_id="mcp_tools_api_v1",
 )
 async def list_mcp_tools() -> dict[str, Any]:
     """List all registered MCP commerce tools."""
@@ -73,14 +82,17 @@ async def list_mcp_tools() -> dict[str, Any]:
     "/mcp",
     summary="MCP Streamable HTTP / SSE Stream (Root /mcp)",
     description="Provides a Streamable HTTP & SSE transport for remote Claude.ai connectors.",
+    operation_id="mcp_sse_root",
 )
 @router.get(
     "/mcp/sse",
     summary="MCP Server-Sent Events (SSE) Stream (/mcp/sse)",
+    operation_id="mcp_sse_path",
 )
 @router.get(
     "/api/v1/mcp/sse",
     summary="MCP Server-Sent Events (SSE) Stream (/api/v1/mcp/sse)",
+    operation_id="mcp_sse_api_v1",
 )
 async def mcp_sse_endpoint(
     request: Request,

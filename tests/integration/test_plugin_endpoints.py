@@ -62,3 +62,16 @@ async def test_remote_mcp_http_endpoints(client: AsyncClient) -> None:
     assert "result" in rpc_data
     assert "tools" in rpc_data["result"]
 
+    # 3. Test notifications/initialized (which previously caused 500 error)
+    notify_res = await client.post(
+        "/mcp",
+        json={
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized",
+        },
+    )
+    assert notify_res.status_code == 200
+    notify_data = notify_res.json()
+    assert notify_data["jsonrpc"] == "2.0"
+
+
