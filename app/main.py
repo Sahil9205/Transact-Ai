@@ -157,6 +157,7 @@ def create_app() -> FastAPI:
         key_id = cfg.RAZORPAY_KEY_ID
         is_paid = order.status in ("payment_success", "confirmed", "order_created", "completed")
         prep_time = getattr(product, "prep_time_minutes", 10) or 10
+        pincode = getattr(product, "pincode", None) or getattr(merchant, "pincode", None) or "110001"
 
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -198,7 +199,7 @@ def create_app() -> FastAPI:
         
         <div class="details-box">
             <div class="row"><span class="label">Quantity</span><span class="value">{order.quantity} unit</span></div>
-            <div class="row"><span class="label">Delivery Location</span><span class="value">Pincode {order.pincode or '110001'}</span></div>
+            <div class="row"><span class="label">Delivery Location</span><span class="value">Pincode {pincode}</span></div>
             <div class="row"><span class="label">Order ID</span><span class="value" style="font-family:monospace;font-size:12px;">{order_id[:8]}...{order_id[-4:]}</span></div>
             <div class="row"><span class="label">Total Amount</span><span class="value price">₹{amount_inr}</span></div>
         </div>
