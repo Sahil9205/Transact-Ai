@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransactAI | Merchant Partner Gateway</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/logo_icon.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <style>
+    :root {
+      --bg-base: #FFF9F2;
+      --bg-cream: #FFF4E6;
+      --bg-peach-light: #FFE8C7;
+      --bg-peach-warm: #FFD9A8;
+      --brand-orange: #FF9F1C;
+      --brand-orange-deep: #FF7A18;
+      --brand-red: #FF203D;
+      --brand-red-deep: #E71937;
+      --text-charcoal: #171717;
+      --text-secondary: #5F5F5F;
+      --text-muted: #8A8A8A;
+      --border-soft: #F0DED0;
+      --border-strong: #E8CDBB;
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-base);
+      color: var(--text-charcoal);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .font-mono-num {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#FF203D] selection:text-white">
+
+  <!-- Top Navigation (Broad & Spacious) -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#F0DED0] sticky top-0 z-30 shadow-[0_2px_12px_rgba(240,222,208,0.45)]">
+    <div class="w-full px-5 sm:px-8 lg:px-12 min-h-[82px] py-4 flex items-center justify-between">
+      
+      <!-- Brand Logo Lockup with Brand Mark -->
+      <a href="/" class="flex items-center gap-3.5 group">
+        <img src="/logo_icon.png" alt="TransactAI Logo" class="w-11 h-11 rounded-2xl shadow-sm group-hover:scale-105 transition-transform object-contain">
+        <div>
+          <span class="text-2xl font-black tracking-tight text-[#171717]">Transact<span class="text-[#FF203D]">AI</span></span>
+        </div>
+      </a>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-3.5 text-xs">
+        <a href="/docs" target="_blank" class="text-[#5F5F5F] hover:text-[#171717] font-bold transition-colors hidden sm:block">
+          API Specs &nearr;
+        </a>
+        <a href="/merchant/register" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF203D] hover:bg-[#E71937] text-white font-bold shadow-sm transition-all active:scale-95">
+          <span>+ Register Store</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Gateway Container (Fluid & Centered with High Visual Poise) -->
+  <main class="flex-1 w-full px-4 sm:px-8 lg:px-12 py-12 sm:py-16 flex flex-col items-center justify-center">
+    
+    <!-- Hero Header (Cheesy buzzword badge removed) -->
+    <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-14">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-[#171717] tracking-tight leading-[1.15]">
+        Merchant Operations &amp; Partner Hub
+      </h1>
+      <p class="mt-4 text-[#5F5F5F] text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-medium">
+        Empowering local merchants, bakeries, and quick-commerce providers to serve instant programmatic orders from AI assistants with automated Razorpay payouts.
+      </p>
+    </div>
+
+    <!-- The 2 Core Gateway Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl">
+      
+      <!-- CARD 1: Existing Store Partner (Clean SVG Icon, No Emojis) -->
+      <div class="bg-white rounded-3xl border border-[#F0DED0] p-6 sm:p-8 hover:border-[#FFD9A8] shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl bg-[#FFF4E6] border border-[#FFD9A8] flex items-center justify-center text-[#FF7A18] shadow-2xs group-hover:scale-105 transition-transform">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            </div>
+            <span class="text-xs font-bold text-[#5F5F5F] bg-[#FFF4E6] border border-[#F0DED0] px-3 py-1 rounded-full">
+              Existing Merchant
+            </span>
+          </div>
+
+          <h2 class="text-xl font-black text-[#171717] tracking-tight">I am an Existing Store Partner</h2>
+          <p class="text-xs text-[#5F5F5F] mt-2 leading-relaxed font-medium">
+            Already registered on TransactAI? Select your shop below to access live incoming customer orders, manage pricing, and review daily settlements.
+          </p>
+
+          <!-- Store Selector Dropdown -->
+          <div class="mt-6 space-y-2">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-[#171717]">Select Your Store:</label>
+            <div class="relative">
+              <select id="existingStoreSelect"
+                class="w-full appearance-none bg-[#FFF9F2] hover:bg-[#FFF4E6] text-[#171717] font-bold text-xs rounded-xl pl-3.5 pr-10 py-3.5 border border-[#F0DED0] outline-none focus:border-[#FF203D] focus:ring-1 focus:ring-[#FF203D] cursor-pointer transition-all">
+                __SWITCHER_OPTIONS__
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#5F5F5F]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 mt-6 border-t border-[#F0DED0]">
+          <button onclick="goToSelectedDashboard()"
+            class="w-full py-3.5 px-5 rounded-xl bg-[#171717] hover:bg-[#FF203D] text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-[0.98]">
+            <span>Open Store Operations Console &rarr;</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CARD 2: New Store Partner Registration (Clean SVG Icon, No Emojis, No Developer Jargon) -->
+      <div class="bg-white rounded-3xl border border-[#F0DED0] p-6 sm:p-8 hover:border-[#FFD9A8] shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl bg-[#FFE8C7] border border-[#FFD9A8] flex items-center justify-center text-[#FF203D] shadow-2xs group-hover:scale-105 transition-transform">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </div>
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+              New Merchant
+            </span>
+          </div>
+
+          <h2 class="text-xl font-black text-[#171717] tracking-tight">I am a New Store Partner</h2>
+          <p class="text-xs text-[#5F5F5F] mt-2 leading-relaxed font-medium">
+            Register your shop or restaurant in 2 minutes via our 6-step guided onboarding wizard. Begin fulfilling programmatic purchases from AI users across India.
+          </p>
+
+          <div class="mt-6 space-y-2.5 text-xs text-[#171717] font-medium">
+            <div class="flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px] shrink-0">✓</span>
+              <span>100% upfront prepaid customer orders</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px] shrink-0">✓</span>
+              <span>Flexible pricing by piece, kg, or volume</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px] shrink-0">✓</span>
+              <span>Automatic menu synchronization with AI assistants</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 mt-6 border-t border-[#F0DED0]">
+          <a href="/merchant/register"
+            class="w-full py-3.5 px-5 rounded-xl bg-[#FF203D] hover:bg-[#E71937] text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 text-center shadow-sm active:scale-[0.98]">
+            <span>Start 6-Step Onboarding Wizard &rarr;</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Supported AI Ecosystem Strip -->
+    <div class="mt-14 pt-8 border-t border-[#F0DED0] w-full max-w-4xl text-center">
+      <div class="text-[11px] font-bold uppercase tracking-wider text-[#5F5F5F] mb-4">
+        Integrated Across Frontier Autonomous Agents &amp; Payment Networks
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-[#171717] font-mono">
+        <div class="flex items-center gap-2 bg-[#FFF4E6] px-3 py-1.5 rounded-xl border border-[#F0DED0]">
+          <span class="w-2 h-2 rounded-full bg-[#FF7A18]"></span>
+          <span>Claude (MCP Tools)</span>
+        </div>
+        <div class="flex items-center gap-2 bg-[#FFF4E6] px-3 py-1.5 rounded-xl border border-[#F0DED0]">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>ChatGPT (Actions)</span>
+        </div>
+        <div class="flex items-center gap-2 bg-[#FFF4E6] px-3 py-1.5 rounded-xl border border-[#F0DED0]">
+          <span class="w-2 h-2 rounded-full bg-[#FF9F1C]"></span>
+          <span>Gemini Extensions</span>
+        </div>
+        <div class="flex items-center gap-2 bg-[#FFF4E6] px-3 py-1.5 rounded-xl border border-[#F0DED0]">
+          <span class="w-2 h-2 rounded-full bg-[#FF203D]"></span>
+          <span>Razorpay Instant Payouts</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-[#F0DED0] py-6 text-center text-xs text-[#5F5F5F] font-medium bg-[#FFF9F2]">
+    TransactAI Autonomous Agent Commerce Engine &middot; Production Merchant Gateway
+  </footer>
+
+  <script>
+    function goToSelectedDashboard() {
+      const select = document.getElementById("existingStoreSelect");
+      const storeId = select.value;
+      if (!storeId) {
+        alert("Please select a store from the list.");
+        return;
+      }
+      window.location.href = `/merchant/dashboard/${storeId}`;
+    }
+  </script>
+</body>
+</html>

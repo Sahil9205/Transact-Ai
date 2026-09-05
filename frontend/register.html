@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Onboarding Wizard | TransactAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/logo_icon.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <style>
+    :root {
+      --bg-base: #FFF9F2;
+      --bg-cream: #FFF4E6;
+      --bg-peach-light: #FFE8C7;
+      --bg-peach-warm: #FFD9A8;
+      --brand-orange: #FF9F1C;
+      --brand-orange-deep: #FF7A18;
+      --brand-red: #FF203D;
+      --brand-red-deep: #E71937;
+      --text-charcoal: #171717;
+      --text-secondary: #5F5F5F;
+      --text-muted: #8A8A8A;
+      --border-soft: #F0DED0;
+      --border-strong: #E8CDBB;
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-base);
+      color: var(--text-charcoal);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .font-mono-num {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#FF203D] selection:text-white">
+
+  <!-- Header (Broad & Spacious) -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#F0DED0] sticky top-0 z-30 shadow-[0_2px_12px_rgba(240,222,208,0.45)]">
+    <div class="w-full px-5 sm:px-8 lg:px-12 min-h-[82px] py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3.5 group">
+        <img src="/logo_icon.png" alt="TransactAI Logo" class="w-11 h-11 rounded-2xl shadow-sm group-hover:scale-105 transition-transform object-contain">
+        <div>
+          <span class="text-2xl font-black tracking-tight text-[#171717]">Transact<span class="text-[#FF203D]">AI</span></span>
+        </div>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs font-bold text-[#5F5F5F] hover:text-[#171717] px-4 py-2.5 rounded-xl bg-[#FFF4E6] border border-[#F0DED0] transition-colors">
+          &larr; Exit to Gateway
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Wizard Container -->
+  <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center justify-center">
+    
+    <div class="w-full max-w-2xl bg-white border border-[#F0DED0] rounded-3xl p-6 sm:p-10 shadow-xl">
+      
+      <!-- 6-Step Stepper Progress Bar -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between relative mb-3">
+          <!-- Step 1 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-1" class="w-8 h-8 rounded-xl bg-[#FF203D] text-white font-black text-xs flex items-center justify-center transition-all shadow-sm">1</div>
+            <span class="text-[10px] font-bold text-[#171717] mt-1.5 hidden sm:block">Identity</span>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-2" class="w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all">2</div>
+            <span class="text-[10px] font-semibold text-[#8A8A8A] mt-1.5 hidden sm:block">Location</span>
+          </div>
+          <!-- Step 3 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-3" class="w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all">3</div>
+            <span class="text-[10px] font-semibold text-[#8A8A8A] mt-1.5 hidden sm:block">Contact</span>
+          </div>
+          <!-- Step 4 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-4" class="w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all">4</div>
+            <span class="text-[10px] font-semibold text-[#8A8A8A] mt-1.5 hidden sm:block">Catalog</span>
+          </div>
+          <!-- Step 5 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-5" class="w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all">5</div>
+            <span class="text-[10px] font-semibold text-[#8A8A8A] mt-1.5 hidden sm:block">Payouts</span>
+          </div>
+          <!-- Step 6 -->
+          <div class="flex flex-col items-center relative z-10">
+            <div id="stepDot-6" class="w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all">6</div>
+            <span class="text-[10px] font-semibold text-[#8A8A8A] mt-1.5 hidden sm:block">Launch</span>
+          </div>
+          <!-- Background Line -->
+          <div class="absolute top-4 left-4 right-4 h-1 bg-[#FFE8C7] -z-0 rounded-full overflow-hidden">
+            <div id="stepProgressFill" class="h-full bg-[#FF203D] w-[0%] transition-all duration-300"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step Content Panes -->
+      <form id="wizardForm" onsubmit="event.preventDefault()">
+        
+        <!-- STEP 1: Store Identity -->
+        <div id="stepPane-1" class="space-y-4">
+          <div>
+            <h2 class="text-xl font-black text-[#171717]">Step 1: Store Identity &amp; Category</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 font-medium">Tell us the legal name and customer-facing brand of your establishment.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Store Name *</label>
+            <input type="text" id="obStoreName" required placeholder="e.g. Haldiram Sweets & Bakery"
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] focus:ring-1 focus:ring-[#FF203D] transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Business Category *</label>
+            <select id="obStoreType" required
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] cursor-pointer">
+              <option value="local_merchant">Local Merchant / Mithai &amp; Confectionery</option>
+              <option value="local_merchant">Restaurant / Quick Bites</option>
+              <option value="marketplace">Supermarket / Groceries &amp; Daily Essentials</option>
+              <option value="enterprise">Multi-outlet Enterprise</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Brief Description</label>
+            <textarea id="obStoreDesc" rows="2" placeholder="Specializes in fresh North Indian sweets, dry fruits, and hot savories."
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-2.5 text-xs text-[#171717] outline-none focus:border-[#FF203D]"></textarea>
+          </div>
+        </div>
+
+        <!-- STEP 2: Location & Serviceability -->
+        <div id="stepPane-2" class="space-y-4 hidden">
+          <div>
+            <h2 class="text-xl font-black text-[#171717]">Step 2: Location &amp; Serviceability</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 font-medium">Where is your store located and which areas can you serve?</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Store Physical Address *</label>
+            <input type="text" id="obStoreAddress" required placeholder="e.g. Shop 14, Main Market, Lajpat Nagar, New Delhi"
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] focus:ring-1 focus:ring-[#FF203D]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">Primary Store PIN Code *</label>
+              <input type="text" id="obStorePincode" required maxlength="6" placeholder="110024"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">Delivery Radius</label>
+              <select id="obStoreRadius"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] cursor-pointer">
+                <option value="5">Within 5 km</option>
+                <option value="8" selected>Within 8 km (Standard)</option>
+                <option value="15">Within 15 km (Citywide)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Contact & Store Manager -->
+        <div id="stepPane-3" class="space-y-4 hidden">
+          <div>
+            <h2 class="text-xl font-black text-[#171717]">Step 3: Store Contact &amp; Alerts</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 font-medium">Provide communication channels for incoming order alerts and security OTPs.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Store Manager / Owner Name *</label>
+            <input type="text" id="obOwnerName" required placeholder="e.g. Rajesh Sharma"
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] focus:ring-1 focus:ring-[#FF203D]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">WhatsApp / Phone *</label>
+              <input type="tel" id="obPhone" required placeholder="+91 98765 43210"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">Contact Email *</label>
+              <input type="email" id="obEmail" required placeholder="store@example.com"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D]">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Initial Catalog Item (With Flexible Pricing) -->
+        <div id="stepPane-4" class="space-y-4 hidden">
+          <div>
+            <h2 class="text-xl font-black text-[#171717]">Step 4: Initial Signature Product</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 font-medium">Configure your first menu item with unit or weight-based pricing.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">Signature Item Name *</label>
+            <input type="text" id="obProdName" required placeholder="e.g. Motichoor Ladoo or Paneer Butter Masala"
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] outline-none focus:border-[#FF203D] focus:ring-1 focus:ring-[#FF203D]">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-[#F0DED0] bg-[#FFF9F2] cursor-pointer text-xs font-semibold text-[#171717] has-[:checked]:border-[#FF203D] has-[:checked]:bg-[#FFE8C7]">
+              <input type="radio" name="obPricingType" value="fixed_unit" checked onchange="obTogglePricingType()" class="accent-[#FF203D]">
+              <span>Fixed Unit</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-[#F0DED0] bg-[#FFF9F2] cursor-pointer text-xs font-semibold text-[#171717] has-[:checked]:border-[#FF203D] has-[:checked]:bg-[#FFE8C7]">
+              <input type="radio" name="obPricingType" value="weight_based" onchange="obTogglePricingType()" class="accent-[#FF203D]">
+              <span>Weight (₹/kg)</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-[#F0DED0] bg-[#FFF9F2] cursor-pointer text-xs font-semibold text-[#171717] has-[:checked]:border-[#FF203D] has-[:checked]:bg-[#FFE8C7]">
+              <input type="radio" name="obPricingType" value="volume_based" onchange="obTogglePricingType()" class="accent-[#FF203D]">
+              <span>Volume (₹/L)</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1">Price in INR (₹) *</label>
+              <input type="number" id="obProdPrice" required min="1" step="0.5" value="220"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-2.5 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1">Unit Label *</label>
+              <input type="text" id="obProdUnit" value="kg"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-2.5 text-xs text-[#171717] outline-none focus:border-[#FF203D]">
+            </div>
+          </div>
+          <div id="obWeightSubfields" class="grid grid-cols-2 gap-3 pt-2 border-t border-[#F0DED0]">
+            <div>
+              <label class="block text-[11px] font-semibold text-[#5F5F5F] mb-1">Min Order Qty (e.g. 0.25 kg)</label>
+              <input type="number" id="obProdMin" step="0.05" value="0.25"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3 py-2 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#5F5F5F] mb-1">Step Increment (e.g. 0.25 kg)</label>
+              <input type="number" id="obProdStep" step="0.05" value="0.25"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3 py-2 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Settlements & Banking -->
+        <div id="stepPane-5" class="space-y-4 hidden">
+          <div>
+            <h2 class="text-xl font-black text-[#171717]">Step 5: Razorpay Daily Settlements</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 font-medium">Configure your bank account or UPI ID for direct daily payouts.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#171717] mb-1.5">UPI ID / VPA for Instant Payouts *</label>
+            <input type="text" id="obUpi" required placeholder="storename@okhdfcbank"
+              class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] font-mono outline-none focus:border-[#FF203D]">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">Bank Account Number</label>
+              <input type="text" id="obBankAcc" placeholder="123456789012"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] font-mono-num outline-none focus:border-[#FF203D]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#171717] mb-1.5">Bank IFSC Code</label>
+              <input type="text" id="obIfsc" placeholder="HDFC0001234"
+                class="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-3 text-xs text-[#171717] font-mono outline-none focus:border-[#FF203D]">
+            </div>
+          </div>
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 font-medium">
+            <span class="font-bold">✓</span>
+            <span>Razorpay 256-bit automated daily batch payout protocol active.</span>
+          </div>
+        </div>
+
+        <!-- STEP 6: Confirmation & Terminal Launch -->
+        <div id="stepPane-6" class="space-y-5 hidden text-center">
+          <div class="w-16 h-16 rounded-3xl bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-sm">
+            ✓
+          </div>
+          <div>
+            <h2 class="text-2xl font-black text-[#171717]">Store Successfully Registered!</h2>
+            <p class="text-xs text-[#5F5F5F] mt-1 max-w-md mx-auto font-medium">
+              Your store is now live in the TransactAI network. Autonomous agents can discover your catalog items immediately.
+            </p>
+          </div>
+
+          <div class="p-4 bg-[#FFF9F2] border border-[#F0DED0] rounded-2xl text-left space-y-2">
+            <div class="text-[11px] font-mono text-[#5F5F5F] font-bold">Live Merchant API Key:</div>
+            <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-[#F0DED0]">
+              <span id="createdApiKey" class="font-mono text-xs text-[#FF7A18] font-bold truncate">sk_live_...</span>
+              <button type="button" onclick="copyApiKey()" class="text-xs font-bold text-[#171717] hover:text-[#FF203D] ml-2 cursor-pointer">Copy</button>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <a id="launchDashboardBtn" href="/"
+              class="w-full py-4 px-6 rounded-2xl bg-[#FF203D] hover:bg-[#E71937] text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-[0.98]">
+              <span>Open Store Operations Terminal &rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Wizard Navigation Controls (Steps 1 to 5) -->
+        <div id="wizardNavControls" class="flex items-center justify-between pt-6 mt-6 border-t border-[#F0DED0]">
+          <button type="button" id="prevStepBtn" onclick="wizardPrev()"
+            class="px-5 py-2.5 rounded-xl border border-[#F0DED0] bg-[#FFF4E6] text-[#5F5F5F] hover:text-[#171717] text-xs font-bold transition-colors disabled:opacity-40 cursor-pointer" disabled>
+            &larr; Back
+          </button>
+          <button type="button" id="nextStepBtn" onclick="wizardNext()"
+            class="px-6 py-2.5 rounded-xl bg-[#FF203D] hover:bg-[#E71937] text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95">
+            Continue &rarr;
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentStep = 1;
+    let newlyCreatedMerchantId = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateStepUI();
+    });
+
+    function updateStepUI() {
+      // Show only current pane
+      for (let i = 1; i <= 6; i++) {
+        const pane = document.getElementById(`stepPane-${i}`);
+        const dot = document.getElementById(`stepDot-${i}`);
+        if (pane) {
+          if (i === currentStep) pane.classList.remove("hidden");
+          else pane.classList.add("hidden");
+        }
+        if (dot) {
+          if (i === currentStep) {
+            dot.className = "w-8 h-8 rounded-xl bg-[#FF203D] text-white font-black text-xs flex items-center justify-center transition-all shadow-sm";
+          } else if (i < currentStep) {
+            dot.className = "w-8 h-8 rounded-xl bg-[#FF9F1C] text-white font-black text-xs flex items-center justify-center transition-all shadow-xs";
+          } else {
+            dot.className = "w-8 h-8 rounded-xl bg-[#FFE8C7] text-[#5F5F5F] font-bold text-xs flex items-center justify-center transition-all";
+          }
+        }
+      }
+
+      // Progress bar fill
+      const fillPct = ((currentStep - 1) / 5) * 100;
+      document.getElementById("stepProgressFill").style.width = `${fillPct}%`;
+
+      // Nav controls visibility
+      const nav = document.getElementById("wizardNavControls");
+      const prevBtn = document.getElementById("prevStepBtn");
+      const nextBtn = document.getElementById("nextStepBtn");
+
+      if (currentStep === 6) {
+        nav.classList.add("hidden");
+      } else {
+        nav.classList.remove("hidden");
+        prevBtn.disabled = currentStep === 1;
+        if (currentStep === 5) {
+          nextBtn.innerText = "Complete Onboarding & Launch";
+        } else {
+          nextBtn.innerText = "Continue →";
+        }
+      }
+    }
+
+    function obTogglePricingType() {
+      const type = document.querySelector('input[name="obPricingType"]:checked')?.value;
+      const sub = document.getElementById("obWeightSubfields");
+      const unit = document.getElementById("obProdUnit");
+      if (type === "weight_based") {
+        sub.classList.remove("hidden");
+        unit.value = "kg";
+      } else if (type === "volume_based") {
+        sub.classList.add("hidden");
+        unit.value = "liter";
+      } else {
+        sub.classList.add("hidden");
+        unit.value = "piece";
+      }
+    }
+
+    function wizardPrev() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateStepUI();
+      }
+    }
+
+    async function wizardNext() {
+      // Basic step validation
+      if (currentStep === 1) {
+        const name = document.getElementById("obStoreName").value.trim();
+        if (!name) { alert("Please enter your Store Name."); return; }
+      } else if (currentStep === 2) {
+        const addr = document.getElementById("obStoreAddress").value.trim();
+        const pin = document.getElementById("obStorePincode").value.trim();
+        if (!addr || !pin) { alert("Please enter physical address and PIN code."); return; }
+      } else if (currentStep === 3) {
+        const phone = document.getElementById("obPhone").value.trim();
+        const email = document.getElementById("obEmail").value.trim();
+        if (!phone || !email) { alert("Please enter phone and email."); return; }
+      } else if (currentStep === 4) {
+        const pName = document.getElementById("obProdName").value.trim();
+        const pPrice = document.getElementById("obProdPrice").value.trim();
+        if (!pName || !pPrice) { alert("Please enter signature product details."); return; }
+      } else if (currentStep === 5) {
+        // Submit full onboarding to backend!
+        await completeOnboarding();
+        return;
+      }
+
+      currentStep++;
+      updateStepUI();
+    }
+
+    async function completeOnboarding() {
+      const nextBtn = document.getElementById("nextStepBtn");
+      nextBtn.disabled = true;
+      nextBtn.innerText = "Provisioning Store...";
+
+      const storeName = document.getElementById("obStoreName").value.trim();
+      const storeType = document.getElementById("obStoreType").value;
+      const storeDesc = document.getElementById("obStoreDesc").value.trim();
+      const address = document.getElementById("obStoreAddress").value.trim();
+      const pincode = document.getElementById("obStorePincode").value.trim();
+      const ownerName = document.getElementById("obOwnerName").value.trim();
+      const phone = document.getElementById("obPhone").value.trim();
+      const email = document.getElementById("obEmail").value.trim();
+
+      const merchantPayload = {
+        name: storeName,
+        type: storeType,
+        description: storeDesc || `${storeName} in ${address}`,
+        location: address,
+        pincode: pincode,
+        contact_phone: phone,
+        contact_email: email,
+        business_type: storeType === "marketplace" ? "groceries" : "sweets",
+      };
+
+      try {
+        // 1. Register Merchant
+        const res = await fetch("/api/v1/merchants/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(merchantPayload)
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to register merchant.");
+        }
+
+        const merchant = await res.json();
+        newlyCreatedMerchantId = merchant.provider_id;
+
+        // 2. Add Initial Product
+        const pName = document.getElementById("obProdName").value.trim();
+        const pPrice = parseFloat(document.getElementById("obProdPrice").value || "220");
+        const pType = document.querySelector('input[name="obPricingType"]:checked')?.value || "fixed_unit";
+        const pUnit = document.getElementById("obProdUnit").value || "kg";
+        const pMin = parseFloat(document.getElementById("obProdMin")?.value || "0.25");
+        const pStep = parseFloat(document.getElementById("obProdStep")?.value || "0.25");
+
+        await fetch(`/merchants/${merchant.provider_id}/products`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: pName,
+            category: "sweets",
+            price_amount: Math.round(pPrice * 100),
+            price_currency: "INR",
+            pricing_type: pType,
+            unit: pUnit,
+            min_quantity: pMin,
+            increment_step: pStep,
+            quantity: 30,
+            prep_time_minutes: 15,
+            pincode: pincode,
+            availability_status: "in_stock",
+            fulfillment_type: "pickup"
+          })
+        });
+
+        // 3. Populate Step 6
+        document.getElementById("createdApiKey").innerText = merchant.api_key || `sk_live_${merchant.provider_id.slice(0, 16)}`;
+        document.getElementById("launchDashboardBtn").href = `/merchant/dashboard/${merchant.provider_id}`;
+
+        currentStep = 6;
+        updateStepUI();
+
+      } catch (err) {
+        console.error("Onboarding error:", err);
+        alert("An error occurred during registration. Please check your details and try again.");
+        nextBtn.disabled = false;
+        nextBtn.innerText = "Complete Onboarding & Launch";
+      }
+    }
+
+    function copyApiKey() {
+      const key = document.getElementById("createdApiKey").innerText;
+      navigator.clipboard.writeText(key);
+      alert("API key copied to clipboard!");
+    }
+  </script>
+</body>
+</html>

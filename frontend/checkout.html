@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay ₹__AMOUNT_INR__ • TransactAI Checkout</title>
+    <link rel="icon" type="image/png" href="/logo_icon.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        :root {
+            --bg-base: #FFF9F2;
+            --bg-cream: #FFF4E6;
+            --bg-peach: #FFE8C7;
+            --brand-red: #FF203D;
+            --brand-red-hover: #E71937;
+            --brand-orange: #FF7A18;
+            --text-charcoal: #171717;
+            --text-secondary: #5F5F5F;
+            --border-soft: #F0DED0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-base); color: var(--text-charcoal); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .card { background: #ffffff; border: 1px solid var(--border-soft); border-radius: 24px; max-width: 440px; width: 100%; padding: 32px; box-shadow: 0 12px 32px rgba(240, 222, 208, 0.6); }
+        .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: var(--bg-cream); color: var(--brand-orange); border: 1px solid #FFD9A8; margin-bottom: 16px; text-transform: uppercase; tracking: 0.05em; }
+        h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; color: var(--text-charcoal); letter-spacing: -0.02em; }
+        .merchant { font-size: 13px; color: var(--text-secondary); margin-bottom: 22px; font-weight: 500; }
+        .details-box { background: var(--bg-base); border: 1px solid var(--border-soft); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
+        .row:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px dashed var(--border-soft); font-weight: 800; font-size: 16px; }
+        .label { color: var(--text-secondary); font-weight: 500; }
+        .value { color: var(--text-charcoal); font-weight: 700; }
+        .price { color: var(--text-charcoal); font-family: 'JetBrains Mono', monospace; font-size: 18px; }
+        .btn { width: 100%; background: var(--brand-red); color: #ffffff; border: none; padding: 14px 20px; font-size: 14px; font-weight: 800; border-radius: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(255, 32, 61, 0.25); }
+        .btn:hover { background: var(--brand-red-hover); transform: translateY(-1px); }
+        .btn:active { transform: scale(0.98); }
+        .btn-test { background: var(--bg-cream); border: 1px solid var(--border-soft); color: var(--text-secondary); margin-top: 12px; font-size: 12px; padding: 12px; box-shadow: none; font-weight: 700; }
+        .btn-test:hover { background: var(--bg-peach); color: var(--text-charcoal); }
+        .footer { text-align: center; margin-top: 22px; font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; }
+        .success-box { text-align: center; padding: 20px 8px; }
+        .success-icon { font-size: 48px; margin-bottom: 12px; }
+        .success-title { font-size: 22px; font-weight: 800; color: #059669; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="card" id="checkout-card">
+        __PAYMENT_CARD_CONTENT__
+    </div>
+
+    <script>
+        function payNow() {
+            var options = {
+                "key": "__KEY_ID__",
+                "amount": "__AMOUNT_PAISE__",
+                "currency": "INR",
+                "name": "TransactAI",
+                "description": "__PRODUCT_NAME__",
+                "order_id": "__RAZORPAY_ORDER_ID__",
+                "handler": async function (response) {
+                    await handlePaymentSuccess(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+                },
+                "prefill": {
+                    "name": "Transact Shopper",
+                    "email": "buyer@transact.ai",
+                    "contact": "9876543210"
+                },
+                "theme": { "color": "#FF203D" }
+            };
+            try {
+                var rzp = new Razorpay(options);
+                rzp.open();
+            } catch(e) {
+                alert("Razorpay popup error: " + e.message);
+            }
+        }
+
+        async function simulateTestPayment() {
+            await handlePaymentSuccess("__RAZORPAY_ORDER_ID__", "pay_test_" + Math.random().toString(36).substring(7), "sig_test_mock");
+        }
+
+        async function handlePaymentSuccess(rzpOrderId, rzpPayId, rzpSig) {
+            document.getElementById("checkout-card").innerHTML = `
+                <div class="success-box">
+                    <div style="width: 52px; height: 52px; border-radius: 50%; background: #DCFCE7; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <svg style="width: 26px; height: 26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div class="success-title">Payment Successful</div>
+                    <p style="color:#5F5F5F;font-size:14px;margin-bottom:12px;font-weight:500;">Payment of <strong>₹__AMOUNT_INR__</strong> completed via Razorpay.</p>
+                    <p style="color:#8A8A8A;font-size:12px;">Order reference: <code style="color:#FF7A18;font-weight:700;">${rzpOrderId}</code></p>
+                    <div style="margin-top:20px;padding:14px;border-radius:14px;background:#FFF4E6;border:1px solid #FFD9A8;font-size:13px;color:#171717;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;">
+                        <svg style="width:18px;height:18px;color:#FF7A18;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Delivery partner assigned • Estimated: <strong style="color:#FF7A18;">__PREP_TIME__ minutes</strong></span>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
