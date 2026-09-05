@@ -196,12 +196,22 @@ class ExternalHostService:
                 u_id = arguments.get("user_id", user_id)
                 product_id = arguments.get("product_id", "")
                 quantity = arguments.get("quantity", 1)
+                pincode = arguments.get("pincode")
+                delivery_address = arguments.get("delivery_address")
+                platform = arguments.get("platform", "chatgpt")
+                notes = arguments.get("notes") or {}
+                if "phone" in arguments:
+                    notes["phone"] = arguments["phone"]
 
                 order_res = await PaymentService.create_payment_order(
                     session=session,
                     user_id=u_id,
                     product_id=product_id,
                     quantity=quantity,
+                    pincode=pincode,
+                    delivery_address=delivery_address,
+                    platform=platform,
+                    notes=notes,
                 )
                 return {
                     "tool": tool_name,

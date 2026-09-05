@@ -7,8 +7,8 @@
   },
   "servers": [
     {
-      "url": "https://api.transact-ai.com",
-      "description": "Production Gateway"
+      "url": "https://transact-ai-production.up.railway.app",
+      "description": "Production Railway Gateway"
     },
     {
       "url": "http://127.0.0.1:8000",
