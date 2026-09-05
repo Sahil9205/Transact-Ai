@@ -9,10 +9,6 @@
     {
       "url": "https://transact-ai-production.up.railway.app",
       "description": "Production Railway Gateway"
-    },
-    {
-      "url": "http://127.0.0.1:8000",
-      "description": "Local Development / Ngrok"
     }
   ],
   "paths": {
@@ -61,7 +57,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "tool": {
+                      "type": "string",
+                      "description": "Executed tool name"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Execution status: success or error"
+                    },
+                    "result": {
+                      "type": "object",
+                      "description": "Output payload of the tool"
+                    }
+                  }
                 }
               }
             }
@@ -101,7 +111,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Workflow status: completed, policy_rejected, recovery_suggested"
+                    },
+                    "agent_message": {
+                      "type": "string",
+                      "description": "Natural language response message"
+                    },
+                    "order_proposal": {
+                      "type": "object",
+                      "description": "Proposed order details"
+                    },
+                    "alternatives": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Alternative product recommendations"
+                    },
+                    "step_history": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Execution path trace of LangGraph nodes"
+                    }
+                  }
                 }
               }
             }

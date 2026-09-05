@@ -87,7 +87,7 @@ async def node_discover_candidates(
     steps.append(f"discover_candidates: found {len(candidates)} valid candidate(s)")
 
     return {
-        "candidates": candidates,
+        "candidates": candidates[:5],
         "selected_candidate": selected,
         "status": "discovered" if candidates else "no_candidates",
         "step_history": steps,

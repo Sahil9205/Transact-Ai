@@ -47,8 +47,17 @@ class AgentService:
 
         # Configure LangSmith tracing metadata
         settings = get_settings()
+        if settings.LANGSMITH_API_KEY:
+            import os
+            os.environ["LANGCHAIN_TRACING_V2"] = "true"
+            os.environ["LANGCHAIN_API_KEY"] = settings.LANGSMITH_API_KEY
+            os.environ["LANGCHAIN_PROJECT"] = settings.LANGSMITH_PROJECT or "transact-ai"
+            os.environ["LANGSMITH_API_KEY"] = settings.LANGSMITH_API_KEY
+            os.environ["LANGSMITH_PROJECT"] = settings.LANGSMITH_PROJECT or "transact-ai"
+
         config = {
-            "tags": ["transact-ai", "commerce-orchestration"],
+            "run_name": "Autonomous Commerce Workflow <85ms",
+            "tags": ["transact-ai", "commerce-orchestration", "latency-optimized"],
             "metadata": {
                 "user_id": user_id,
                 "environment": settings.APP_ENV,
