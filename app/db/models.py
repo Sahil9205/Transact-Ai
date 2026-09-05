@@ -2,7 +2,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from typing import Any
-from sqlalchemy import String, Integer, Boolean, DateTime, JSON, Text, ForeignKey
+from sqlalchemy import String, Integer, Float, Boolean, DateTime, JSON, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -17,6 +17,13 @@ class MerchantModel(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    api_key: Mapped[str] = mapped_column(String(64), unique=True, index=True, default=lambda: f"sk_live_{uuid.uuid4().hex}")
+    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    business_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default="general")
+    onboarding_status: Mapped[str] = mapped_column(String(30), default="active")
+    operational_status: Mapped[str] = mapped_column(String(30), default="open")  # open, paused, closed
+    logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -25,7 +32,7 @@ class MerchantModel(Base):
     products: Mapped[list[ProductModel]] = relationship(back_populates="merchant", lazy="selectin")
     
     def __repr__(self) -> str:
-        return f"<Merchant {self.name} ({self.merchant_id})>"
+        return f"<Merchant {self.name} ({self.merchant_id}) status={self.onboarding_status}>"
 
 
 class ProductModel(Base):
@@ -39,6 +46,10 @@ class ProductModel(Base):
     category: Mapped[str] = mapped_column(String(50), nullable=False)  # ProductCategory value
     price_amount: Mapped[int] = mapped_column(Integer, nullable=False)  # In paise
     price_currency: Mapped[str] = mapped_column(String(3), default="INR")
+    pricing_type: Mapped[str] = mapped_column(String(30), default="fixed_unit")  # fixed_unit, weight_based, volume_based
+    unit: Mapped[str] = mapped_column(String(20), default="piece")  # piece, kg, g, liter, pack
+    min_quantity: Mapped[float] = mapped_column(Float, default=1.0)
+    increment_step: Mapped[float] = mapped_column(Float, default=1.0)
     quantity: Mapped[int] = mapped_column(Integer, default=0)
     availability_status: Mapped[str] = mapped_column(String(50), default="in_stock")
     fulfillment_type: Mapped[str] = mapped_column(String(50), default="pickup")

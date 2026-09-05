@@ -24,6 +24,11 @@ class MerchantRepository:
             description=data.description,
             location=data.location,
             pincode=data.pincode,
+            contact_email=data.contact_email,
+            contact_phone=data.contact_phone,
+            business_type=data.business_type or "general",
+            logo_url=data.logo_url,
+            onboarding_status="active",
         )
         session.add(merchant)
         await session.flush()
@@ -40,9 +45,25 @@ class MerchantRepository:
         return merchant
     
     @staticmethod
+    async def get_by_api_key(session: AsyncSession, api_key: str) -> MerchantModel | None:
+        result = await session.execute(select(MerchantModel).where(MerchantModel.api_key == api_key))
+        return result.scalar_one_or_none()
+
+    @staticmethod
     async def list_active(session: AsyncSession) -> list[MerchantModel]:
         result = await session.execute(select(MerchantModel).where(MerchantModel.is_active == True))
         return list(result.scalars().all())
+
+    @staticmethod
+    async def update(session: AsyncSession, merchant_id: str, update_dict: dict) -> MerchantModel:
+        merchant = await MerchantRepository.get_by_merchant_id(session, merchant_id)
+        for key, value in update_dict.items():
+            if value is not None and hasattr(merchant, key):
+                setattr(merchant, key, value)
+        await session.flush()
+        await session.refresh(merchant)
+        logger.info(f"Updated merchant {merchant.merchant_id}")
+        return merchant
 
 
 class ProductRepository:
@@ -55,6 +76,10 @@ class ProductRepository:
             category=data.category.value,
             price_amount=data.price_amount,
             price_currency=data.price_currency,
+            pricing_type=data.pricing_type.value if hasattr(data.pricing_type, "value") else str(data.pricing_type),
+            unit=data.unit,
+            min_quantity=data.min_quantity,
+            increment_step=data.increment_step,
             quantity=data.quantity,
             availability_status=data.availability_status.value,
             fulfillment_type=data.fulfillment_type.value,
@@ -102,7 +127,9 @@ class ProductRepository:
         update_data = data.model_dump(exclude_unset=True)
         # Convert enum values to strings
         if 'availability_status' in update_data and update_data['availability_status'] is not None:
-            update_data['availability_status'] = update_data['availability_status'].value
+            update_data['availability_status'] = update_data['availability_status'].value if hasattr(update_data['availability_status'], 'value') else update_data['availability_status']
+        if 'pricing_type' in update_data and update_data['pricing_type'] is not None:
+            update_data['pricing_type'] = update_data['pricing_type'].value if hasattr(update_data['pricing_type'], 'value') else update_data['pricing_type']
         for key, value in update_data.items():
             setattr(product, key, value)
         product.last_verified = datetime.now(timezone.utc)

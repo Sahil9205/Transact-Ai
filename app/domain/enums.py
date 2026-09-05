@@ -23,6 +23,16 @@ class FulfillmentType(str, enum.Enum):
     DELIVERY = "delivery"
     BOTH = "both"
 
+class PricingType(str, enum.Enum):
+    FIXED_UNIT = "fixed_unit"
+    WEIGHT_BASED = "weight_based"
+    VOLUME_BASED = "volume_based"
+
+class StoreOperationalStatus(str, enum.Enum):
+    OPEN = "open"
+    PAUSED = "paused"
+    CLOSED = "closed"
+
 class OrderStatus(str, enum.Enum):
     DISCOVERED = "discovered"
     VERIFIED = "verified"

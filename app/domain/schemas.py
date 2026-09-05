@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.domain.enums import (
     ProviderType, ProductCategory, AvailabilityStatus,
     FulfillmentType, OrderStatus, PaymentStatus,
-    FreshnessTier, AuditEventType
+    FreshnessTier, AuditEventType, PricingType, StoreOperationalStatus
 )
 
 # Value objects (never standalone DB entities)
@@ -12,6 +12,10 @@ class PricingSchema(BaseModel):
     """Pricing information. Amount is in paise (smallest currency unit)."""
     amount: int = Field(ge=0, description="Price in paise. ₹450 = 45000")
     currency: str = Field(default="INR")
+    pricing_type: PricingType = Field(default=PricingType.FIXED_UNIT)
+    unit: str = Field(default="piece", description="kg, g, piece, liter, pack")
+    min_quantity: float = Field(default=1.0, gt=0, description="Minimum orderable quantity")
+    increment_step: float = Field(default=1.0, gt=0, description="Step quantity e.g. 0.25 kg")
 
 class AvailabilitySchema(BaseModel):
     """Product availability status."""
@@ -41,6 +45,13 @@ class ProviderSchema(BaseModel):
     location: str | None = None
     pincode: str | None = None
     is_active: bool = True
+    api_key: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    business_type: str | None = None
+    onboarding_status: str | None = "active"
+    operational_status: StoreOperationalStatus | str = "open"
+    logo_url: str | None = None
 
 class ProductSchema(BaseModel):
     """Canonical representation of a product across all provider types."""
@@ -85,6 +96,23 @@ class ProviderCreateSchema(BaseModel):
     description: str | None = None
     location: str | None = None
     pincode: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    business_type: str | None = None
+    logo_url: str | None = None
+
+class ProviderUpdateSchema(BaseModel):
+    """Schema for updating an existing provider."""
+    name: str | None = None
+    description: str | None = None
+    location: str | None = None
+    pincode: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    business_type: str | None = None
+    onboarding_status: str | None = None
+    operational_status: StoreOperationalStatus | str | None = None
+    is_active: bool | None = None
 
 class ProductCreateSchema(BaseModel):
     """Schema for creating/registering a new product."""
@@ -93,6 +121,10 @@ class ProductCreateSchema(BaseModel):
     category: ProductCategory
     price_amount: int = Field(ge=0, description="Price in paise")
     price_currency: str = "INR"
+    pricing_type: PricingType = PricingType.FIXED_UNIT
+    unit: str = "piece"
+    min_quantity: float = Field(default=1.0, gt=0)
+    increment_step: float = Field(default=1.0, gt=0)
     quantity: int = Field(default=0, ge=0)
     availability_status: AvailabilityStatus = AvailabilityStatus.IN_STOCK
     fulfillment_type: FulfillmentType = FulfillmentType.PICKUP
@@ -104,6 +136,10 @@ class ProductUpdateSchema(BaseModel):
     """Schema for updating product fields. All fields optional."""
     name: str | None = None
     price_amount: int | None = Field(default=None, ge=0)
+    pricing_type: PricingType | None = None
+    unit: str | None = None
+    min_quantity: float | None = Field(default=None, gt=0)
+    increment_step: float | None = Field(default=None, gt=0)
     quantity: int | None = Field(default=None, ge=0)
     availability_status: AvailabilityStatus | None = None
     prep_time_minutes: int | None = Field(default=None, ge=0)

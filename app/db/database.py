@@ -69,6 +69,31 @@ class DatabaseManager:
                 except Exception:
                     pass  # Column already exists
 
+            for col, col_type in [
+                ("api_key", "VARCHAR(64)"),
+                ("contact_email", "VARCHAR(255)"),
+                ("contact_phone", "VARCHAR(20)"),
+                ("business_type", "VARCHAR(50) DEFAULT 'general'"),
+                ("onboarding_status", "VARCHAR(30) DEFAULT 'active'"),
+                ("operational_status", "VARCHAR(30) DEFAULT 'open'"),
+                ("logo_url", "VARCHAR(500)"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE merchants ADD COLUMN {col} {col_type}"))
+                except Exception:
+                    pass  # Column already exists
+
+            for col, col_type in [
+                ("pricing_type", "VARCHAR(30) DEFAULT 'fixed_unit'"),
+                ("unit", "VARCHAR(20) DEFAULT 'piece'"),
+                ("min_quantity", "FLOAT DEFAULT 1.0"),
+                ("increment_step", "FLOAT DEFAULT 1.0"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE products ADD COLUMN {col} {col_type}"))
+                except Exception:
+                    pass  # Column already exists
+
 
     async def close(self) -> None:
         """Close the database engine."""
