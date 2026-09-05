@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Store, UserPlus, ArrowRight, ShieldCheck, ChevronDown } from "lucide-react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -46,10 +44,8 @@ export default function MerchantGatewayPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF9F2]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-12 sm:py-16 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFF9F2] py-12 sm:py-16 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 flex flex-col items-center justify-center relative">
         {/* Subtle background mandala motif */}
         <div className="absolute -left-20 top-20 opacity-30 pointer-events-none">
           <MandalaAccent size={360} className="text-[#FF9F1C]" />
@@ -210,9 +206,7 @@ export default function MerchantGatewayPage() {
           </div>
         </div>
 
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }

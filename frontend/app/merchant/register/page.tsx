@@ -3,8 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, ArrowRight, ArrowLeft, Store, MapPin, Phone, Package, CreditCard, Sparkles } from "lucide-react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -156,10 +154,8 @@ export default function MerchantRegisterPage() {
   const stepTitles = ["Identity", "Location", "Contact", "Catalog", "Payouts", "Launch"];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF9F2]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#FFF9F2] py-10 sm:py-14 flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
         <Card className="w-full p-6 sm:p-10 shadow-xl bg-white">
           
           {/* 6-Step Stepper Progress Bar */}
@@ -540,9 +536,7 @@ export default function MerchantRegisterPage() {
           </form>
 
         </Card>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }
