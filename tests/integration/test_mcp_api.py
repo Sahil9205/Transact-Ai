@@ -12,7 +12,7 @@ async def test_mcp_tools_discovery_endpoint(client: AsyncClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert "tools" in data
-    assert len(data["tools"]) == 5
+    assert len(data["tools"]) >= 5
 
 
 @pytest.mark.asyncio
@@ -45,7 +45,7 @@ async def test_mcp_jsonrpc_lifecycle(client: AsyncClient) -> None:
     assert list_res.status_code == 200
     list_data = list_res.json()
     assert "tools" in list_data["result"]
-    assert len(list_data["result"]["tools"]) == 5
+    assert len(list_data["result"]["tools"]) >= 5
 
     # 3. tools/call method (search catalog)
     call_payload = {

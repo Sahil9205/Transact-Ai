@@ -13,7 +13,7 @@ from app.services.product_service import ProductService
 @pytest.mark.asyncio
 async def test_mcp_tool_definitions() -> None:
     """Test MCP tool definitions conform to MCP specification."""
-    assert len(MCP_TOOLS_DEFINITIONS) == 7
+    assert len(MCP_TOOLS_DEFINITIONS) == 8
     tool_names = [t["name"] for t in MCP_TOOLS_DEFINITIONS]
     assert "transact_discover_merchants" in tool_names
     assert "transact_search_catalog" in tool_names
@@ -22,6 +22,7 @@ async def test_mcp_tool_definitions() -> None:
     assert "transact_get_merchant_manifest" in tool_names
     assert "transact_create_order_payment" in tool_names
     assert "transact_verify_order_preflight" in tool_names
+    assert "transact_register_merchant" in tool_names
 
     for tool in MCP_TOOLS_DEFINITIONS:
         assert "name" in tool
@@ -131,4 +132,20 @@ async def test_mcp_commerce_tools_execution(db_session: AsyncSession) -> None:
     assert order_res["platform"] == "claude"
     assert "payment_link_url" in order_res
     assert order_res["payment_link_url"].startswith("http")
+
+    # 9. Test transact_register_merchant
+    reg_m_res = await MCPCommerceTools.register_merchant(
+        session=db_session,
+        name="Haldiram Janpath",
+        location="Janpath Road, New Delhi",
+        pincode="110001",
+        business_type="sweet_shop",
+        contact_email="janpath@haldiram.com",
+    )
+    assert reg_m_res["status"] == "success"
+    assert "provider_id" in reg_m_res
+    assert reg_m_res["name"] == "Haldiram Janpath"
+    assert "api_key" in reg_m_res
+    assert "/merchant/dashboard/" in reg_m_res["dashboard_url"]
+
 
