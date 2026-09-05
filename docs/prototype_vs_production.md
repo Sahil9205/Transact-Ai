@@ -21,6 +21,8 @@ This ensures all developers and AI agents working on this codebase understand cu
 | **Order Notifications** | Mock/In-App structured logs | **Twilio / WhatsApp Business API / Push Notifications** | Keeps the prototype self-contained without third-party messaging costs. |
 | **Agent Orchestration** | **LangGraph + LangSmith Tracing & Evals** (production-grade from day 1) | Scale with LangGraph Cloud, add A/B eval pipelines | Observability, replayability, and latency monitoring are not optional — they're built-in. |
 | **Audit Trail** | **Production-grade**: structlog + DB `audit_events` + LangSmith traces | Add Grafana dashboards, alerting, long-term archival | Every transaction, every decision, every failure — logged permanently. Audit is NEVER a prototype shortcut. |
+| **Merchant Portal & Auth** | **Self-serve clean light web portal** (`/merchant/register`, `/merchant/dashboard`) + API Key auth (`sk_live_...`) | **Decoupled Next.js / React SPA** with OAuth 2.0, GST/KYC auto-verification via Sandbox API | Zero-setup single-service hosting on Railway; allows merchants to go live immediately while keeping production roadmap clear. |
+| **Catalog Ingestion** | Instant web modal / REST / MCP tool with immediate Qdrant Cloud vector sync | **Bulk CSV/Excel Ingestion Queue** (Celery/Temporal) + ONDC Beckn protocol sync | Prototype allows atomic, verifiable product publishing; bulk ingestion needed at 10,000+ SKU scale. |
 
 ---
 
@@ -49,13 +51,16 @@ This ensures all developers and AI agents working on this codebase understand cu
 * **Later (Production):**
   * Migrate external IDs to **UUIDv7** (time-ordered) or cryptographic Nanoids to prevent fragmentation in large B-tree indexes while maintaining unguessable public IDs.
 
-### 4. Merchant & Enterprise Providers
+### 4. Merchant Onboarding & Enterprise Providers
 * **Now (Prototype):**
-  * **Local Merchants:** Onboarded directly into our local database (e.g., *Sharma Sweets*).
-  * **Enterprise / Quick Commerce:** Simulated adapters for Blinkit / Zepto / Swiggy that return realistic mock catalog/inventory data matching their actual API structure.
+  * **Self-Serve Clean Web Portal:** Merchants can register at `/merchant/register`, receive a secret API key (`sk_live_...`), access their store dashboard at `/merchant/dashboard/{id}`, view incoming orders, and publish new products with immediate Qdrant Cloud vector sync.
+  * **AI Agent Onboarding Tool:** External AI hosts can onboard new local shops conversationally using the `transact_register_merchant` MCP tool.
+  * **Local Merchants & Enterprise:** Local merchants onboarded directly into our relational database (e.g., *Sharma Sweets*, *Apollo Pharmacy*); simulated quick-commerce hubs (Blinkit / Zepto / Swiggy) returning realistic catalog structures.
 * **Later (Production):**
-  * Direct API integration with partner merchant portals, ONDC network gateways, or enterprise inventory webhooks.
-  * Resilience layer with Retry, Circuit Breakers, and Cache-Aside (Redis) to protect against provider rate limits.
+  * **Decoupled React / Next.js Portal:** Multi-tenant dashboard with role-based access control (RBAC), multi-user store management, and real-time WebSocket order notifications.
+  * **Automated KYC & Verification:** Real-time GSTIN and PAN validation via government sandbox APIs, automated FSSAI license checks for food merchants.
+  * **ONDC & Direct Partner APIs:** Direct ONDC Beckn protocol integration, partner merchant webhooks, and circuit-breaker protected catalog sync.
+
 
 ### 5. Semantic Search & Embeddings
 * **From Day 1 (Production-Grade):**

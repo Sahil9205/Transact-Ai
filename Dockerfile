@@ -25,6 +25,7 @@ RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BA
 
 # Copy application source
 COPY app/ app/
+COPY frontend/ frontend/
 COPY .well-known/ .well-known/
 COPY scripts/ scripts/
 COPY pyproject.toml .
