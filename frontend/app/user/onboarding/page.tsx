@@ -24,6 +24,7 @@ import { formatINR } from "@/lib/utils";
 
 const CATEGORIES = [
   { id: "sweets", label: "Sweets & Mithai" },
+  { id: "stationery", label: "Stationery & Books" },
   { id: "food", label: "Cooked Meals & Dining" },
   { id: "groceries", label: "Fresh Groceries & Produce" },
   { id: "electronics", label: "Gadgets & Electronics" },

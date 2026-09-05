@@ -11,6 +11,7 @@ class ProductCategory(str, enum.Enum):
     SWEETS = "sweets"
     GROCERIES = "groceries"
     BEVERAGES = "beverages"
+    STATIONERY = "stationery"
     GENERAL = "general"
 
 class AvailabilityStatus(str, enum.Enum):
