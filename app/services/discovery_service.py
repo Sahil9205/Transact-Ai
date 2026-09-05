@@ -48,37 +48,64 @@ class DiscoveryService:
 
         candidate_map: dict[str, tuple[ProductModel, float]] = {}  # product_id -> (ProductModel, semantic_score)
 
-        # 1. Vector Search Pass (Qdrant Semantic Embeddings)
-        if vector_service and intent.product_query:
-            try:
-                vector_results = await vector_service.search_similar(
-                    query=intent.product_query,
-                    limit=10,
-                    category=intent.category.value if intent.category else None,
-                    max_price=intent.max_price,
-                    pincode=intent.pincode,
-                )
-                for hit in vector_results:
-                    prod_id = hit.get("product_id")
-                    if prod_id:
-                        try:
-                            prod_model = await ProductRepository.get_by_product_id(session, prod_id)
-                            candidate_map[prod_id] = (prod_model, float(hit.get("score", 0.85)))
-                        except Exception:
-                            continue
-            except Exception as e:
-                logger.warning(f"Vector discovery pass failed (continuing with DB pass): {e}")
+        # Dynamically resolve location/pincode from database if not explicitly set as 6-digit numeric pincode
+        if not intent.pincode and intent.product_query:
+            db_pincode = await MerchantRepository.resolve_pincode_from_db(session, intent.product_query)
+            if db_pincode:
+                intent.pincode = db_pincode
+                logger.info("Dynamically resolved pincode from database", pincode=db_pincode, query=intent.product_query)
 
-        # 2. Relational DB Search Pass (Keyword & Category Across All Providers)
-        db_products = await ProductRepository.search(
-            session=session,
-            query=intent.product_query,
-            category=intent.category.value if intent.category else None,
-            pincode=intent.pincode,
+        # 1 & 2. Concurrent Parallel Search: Fast In-Memory Vector Search + Relational DB Search
+        async def _run_vector_search() -> list[dict[str, Any]]:
+            if vector_service and intent.product_query:
+                try:
+                    return await vector_service.search_similar(
+                        query=intent.product_query,
+                        limit=10,
+                        category=intent.category.value if intent.category else None,
+                        max_price=intent.max_price,
+                        pincode=intent.pincode,
+                    )
+                except Exception as e:
+                    logger.warning(f"Vector discovery pass failed (continuing with DB pass): {e}")
+            return []
+
+        async def _run_db_search() -> list[ProductModel]:
+            return await ProductRepository.search(
+                session=session,
+                query=intent.product_query,
+                category=intent.category.value if intent.category else None,
+                pincode=intent.pincode,
+            )
+
+        import asyncio
+        vector_results, db_products = await asyncio.gather(
+            _run_vector_search(),
+            _run_db_search(),
         )
+
+        # Merge results into candidate_map
         for p in db_products:
-            if p.product_id not in candidate_map:
-                candidate_map[p.product_id] = (p, 0.75)  # Base relational match score
+            candidate_map[p.product_id] = (p, 0.75)
+
+        # For vector results, batch fetch any product models not yet loaded
+        missing_ids = [
+            hit.get("product_id") for hit in vector_results 
+            if hit.get("product_id") and hit.get("product_id") not in candidate_map
+        ]
+        if missing_ids:
+            fetched_models = await ProductRepository.get_by_product_ids(session, missing_ids)
+            fetched_dict = {p.product_id: p for p in fetched_models}
+            for hit in vector_results:
+                pid = hit.get("product_id")
+                if pid and pid in fetched_dict:
+                    candidate_map[pid] = (fetched_dict[pid], float(hit.get("score", 0.85)))
+        else:
+            for hit in vector_results:
+                pid = hit.get("product_id")
+                if pid and pid in candidate_map:
+                    p_model, _ = candidate_map[pid]
+                    candidate_map[pid] = (p_model, float(hit.get("score", 0.85)))
 
         if not candidate_map and intent.category:
             # Fallback category search if keyword was too specific
@@ -92,33 +119,34 @@ class DiscoveryService:
                     candidate_map[p.product_id] = (p, 0.60)
 
         # 3. Apply Hard Deterministic Constraint Filters
-        valid_candidates: list[tuple[ProductSchema, str, str, float]] = []  # (schema, merch_name, merch_type, sem_score)
+        filtered_candidates: list[tuple[ProductModel, float]] = []
         for prod_id, (prod_model, sem_score) in candidate_map.items():
             # Filter A: Price Ceiling (Hard Reject if price > budget)
             if intent.max_price is not None and prod_model.price_amount > intent.max_price:
-                logger.debug(
-                    f"Rejecting candidate {prod_model.name}: price {prod_model.price_amount} > budget {intent.max_price}"
-                )
                 continue
 
             # Filter B: Stock Availability
             if prod_model.availability_status != "in_stock" or prod_model.quantity <= 0:
-                logger.debug(f"Rejecting candidate {prod_model.name}: out of stock")
                 continue
 
             # Filter C: Pincode Location Match
             if intent.pincode and prod_model.pincode and prod_model.pincode != intent.pincode:
                 continue
 
-            # Lookup Merchant Name & Type
-            try:
-                merchant = await MerchantRepository.get_by_merchant_id(session, prod_model.merchant_id)
-                merch_name = merchant.name
-                merch_type = merchant.type
-            except Exception:
-                merch_name = "Unknown Merchant"
-                merch_type = "local_merchant"
+            filtered_candidates.append((prod_model, sem_score))
 
+        if not filtered_candidates:
+            return []
+
+        # Batch fetch all unique merchants in a SINGLE SQL query (eliminates N+1 query loop!)
+        unique_merchant_ids = list({pm.merchant_id for pm, _ in filtered_candidates})
+        merchant_lookup = await MerchantRepository.get_by_merchant_ids(session, unique_merchant_ids)
+
+        valid_candidates: list[tuple[ProductSchema, str, str, float]] = []
+        for prod_model, sem_score in filtered_candidates:
+            merchant = merchant_lookup.get(prod_model.merchant_id)
+            merch_name = merchant.name if merchant else "Unknown Merchant"
+            merch_type = merchant.type if merchant else "local_merchant"
             schema = model_to_schema(prod_model)
             valid_candidates.append((schema, merch_name, merch_type, sem_score))
 

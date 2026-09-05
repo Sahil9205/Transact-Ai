@@ -81,3 +81,52 @@ async def test_audit_repository_log_event(db_session):
     assert event.id is not None
     assert event.event_type == AuditEventType.INTENT_RECEIVED.value
     assert event.metadata_json == {"test": "data"}
+
+
+async def test_merchant_repository_resolve_pincode_from_db(db_session):
+    m_data = ProviderCreateSchema(
+        name="Roshan Di Kulfi",
+        type=ProviderType.LOCAL_MERCHANT,
+        location="Ajmal Khan Road, Karol Bagh, New Delhi",
+        pincode="110005",
+    )
+    await MerchantRepository.create(db_session, m_data)
+
+    # 1. Match by location area "Karol Bagh" dynamically from DB
+    pin = await MerchantRepository.resolve_pincode_from_db(db_session, "I want kulfi in Karol Bagh")
+    assert pin == "110005"
+
+    # 2. Match by merchant name "Roshan Di Kulfi" dynamically from DB
+    pin_name = await MerchantRepository.resolve_pincode_from_db(db_session, "order from Roshan Di Kulfi please")
+    assert pin_name == "110005"
+
+    # 3. Non-existent location returns None
+    pin_none = await MerchantRepository.resolve_pincode_from_db(db_session, "sweets in Chennai")
+    assert pin_none is None
+
+
+async def test_product_repository_search_by_merchant_location(db_session):
+    m_data = ProviderCreateSchema(
+        name="Anand Sweets",
+        type=ProviderType.LOCAL_MERCHANT,
+        location="100 Feet Road, Indiranagar, Bengaluru",
+        pincode="560038",
+    )
+    merchant = await MerchantRepository.create(db_session, m_data)
+
+    await ProductRepository.create(
+        db_session,
+        merchant.merchant_id,
+        ProductCreateSchema(
+            name="Mysore Pak",
+            category=ProductCategory.SWEETS,
+            price_amount=30000,
+            quantity=10,
+            pincode="560038",
+        ),
+    )
+
+    # Search with location name in query matches through joined MerchantModel
+    results = await ProductRepository.search(db_session, query="Indiranagar")
+    assert len(results) >= 1
+    assert any(p.name == "Mysore Pak" for p in results)

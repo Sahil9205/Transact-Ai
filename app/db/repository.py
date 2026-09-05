@@ -43,6 +43,17 @@ class MerchantRepository:
         if not merchant:
             raise NotFoundError(message=f"Merchant {merchant_id} not found")
         return merchant
+
+    @staticmethod
+    async def get_by_merchant_ids(session: AsyncSession, merchant_ids: list[str]) -> dict[str, MerchantModel]:
+        """Batch fetches merchants by IDs in a single SQL query, returning a lookup dict {merchant_id: MerchantModel}."""
+        if not merchant_ids:
+            return {}
+        result = await session.execute(
+            select(MerchantModel).where(MerchantModel.merchant_id.in_(merchant_ids))
+        )
+        merchants = result.scalars().all()
+        return {m.merchant_id: m for m in merchants}
     
     @staticmethod
     async def get_by_api_key(session: AsyncSession, api_key: str) -> MerchantModel | None:
@@ -53,6 +64,38 @@ class MerchantRepository:
     async def list_active(session: AsyncSession) -> list[MerchantModel]:
         result = await session.execute(select(MerchantModel).where(MerchantModel.is_active == True))
         return list(result.scalars().all())
+
+    @staticmethod
+    async def resolve_pincode_from_db(session: AsyncSession, text: str) -> str | None:
+        """Dynamically resolves a postal pincode by querying active merchants from the database.
+        Checks merchant location and name fields against text keywords (Zero hardcoding)."""
+        if not text or not text.strip():
+            return None
+        import re
+        result = await session.execute(
+            select(MerchantModel.pincode, MerchantModel.location, MerchantModel.name)
+            .where(MerchantModel.is_active == True)
+        )
+        merchants = result.all()
+        text_lower = text.lower()
+        for pin, loc, name in merchants:
+            if not pin:
+                continue
+            # Match location segments (e.g. "Karol Bagh", "Connaught Place", "Chandni Chowk", "Indiranagar")
+            if loc:
+                segments = [seg.strip().lower() for seg in loc.split(",") if seg.strip()]
+                for seg in segments:
+                    if len(seg) >= 3:
+                        if re.search(rf"\b{re.escape(seg)}\b", text_lower):
+                            return pin
+                        base_seg = re.sub(r"\b(i+|iv|v|vi*|part\s*\d+|block\s*\w+|phase\s*\d+)\b", "", seg).strip()
+                        if len(base_seg) >= 3 and re.search(rf"\b{re.escape(base_seg)}\b", text_lower):
+                            return pin
+            # Match merchant name (e.g. "Roshan Di Kulfi", "Sharma Sweets")
+            if name and len(name) >= 3:
+                if re.search(rf"\b{re.escape(name.lower())}\b", text_lower):
+                    return pin
+        return None
 
     @staticmethod
     async def update(session: AsyncSession, merchant_id: str, update_dict: dict) -> MerchantModel:
@@ -100,6 +143,16 @@ class ProductRepository:
         if not product:
             raise NotFoundError(message=f"Product {product_id} not found")
         return product
+
+    @staticmethod
+    async def get_by_product_ids(session: AsyncSession, product_ids: list[str]) -> list[ProductModel]:
+        """Batch fetches products by IDs in a single SQL query."""
+        if not product_ids:
+            return []
+        result = await session.execute(
+            select(ProductModel).where(ProductModel.product_id.in_(product_ids))
+        )
+        return list(result.scalars().all())
     
     @staticmethod
     async def search(
@@ -109,15 +162,35 @@ class ProductRepository:
         pincode: str | None = None,
         merchant_id: str | None = None,
     ) -> list[ProductModel]:
-        stmt = select(ProductModel)
-        if query:
-            stmt = stmt.where(ProductModel.name.ilike(f"%{query}%"))
+        from sqlalchemy import or_
+        stmt = (
+            select(ProductModel)
+            .join(MerchantModel, ProductModel.merchant_id == MerchantModel.merchant_id, isouter=True)
+        )
         if category:
             stmt = stmt.where(ProductModel.category == category)
         if pincode:
             stmt = stmt.where(ProductModel.pincode == pincode)
         if merchant_id:
             stmt = stmt.where(ProductModel.merchant_id == merchant_id)
+        if query:
+            words = [w.strip() for w in query.split() if len(w.strip()) > 2]
+            if words:
+                conditions = []
+                for w in words:
+                    conditions.append(ProductModel.name.ilike(f"%{w}%"))
+                    conditions.append(ProductModel.description.ilike(f"%{w}%"))
+                    conditions.append(MerchantModel.name.ilike(f"%{w}%"))
+                    conditions.append(MerchantModel.location.ilike(f"%{w}%"))
+                stmt = stmt.where(or_(*conditions))
+            else:
+                stmt = stmt.where(
+                    or_(
+                        ProductModel.name.ilike(f"%{query}%"),
+                        MerchantModel.name.ilike(f"%{query}%"),
+                        MerchantModel.location.ilike(f"%{query}%"),
+                    )
+                )
         result = await session.execute(stmt)
         return list(result.scalars().all())
     
