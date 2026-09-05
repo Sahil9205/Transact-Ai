@@ -18,13 +18,13 @@ def test_parse_english_intent_with_budget_and_deadline() -> None:
 
 
 def test_parse_hinglish_intent() -> None:
-    """Test parsing Hinglish prompt with colloquial phrasing."""
-    prompt = "bhai 2 samosa aur sweet lassi mangwa do 300 ke andar Connaught Place mein"
+    """Test parsing Hinglish prompt with colloquial phrasing and numeric pincode."""
+    prompt = "bhai 2 samosa aur sweet lassi mangwa do 300 ke andar in 110001"
     intent = IntentService.parse_intent(prompt)
 
     assert "samosa" in intent.product_query.lower() or "sweet lassi" in intent.product_query.lower()
     assert intent.max_price == 30000  # 300 rupees = 30000 paise
-    assert intent.pincode == "110001"  # Connaught Place mapped to 110001
+    assert intent.pincode == "110001"
 
 
 def test_parse_hindi_time_expression() -> None:
@@ -39,11 +39,24 @@ def test_parse_hindi_time_expression() -> None:
 
 
 def test_parse_intent_without_budget() -> None:
-    """Test prompt without explicit budget ceiling."""
-    prompt = "fresh gulab jamun in Chandni Chowk"
+    """Test prompt with numeric pincode without explicit budget ceiling."""
+    prompt = "fresh gulab jamun in 110006"
     intent = IntentService.parse_intent(prompt)
 
     assert "gulab jamun" in intent.product_query.lower()
     assert intent.max_price is None
     assert intent.category == ProductCategory.SWEETS
-    assert intent.pincode == "110006"  # Chandni Chowk mapped to 110006
+    assert intent.pincode == "110006"
+
+
+def test_parse_intent_location_text_preserved_without_hardcoding() -> None:
+    """Test that location text without a numeric pincode preserves location in product_query
+    and leaves pincode None so it is dynamically resolved from the database (Zero hardcoding)."""
+    prompt = "fresh gulab jamun in Chandni Chowk"
+    intent = IntentService.parse_intent(prompt)
+
+    assert "gulab jamun" in intent.product_query.lower()
+    assert "chandni chowk" in intent.product_query.lower()
+    assert intent.max_price is None
+    assert intent.category == ProductCategory.SWEETS
+    assert intent.pincode is None  # Resolved dynamically via database in DiscoveryService

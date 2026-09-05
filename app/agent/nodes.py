@@ -25,6 +25,10 @@ async def node_parse_intent(
     logger.info("LangGraph Node: parse_intent", prompt=prompt)
 
     intent = IntentService.parse_intent(prompt)
+    if not intent.pincode:
+        db_pin = await MerchantRepository.resolve_pincode_from_db(session, prompt)
+        if db_pin:
+            intent.pincode = db_pin
 
     # Log INTENT_RECEIVED audit event
     await AuditRepository.log_event(

@@ -9,22 +9,11 @@ from app.domain.schemas import BuyerIntentSchema
 
 logger = get_logger(__name__)
 
-# Known pincode aliases
-LOCATION_PINCODE_MAP: dict[str, str] = {
-    "cp": "110001",
-    "connaught place": "110001",
-    "central delhi": "110001",
-    "karol bagh": "110005",
-    "chandni chowk": "110006",
-    "green park": "110016",
-    "noida": "201301",
-}
-
 # Category keyword triggers
 CATEGORY_KEYWORDS: dict[ProductCategory, list[str]] = {
     ProductCategory.SWEETS: [
         "rasgulla", "gulab jamun", "kaju katli", "jalebi", "ladoo", "mithai",
-        "meetha", "sweet", "sweets", "halwa", "barfi", "peda", "rasmalai", "rajbhog"
+        "meetha", "sweet", "sweets", "halwa", "barfi", "peda", "rasmalai", "rajbhog", "mysore pak", "sandesh", "kulfi"
     ],
     ProductCategory.FOOD: [
         "samosa", "kachori", "pakora", "dhokla", "chaat", "tikki", "snack",
@@ -38,6 +27,12 @@ CATEGORY_KEYWORDS: dict[ProductCategory, list[str]] = {
         "atta", "rice", "dal", "sugar", "oil", "milk", "dahi", "curd", "paneer",
         "ghee", "butter", "grocery", "groceries"
     ],
+    ProductCategory.STATIONERY: [
+        "stationery", "notebook", "notebooks", "register", "registers", "pen", "pens",
+        "pencil", "pencils", "eraser", "sharpener", "scale", "ruler", "geometry box",
+        "fevicol", "glue", "highlighter", "highlighters", "marker", "markers", "diary",
+        "a4 paper", "stapler", "art supplies", "drawing book", "sketchbook", "calculator"
+    ],
 }
 
 # Noise phrases to strip from query keyword extraction
@@ -46,7 +41,6 @@ NOISE_PATTERNS = [
     r"\b(under|below|less than|max|maximum|budget|ke andar|tak)\b",
     r"\b(by|at|before|within|tak|baje)\b",
     r"\b(urgent|fast|quickly|jaldi)\b",
-    r"\b(in|near|at|around)\s+[a-zA-Z0-9\s]+",
 ]
 
 
@@ -140,17 +134,10 @@ class IntentService:
 
     @staticmethod
     def _extract_pincode(text: str) -> str | None:
-        """Extracts explicit 6-digit Indian pincode or infers from location keyword."""
-        # 1. Explicit 6-digit number
+        """Extracts explicit 6-digit Indian postal pincode if present in the text."""
         pincode_match = re.search(r"\b([1-9][0-9]{5})\b", text)
         if pincode_match:
             return pincode_match.group(1)
-
-        # 2. Location mapping
-        for loc_name, pin in LOCATION_PINCODE_MAP.items():
-            if re.search(rf"\b{re.escape(loc_name)}\b", text):
-                return pin
-
         return None
 
     @staticmethod

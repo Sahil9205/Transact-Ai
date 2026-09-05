@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from typing import Any
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.database import get_db
+from app.db.repository import MerchantRepository
 from app.domain.schemas import BuyerIntentSchema
 from app.services.intent_service import IntentService
 
@@ -27,6 +30,12 @@ class IntentParseRequest(BaseModel):
 )
 async def parse_intent_endpoint(
     request: IntentParseRequest,
+    session: AsyncSession = Depends(get_db),
 ) -> BuyerIntentSchema:
-    """Parse unstructured prompt into structured commerce intent."""
-    return IntentService.parse_intent(request.prompt)
+    """Parse unstructured prompt into structured commerce intent with dynamic database location resolution."""
+    intent = IntentService.parse_intent(request.prompt)
+    if not intent.pincode:
+        db_pin = await MerchantRepository.resolve_pincode_from_db(session, request.prompt)
+        if db_pin:
+            intent.pincode = db_pin
+    return intent
