@@ -42,6 +42,9 @@ class DatabaseManager:
 
     async def init_db(self) -> None:
         """Create all tables from Base.metadata."""
+        # Ensure all SQLAlchemy models are registered in Base.metadata
+        import app.db.models  # noqa: F401
+
         # Ensure the directory for SQLite file exists safely
         url_str = str(self.engine.url)
         if url_str.startswith("sqlite"):
@@ -59,13 +62,16 @@ class DatabaseManager:
             await conn.run_sync(Base.metadata.create_all)
             # Safe non-breaking column addition for existing tables (SQLite & Postgres)
             from sqlalchemy import text
+            is_pg = not url_str.startswith("sqlite")
+            if_not_exists = "IF NOT EXISTS " if is_pg else ""
+
             for col, col_type in [
                 ("pincode", "VARCHAR(10)"),
                 ("delivery_address", "TEXT"),
                 ("platform", "VARCHAR(50) DEFAULT 'unknown'"),
             ]:
                 try:
-                    await conn.execute(text(f"ALTER TABLE orders ADD COLUMN {col} {col_type}"))
+                    await conn.execute(text(f"ALTER TABLE orders ADD COLUMN {if_not_exists}{col} {col_type}"))
                 except Exception:
                     pass  # Column already exists
 
@@ -79,7 +85,7 @@ class DatabaseManager:
                 ("logo_url", "VARCHAR(500)"),
             ]:
                 try:
-                    await conn.execute(text(f"ALTER TABLE merchants ADD COLUMN {col} {col_type}"))
+                    await conn.execute(text(f"ALTER TABLE merchants ADD COLUMN {if_not_exists}{col} {col_type}"))
                 except Exception:
                     pass  # Column already exists
 
@@ -90,7 +96,7 @@ class DatabaseManager:
                 ("increment_step", "FLOAT DEFAULT 1.0"),
             ]:
                 try:
-                    await conn.execute(text(f"ALTER TABLE products ADD COLUMN {col} {col_type}"))
+                    await conn.execute(text(f"ALTER TABLE products ADD COLUMN {if_not_exists}{col} {col_type}"))
                 except Exception:
                     pass  # Column already exists
 

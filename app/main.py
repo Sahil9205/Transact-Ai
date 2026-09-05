@@ -41,12 +41,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
     try:
         await vector_service.ensure_collection()
-        app.state.vector_service = vector_service
+    except Exception as e:
+        logger.warning(f"Qdrant Cloud network warning during startup: {e}")
+    app.state.vector_service = vector_service
+
+    try:
         async with db_manager.async_session_factory() as session:
             await seed_database(session, vector_service)
     except Exception as e:
-        logger.warning(f"Qdrant Cloud network warning during startup: {e}")
-        app.state.vector_service = vector_service
+        logger.error(f"Database seed warning during startup: {e}")
     
     logger.info("Starting up application", env=settings.APP_ENV, version=settings.APP_VERSION)
     
@@ -127,26 +130,44 @@ def create_app() -> FastAPI:
 
     @app_instance.get("/favicon.ico", include_in_schema=False)
     @app_instance.get("/favicon.png", include_in_schema=False)
-    async def get_favicon() -> FileResponse:
+    async def get_favicon():
         """Serve TransactAI favicon."""
         from pathlib import Path
-        path = Path(__file__).parent.parent / "frontend" / "favicon.png"
-        return FileResponse(path, media_type="image/png")
+        from fastapi.responses import Response
+        for p in [
+            Path(__file__).parent.parent / "frontend" / "public" / "favicon.png",
+            Path(__file__).parent.parent / "frontend" / "favicon.png",
+        ]:
+            if p.exists():
+                return FileResponse(p, media_type="image/png")
+        return Response(status_code=204)
 
     @app_instance.get("/logo_icon.png", include_in_schema=False)
     @app_instance.get("/logo.png", include_in_schema=False)
-    async def get_logo_icon() -> FileResponse:
+    async def get_logo_icon():
         """Serve TransactAI logo icon."""
         from pathlib import Path
-        path = Path(__file__).parent.parent / "frontend" / "logo_icon.png"
-        return FileResponse(path, media_type="image/png")
+        from fastapi.responses import Response
+        for p in [
+            Path(__file__).parent.parent / "frontend" / "public" / "logo_icon.png",
+            Path(__file__).parent.parent / "frontend" / "logo_icon.png",
+        ]:
+            if p.exists():
+                return FileResponse(p, media_type="image/png")
+        return Response(status_code=204)
 
     @app_instance.get("/logo_full.png", include_in_schema=False)
-    async def get_logo_full() -> FileResponse:
+    async def get_logo_full():
         """Serve TransactAI full brand logo lockup."""
         from pathlib import Path
-        path = Path(__file__).parent.parent / "frontend" / "logo_full.png"
-        return FileResponse(path, media_type="image/png")
+        from fastapi.responses import Response
+        for p in [
+            Path(__file__).parent.parent / "frontend" / "public" / "logo_full.png",
+            Path(__file__).parent.parent / "frontend" / "logo_full.png",
+        ]:
+            if p.exists():
+                return FileResponse(p, media_type="image/png")
+        return Response(status_code=204)
 
     @app_instance.get("/pay/{order_id}", response_class=HTMLResponse, include_in_schema=False)
     async def checkout_payment_page(order_id: str, session: AsyncSession = Depends(get_db)) -> HTMLResponse:
