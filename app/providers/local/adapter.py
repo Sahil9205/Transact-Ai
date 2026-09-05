@@ -8,7 +8,7 @@ from app.domain.schemas import (
     ProviderSchema, ProductSchema, PricingSchema, 
     AvailabilitySchema, VerificationSchema, FulfillmentSchema
 )
-from app.domain.enums import FreshnessTier, ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType
+from app.domain.enums import FreshnessTier, ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType, PricingType
 from app.core.logging import get_logger
 from app.core.exceptions import NotFoundError
 
@@ -44,7 +44,11 @@ class LocalMerchantAdapter(BaseProviderAdapter):
             category=ProductCategory(product.category),
             pricing=PricingSchema(
                 amount=product.price_amount,
-                currency=product.price_currency
+                currency=product.price_currency,
+                pricing_type=PricingType(getattr(product, "pricing_type", "fixed_unit")),
+                unit=getattr(product, "unit", "piece"),
+                min_quantity=getattr(product, "min_quantity", 1.0),
+                increment_step=getattr(product, "increment_step", 1.0),
             ),
             availability=AvailabilitySchema(
                 status=AvailabilityStatus(product.availability_status),
