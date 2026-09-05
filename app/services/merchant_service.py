@@ -28,6 +28,9 @@ def merchant_model_to_schema(merchant: MerchantModel) -> ProviderSchema:
         onboarding_status=getattr(merchant, "onboarding_status", "active"),
         operational_status=getattr(merchant, "operational_status", "open"),
         logo_url=getattr(merchant, "logo_url", None),
+        payout_upi_id=getattr(merchant, "payout_upi_id", None),
+        payout_bank_account=getattr(merchant, "payout_bank_account", None),
+        payout_ifsc_code=getattr(merchant, "payout_ifsc_code", None),
     )
 
 

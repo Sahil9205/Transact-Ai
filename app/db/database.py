@@ -83,6 +83,9 @@ class DatabaseManager:
                 ("onboarding_status", "VARCHAR(30) DEFAULT 'active'"),
                 ("operational_status", "VARCHAR(30) DEFAULT 'open'"),
                 ("logo_url", "VARCHAR(500)"),
+                ("payout_upi_id", "VARCHAR(100)"),
+                ("payout_bank_account", "VARCHAR(50)"),
+                ("payout_ifsc_code", "VARCHAR(20)"),
             ]:
                 try:
                     await conn.execute(text(f"ALTER TABLE merchants ADD COLUMN {if_not_exists}{col} {col_type}"))

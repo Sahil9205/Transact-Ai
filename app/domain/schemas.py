@@ -52,6 +52,9 @@ class ProviderSchema(BaseModel):
     onboarding_status: str | None = "active"
     operational_status: StoreOperationalStatus | str = "open"
     logo_url: str | None = None
+    payout_upi_id: str | None = None
+    payout_bank_account: str | None = None
+    payout_ifsc_code: str | None = None
 
 class ProductSchema(BaseModel):
     """Canonical representation of a product across all provider types."""
@@ -100,6 +103,9 @@ class ProviderCreateSchema(BaseModel):
     contact_phone: str | None = None
     business_type: str | None = None
     logo_url: str | None = None
+    payout_upi_id: str | None = None
+    payout_bank_account: str | None = None
+    payout_ifsc_code: str | None = None
 
 class ProviderUpdateSchema(BaseModel):
     """Schema for updating an existing provider."""
@@ -112,6 +118,9 @@ class ProviderUpdateSchema(BaseModel):
     business_type: str | None = None
     onboarding_status: str | None = None
     operational_status: StoreOperationalStatus | str | None = None
+    payout_upi_id: str | None = None
+    payout_bank_account: str | None = None
+    payout_ifsc_code: str | None = None
     is_active: bool | None = None
 
 class ProductCreateSchema(BaseModel):

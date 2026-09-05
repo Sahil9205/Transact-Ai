@@ -113,6 +113,9 @@ export default function MerchantRegisterPage() {
         contact_phone: phone.trim(),
         contact_email: email.trim(),
         business_type: storeType === "marketplace" ? "groceries" : "sweets",
+        payout_upi_id: upi.trim() || undefined,
+        payout_bank_account: bankAcc.trim() || undefined,
+        payout_ifsc_code: ifsc.trim() || undefined,
       });
 
       setCreatedMerchantId(merchant.provider_id);

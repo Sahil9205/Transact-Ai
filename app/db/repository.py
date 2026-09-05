@@ -28,6 +28,9 @@ class MerchantRepository:
             contact_phone=data.contact_phone,
             business_type=data.business_type or "general",
             logo_url=data.logo_url,
+            payout_upi_id=data.payout_upi_id,
+            payout_bank_account=data.payout_bank_account,
+            payout_ifsc_code=data.payout_ifsc_code,
             onboarding_status="active",
         )
         session.add(merchant)

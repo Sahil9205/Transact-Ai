@@ -24,6 +24,9 @@ class MerchantModel(Base):
     onboarding_status: Mapped[str] = mapped_column(String(30), default="active")
     operational_status: Mapped[str] = mapped_column(String(30), default="open")  # open, paused, closed
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    payout_upi_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    payout_bank_account: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    payout_ifsc_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

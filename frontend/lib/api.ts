@@ -45,6 +45,9 @@ export const api = {
     contact_phone?: string;
     contact_email?: string;
     business_type?: string;
+    payout_upi_id?: string;
+    payout_bank_account?: string;
+    payout_ifsc_code?: string;
   }): Promise<Merchant> {
     return apiFetch<Merchant>("/api/v1/merchants/", {
       method: "POST",
