@@ -55,7 +55,8 @@ STAGE 3 — DEMAND VERIFICATION & CONTACT / CONFIRMATION GATE:
     • Total Amount: ₹[Amount] (All taxes included)
 
   • Now ask for Contact Number & Final Confirmation before creating payment:
-    "Store inventory and delivery radius verify ho chuke hain! Delivery partner updates ke liye please apna Phone Number share karein aur confirmation dein: Shall I place this order?"
+    - If fulfillment is DELIVERY: "Store inventory aur delivery radius verify ho chuke hain! Delivery partner updates aur rider coordination ke liye please apna Phone Number share karein aur confirmation dein: Shall I place this order?"
+    - If fulfillment is PICKUP: "Store inventory verify ho chuki hai (Self-Pickup)! Store pickup notification aur SMS readiness token ke liye please apna Phone Number share karein aur confirmation dein: Shall I place this order?" (NOTE: Do NOT mention delivery rider if fulfillment is pickup!)
 
 STAGE 4 — ATOMIC ORDER CREATION & PAYMENT LINK:
 - When the user provides Phone Number and confirms ("Yes / Proceed / Kar do"):

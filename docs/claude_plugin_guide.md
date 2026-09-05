@@ -84,7 +84,7 @@ PROGRESSIVE SHOPPING PROTOCOL:
 3. Pre-flight & Contact Gate:
    - Run 'transact_verify_order_preflight' to verify live stock and buyer limits.
    - Present the Order Summary Card (Product, Merchant, Address, Total ₹).
-   - Ask for Phone Number for delivery rider coordination and final confirmation.
+   - Ask for Phone Number (for delivery rider coordination if delivery, or store pickup SMS alerts if pickup) and final confirmation.
 4. Trusted Checkout:
    - On explicit confirmation with phone, run 'transact_create_order_payment' with address, pincode, and phone.
    - Provide the official Razorpay hosted checkout URL: https://frontend-six-steel-85.vercel.app/pay/{order_id}.

@@ -52,6 +52,7 @@ class OrderDetailsResponse(BaseModel):
     delivery_address: str | None = None
     platform: str | None = None
     razorpay_order_id: str | None = None
+    transaction_id: str | None = None
     payment_status: str | None = None
 
 
@@ -155,5 +156,6 @@ async def get_order_status_endpoint(
         currency=order.currency,
         status=order.status,
         razorpay_order_id=payment.provider_ref if payment else None,
+        transaction_id=payment.transaction_id if payment and payment.transaction_id else getattr(order, "transaction_id", None),
         payment_status=payment.status if payment else None,
     )

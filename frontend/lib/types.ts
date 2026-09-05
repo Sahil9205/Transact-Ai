@@ -78,6 +78,8 @@ export interface Order {
   pincode?: string | null;
   delivery_address?: string | null;
   platform?: string | null;
+  razorpay_order_id?: string | null;
+  transaction_id?: string | null;
   created_at?: string;
 }
 

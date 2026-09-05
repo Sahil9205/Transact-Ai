@@ -262,19 +262,33 @@ export default function HostedCheckoutPage() {
                   </div>
                 </div>
 
-                {/* Delivery partner ETA pill */}
+                {/* Fulfillment status pill */}
                 <div className="bg-[#FFF4E6] border border-[#FFD9A8] rounded-2xl p-3.5 flex items-center justify-center gap-2 text-xs font-semibold text-[#171717]">
                   <Truck className="w-4 h-4 text-[#FF7A18] shrink-0" />
                   <span>
-                    Fulfillment partner dispatched • Delivery in ~
-                    <strong className="text-[#FF7A18]">20 mins</strong>
+                    {order.delivery_address ? (
+                      <>
+                        Fulfillment partner dispatched &bull; Delivery in ~
+                        <strong className="text-[#FF7A18]">20 mins</strong>
+                      </>
+                    ) : (
+                      <>
+                        Order confirmed &bull; Ready for pickup at store in ~
+                        <strong className="text-[#FF7A18]">15 mins</strong>
+                      </>
+                    )}
                   </span>
                 </div>
 
-                <div className="pt-2">
-                  <Link href={`/merchant/dashboard/${order.merchant_id || ""}`}>
+                <div className="pt-2 space-y-2">
+                  <Link href="/user/dashboard">
+                    <Button className="w-full text-xs bg-[#FF203D] hover:bg-[#E71937] text-white">
+                      Track Order in Buyer Console &rarr;
+                    </Button>
+                  </Link>
+                  <Link href="/">
                     <Button variant="outline" className="w-full text-xs">
-                      View Store Live Dashboard &rarr;
+                      Return to TransactAI Homepage
                     </Button>
                   </Link>
                 </div>

@@ -113,6 +113,7 @@ class OrderModel(Base):
     pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
     delivery_address: Mapped[str | None] = mapped_column(Text, nullable=True)
     platform: Mapped[str | None] = mapped_column(String(50), nullable=True, default="unknown")
+    transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
@@ -129,7 +130,8 @@ class PaymentModel(Base):
     amount: Mapped[int] = mapped_column(Integer, nullable=False)  # paise
     currency: Mapped[str] = mapped_column(String(3), default="INR")
     status: Mapped[str] = mapped_column(String(50), default="pending")  # PaymentStatus value
-    provider_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Razorpay payment_id
+    provider_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Razorpay order_id / payment_id
+    transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Completed Razorpay payment_id (pay_...)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:

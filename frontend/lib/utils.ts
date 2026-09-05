@@ -5,9 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatINR(paise: number): string {
-  return (paise / 100).toLocaleString("en-IN", {
+export function formatINR(amount: number, isPaise: boolean = false): string {
+  const inr = isPaise ? Number(amount || 0) / 100 : Number(amount || 0);
+  return `₹${inr.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  });
+  })}`;
 }

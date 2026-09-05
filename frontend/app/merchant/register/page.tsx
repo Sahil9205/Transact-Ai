@@ -32,6 +32,7 @@ export default function MerchantRegisterPage() {
   const [prodUnit, setProdUnit] = useState("piece");
   const [prodMin, setProdMin] = useState("1.0");
   const [prodStep, setProdStep] = useState("1.0");
+  const [fulfillmentType, setFulfillmentType] = useState<"both" | "delivery" | "pickup">("both");
   const [upi, setUpi] = useState("");
   const [bankAcc, setBankAcc] = useState("");
   const [ifsc, setIfsc] = useState("");
@@ -137,7 +138,7 @@ export default function MerchantRegisterPage() {
         prep_time_minutes: 15,
         pincode: pincode.trim(),
         availability_status: "in_stock",
-        fulfillment_type: "pickup",
+        fulfillment_type: fulfillmentType,
       });
 
       showToast("Store and catalog item provisioned successfully!");
@@ -284,6 +285,18 @@ export default function MerchantRegisterPage() {
                       <option value="15">Within 15 km (Citywide)</option>
                     </select>
                   </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#171717]">Fulfillment Capability</label>
+                  <select
+                    value={fulfillmentType}
+                    onChange={(e) => setFulfillmentType(e.target.value as any)}
+                    className="w-full bg-[#FFF9F2] border border-[#F0DED0] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-[#171717] outline-none focus:border-[#FF203D] cursor-pointer"
+                  >
+                    <option value="both">Both Doorstep Delivery &amp; Store Pickup (Recommended)</option>
+                    <option value="delivery">Doorstep Delivery Only</option>
+                    <option value="pickup">In-Store Pickup Only</option>
+                  </select>
                 </div>
               </div>
             )}

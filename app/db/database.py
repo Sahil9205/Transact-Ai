@@ -69,9 +69,18 @@ class DatabaseManager:
                 ("pincode", "VARCHAR(10)"),
                 ("delivery_address", "TEXT"),
                 ("platform", "VARCHAR(50) DEFAULT 'unknown'"),
+                ("transaction_id", "VARCHAR(255)"),
             ]:
                 try:
                     await conn.execute(text(f"ALTER TABLE orders ADD COLUMN {if_not_exists}{col} {col_type}"))
+                except Exception:
+                    pass  # Column already exists
+
+            for col, col_type in [
+                ("transaction_id", "VARCHAR(255)"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE payments ADD COLUMN {if_not_exists}{col} {col_type}"))
                 except Exception:
                     pass  # Column already exists
 
