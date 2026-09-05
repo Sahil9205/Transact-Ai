@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Check, Copy, ArrowRight, ArrowLeft, Store, MapPin, Phone, Package, CreditCard, Sparkles } from "lucide-react";
+import { Check, Copy, ArrowRight, ArrowLeft, Store, MapPin, Phone, Package, CreditCard, Sparkles, Key, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -39,6 +39,7 @@ export default function MerchantRegisterPage() {
   // Post-registration credentials
   const [createdMerchantId, setCreatedMerchantId] = useState("");
   const [createdApiKey, setCreatedApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const handlePricingTypeChange = (type: PricingType) => {
     setPricingType(type);
@@ -464,36 +465,109 @@ export default function MerchantRegisterPage() {
             )}
 
             {/* STEP 6: Launch Terminal */}
+            {/* STEP 6: Celebratory Launch & Store Profile */}
             {currentStep === 6 && (
-              <div className="space-y-5 text-center py-4 animate-in zoom-in-95">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-sm">
-                  ✓
+              <div className="space-y-6 text-center py-2 animate-in zoom-in-95">
+                {/* Celebratory Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-black text-emerald-800 shadow-2xs">
+                  <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
+                  <span>STORE IS OFFICIALLY LIVE</span>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-black text-[#171717]">Store Successfully Registered!</h2>
-                  <p className="text-xs text-[#5F5F5F] mt-1 max-w-md mx-auto font-medium">
-                    Your store is now live in the TransactAI network. Autonomous agents can discover your catalog items immediately.
+
+                {/* Main Congratulations Header */}
+                <div className="space-y-2">
+                  <h2 className="text-3xl sm:text-4xl font-black text-[#171717] tracking-tight">
+                    🎉 Congratulations!
+                  </h2>
+                  <p className="text-lg sm:text-xl font-bold text-[#FF7A18]">
+                    {storeName || "Your Store"} is Ready for Autonomous AI Orders
+                  </p>
+                  <p className="text-xs sm:text-sm text-[#5F5F5F] max-w-lg mx-auto font-medium leading-relaxed">
+                    Aapka store TransactAI commerce network par successfully connect ho gaya hai. Autonomous AI assistants (ChatGPT, Claude, Gemini) ab aapke products customers ko instantly recommend aur fulfill kar sakte hain.
                   </p>
                 </div>
 
-                <div className="p-4 bg-[#FFF9F2] border border-[#F0DED0] rounded-2xl text-left space-y-2 max-w-md mx-auto">
-                  <div className="text-[11px] font-mono text-[#5F5F5F] font-bold">Live Merchant API Key:</div>
-                  <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-[#F0DED0]">
-                    <span className="font-mono text-xs text-[#FF7A18] font-bold truncate">{createdApiKey}</span>
-                    <Button variant="ghost" size="sm" onClick={copyKey} className="ml-2 gap-1 text-xs">
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy</span>
-                    </Button>
+                {/* Live Store Snapshot Card */}
+                <div className="p-5 bg-gradient-to-br from-[#FFF9F2] to-[#FFF4E6] border border-[#F0DED0] rounded-2xl text-left max-w-lg mx-auto shadow-sm space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-[#F0DED0] pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <Store className="w-4 h-4 text-[#FF7A18]" />
+                      <span className="text-xs font-black text-[#171717] uppercase tracking-wider">{storeName || "Store Identity"}</span>
+                    </div>
+                    <Badge variant="success" className="text-[10px] font-black">
+                      ACTIVE &amp; VERIFIED
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#171717]">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#FF203D] mt-0.5 shrink-0" />
+                      <div>
+                        <div className="font-bold text-[11px] text-[#7F7F7F] uppercase">Fulfillment Zone</div>
+                        <div className="font-semibold">{pincode || "110001"} ({radius || 8} km radius)</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <Package className="w-3.5 h-3.5 text-[#FF7A18] mt-0.5 shrink-0" />
+                      <div>
+                        <div className="font-bold text-[11px] text-[#7F7F7F] uppercase">Catalog Item</div>
+                        <div className="font-semibold">{prodName || "First Item"} (₹{prodPrice} / {prodUnit})</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="font-bold text-[11px] text-[#7F7F7F] uppercase">Payout Settlement</div>
+                        <div className="font-semibold text-emerald-700">Razorpay Instant Active</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="font-bold text-[11px] text-[#7F7F7F] uppercase">Agent Protocol</div>
+                        <div className="font-semibold">Claude • ChatGPT • Gemini</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-4 max-w-md mx-auto">
+                {/* Primary Action Button */}
+                <div className="pt-2 max-w-lg mx-auto">
                   <Link href={`/merchant/dashboard/${createdMerchantId}`} className="w-full block">
-                    <Button variant="primary" size="lg" className="w-full font-black text-sm flex items-center justify-center gap-2 shadow-lg">
+                    <Button variant="primary" size="lg" className="w-full font-black text-sm sm:text-base py-3.5 flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all">
                       <span>Open Store Operations Terminal</span>
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
+                </div>
+
+                {/* Collapsed Developer Key Accordion */}
+                <div className="pt-2 border-t border-[#F0DED0]/60 max-w-lg mx-auto">
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="text-xs text-[#7F7F7F] hover:text-[#171717] font-semibold flex items-center justify-center gap-1.5 mx-auto transition-colors"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                    <span>{showApiKey ? "Hide Developer API Key" : "Looking for Developer API Key or POS Integration?"}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showApiKey ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {showApiKey && (
+                    <div className="mt-3 p-3.5 bg-[#FFF9F2] border border-[#F0DED0] rounded-xl text-left space-y-1.5 animate-in fade-in duration-200">
+                      <div className="text-[11px] font-mono text-[#5F5F5F] font-bold">Live Merchant API Key (For Custom APIs &amp; POS):</div>
+                      <div className="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-[#F0DED0]">
+                        <span className="font-mono text-xs text-[#FF7A18] font-bold truncate">{createdApiKey}</span>
+                        <Button variant="ghost" size="sm" onClick={copyKey} className="ml-2 gap-1 text-xs h-7">
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
