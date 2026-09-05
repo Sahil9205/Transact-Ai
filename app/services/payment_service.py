@@ -175,8 +175,11 @@ class PaymentService:
 
         # 6. Determine base domain for hosted user payment page
         import os
+        custom_base = os.environ.get("TRANSACTAI_BASE_URL") or os.environ.get("FRONTEND_URL") or os.environ.get("PUBLIC_APP_URL")
         railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-        if railway_domain:
+        if custom_base:
+            base_url = custom_base.rstrip("/")
+        elif railway_domain:
             base_url = f"https://{railway_domain}"
         elif settings.APP_ENV == "production":
             base_url = "https://transact-ai-production.up.railway.app"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Code,
@@ -65,23 +65,29 @@ interface AssistantGuide {
   };
 }
 
-const ASSISTANT_GUIDES: Record<AssistantType, AssistantGuide> = {
+const DEFAULT_FRONTEND_URL = "https://frontend-six-steel-85.vercel.app";
+const DEFAULT_BACKEND_URL = "https://transact-ai-production.up.railway.app";
 
-  claude: {
-    id: "claude",
-    name: "Claude Desktop",
-    provider: "Anthropic MCP",
-    tag: "Native Model Context Protocol",
-    color: "#D97706", // warm amber/orange
-    bgLight: "bg-amber-50 border-amber-200 text-amber-900",
-    badgeBg: "bg-[#FFF4E6] border-[#FFD9A8] text-[#FF7A18]",
-    description:
-      "Connect Claude Desktop directly to TransactAI's local MCP server. Claude natively discovers store catalogs, validates user spending policies, and returns instant Razorpay checkout links.",
-    configFilePath: {
-      windows: `%APPDATA%\\Claude\\claude_desktop_config.json`,
-      mac: `~/Library/Application Support/Claude/claude_desktop_config.json`,
-    },
-    configCode: `{
+function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<AssistantType, AssistantGuide> {
+  const fe = frontendUrl.replace(/\/+$/, "");
+  const be = backendUrl.replace(/\/+$/, "");
+
+  return {
+    claude: {
+      id: "claude",
+      name: "Claude Desktop",
+      provider: "Anthropic MCP",
+      tag: "Native Model Context Protocol",
+      color: "#D97706",
+      bgLight: "bg-amber-50 border-amber-200 text-amber-900",
+      badgeBg: "bg-[#FFF4E6] border-[#FFD9A8] text-[#FF7A18]",
+      description:
+        "AI decides. TransactAI transacts. Connect Claude Desktop directly to TransactAI's MCP execution engine. Claude acts as the conversational reasoning and comparison layer, while TransactAI provides deterministic catalog verification, spending guardrails, and Razorpay checkout settlements.",
+      configFilePath: {
+        windows: `%APPDATA%\\Claude\\claude_desktop_config.json`,
+        mac: `~/Library/Application Support/Claude/claude_desktop_config.json`,
+      },
+      configCode: `{
   "mcpServers": {
     "transactai": {
       "command": "python",
@@ -90,117 +96,117 @@ const ASSISTANT_GUIDES: Record<AssistantType, AssistantGuide> = {
         "app.mcp.server"
       ],
       "env": {
-        "TRANSACTAI_BASE_URL": "http://127.0.0.1:8000"
+        "TRANSACTAI_BASE_URL": "${fe}"
       }
     }
   }
 }`,
-    steps: [
-      {
-        step: 1,
-        title: "Locate Your Claude Desktop Config File",
-        desc: "Open your Claude Desktop configuration file on your machine:",
-        details: [
-          "Windows: Win+R → %APPDATA%\\Claude\\claude_desktop_config.json",
-          "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
-        ],
+      steps: [
+        {
+          step: 1,
+          title: "Locate Your Claude Desktop Config File",
+          desc: "Open your Claude Desktop configuration file on your machine:",
+          details: [
+            "Windows: Win+R → %APPDATA%\\Claude\\claude_desktop_config.json",
+            "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
+          ],
+        },
+        {
+          step: 2,
+          title: "Add TransactAI MCP Server Definition",
+          desc: `Paste the JSON configuration below into your mcpServers block. Notice TRANSACTAI_BASE_URL points to your live hosted frontend (${fe}) so checkout links work seamlessly.`,
+        },
+        {
+          step: 3,
+          title: "Restart Claude Desktop",
+          desc: "Completely quit Claude Desktop (check system tray) and reopen it. You will see a small hammer/tools icon indicating TransactAI tools are active.",
+        },
+        {
+          step: 4,
+          title: "Test with a Real Prompt",
+          desc: "Ask Claude in natural language:",
+          promptExample:
+            "Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600. Verify my daily spending policy limit, and if approved, prepare an order summary for my confirmation.",
+        },
+      ],
+      toolTrace: {
+        call: `transact_search_catalog({"query": "kaju katli", "pincode": "560001", "max_price_inr": 600})`,
+        policy: `transact_check_policy({"user_id": "buyer-1", "amount_paise": 45000}) -> ALLOWED`,
+        result: `Order initialized. Payment checkout link: ${fe}/pay/ord_9f82ab...`,
       },
-      {
-        step: 2,
-        title: "Add TransactAI MCP Server Definition",
-        desc: "Paste the JSON configuration below into your `mcpServers` block. This tells Claude how to spin up the TransactAI commerce agent protocol.",
-      },
-      {
-        step: 3,
-        title: "Restart Claude Desktop",
-        desc: "Completely quit Claude Desktop (check system tray) and reopen it. You will see a small hammer/tools icon indicating TransactAI tools are active.",
-      },
-      {
-        step: 4,
-        title: "Test with a Real Prompt",
-        desc: "Ask Claude in natural language:",
-        promptExample:
-          "Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600 and prepare an order for me.",
-      },
-    ],
-    toolTrace: {
-      call: `transact_search_catalog({"query": "kaju katli", "pincode": "560001", "max_price_inr": 600})`,
-      policy: `transact_check_policy({"user_id": "buyer-1", "amount_paise": 45000}) -> ALLOWED`,
-      result: `Order initialized. Payment checkout link: http://localhost:8000/pay/ord_9f82ab...`,
     },
-  },
 
-  chatgpt: {
-    id: "chatgpt",
-    name: "ChatGPT",
-    provider: "OpenAI Custom GPTs & Actions",
-    tag: "OpenAPI Actions Integration",
-    color: "#10A37F", // OpenAI Emerald
-    bgLight: "bg-emerald-50 border-emerald-200 text-emerald-900",
-    badgeBg: "bg-emerald-50 border-emerald-300 text-emerald-800",
-    description:
-      "Connect ChatGPT using OpenAI Custom GPT Actions. ChatGPT reads the official TransactAI OpenAPI specification and automatically executes product search, policy enforcement, and checkout generation.",
-    configFilePath: {
-      windows: "ChatGPT Web Interface > Explore GPTs > Create a GPT > Actions",
-      mac: "ChatGPT Web Interface > Explore GPTs > Create a GPT > Actions",
+    chatgpt: {
+      id: "chatgpt",
+      name: "ChatGPT",
+      provider: "OpenAI Custom GPTs & Actions",
+      tag: "OpenAPI Actions Integration",
+      color: "#10A37F",
+      bgLight: "bg-emerald-50 border-emerald-200 text-emerald-900",
+      badgeBg: "bg-emerald-50 border-emerald-300 text-emerald-800",
+      description:
+        "AI decides. TransactAI transacts. Connect ChatGPT using OpenAI Custom GPT Actions. ChatGPT handles product research, price/quality evaluation, and user decision-making, while TransactAI enforces stock parity, spending policies, and checkout execution.",
+      configFilePath: {
+        windows: "ChatGPT Web Interface > Explore GPTs > Create a GPT > Actions",
+        mac: "ChatGPT Web Interface > Explore GPTs > Create a GPT > Actions",
+      },
+      configCode: `${be}/.well-known/openapi.json`,
+      steps: [
+        {
+          step: 1,
+          title: "Open ChatGPT Custom GPT Builder",
+          desc: "In ChatGPT Plus/Team/Enterprise, click 'Explore GPTs' in the sidebar, then click '+ Create' to open the GPT editor.",
+        },
+        {
+          step: 2,
+          title: "Create a New Action via OpenAPI URL",
+          desc: "Go to the 'Configure' tab, scroll down to 'Actions', and click 'Create new action'. Click 'Import from URL' and enter:",
+          details: [
+            `Import URL: ${be}/.well-known/openapi.json`,
+            `Or via Frontend Proxy: ${fe}/.well-known/openapi.json`,
+          ],
+        },
+        {
+          step: 3,
+          title: "Add Agent Guardrail Instructions",
+          desc: "In the Instructions box, paste this production execution protocol:",
+          promptExample:
+            "You are ChatGPT connected to TransactAI, an AI Commerce Execution Agent. Help users research and compare products. Only trigger TransactAI when the user expresses clear purchase intent ('Buy this', 'Place order'). Validate stock, enforce spending policy limits, never silently replace unavailable items, and always get explicit user confirmation before generating the payment link.",
+        },
+        {
+          step: 4,
+          title: "Test Your Custom GPT",
+          desc: "In the Preview pane, prompt your GPT:",
+          promptExample:
+            "Order 1kg Alphonso mangoes to pincode 560001. Check if it's within my ₹1,000 budget and ask for my confirmation before ordering.",
+        },
+      ],
+      toolTrace: {
+        call: `POST /api/v1/discovery/search {"query": "alphonso mangoes", "pincode": "560001"}`,
+        policy: `POST /api/v1/policies/validate {"user_id": "buyer-1", "amount_paise": 35000} -> ALLOWED`,
+        result: `Order created. Payment link generated: ${fe}/pay/ord_mango_332`,
+      },
     },
-    configCode: `http://127.0.0.1:8000/.well-known/openapi.json`,
-    steps: [
-      {
-        step: 1,
-        title: "Open ChatGPT Custom GPT Builder",
-        desc: "In ChatGPT Plus/Team/Enterprise, click 'Explore GPTs' in the sidebar, then click '+ Create' to open the GPT editor.",
-      },
-      {
-        step: 2,
-        title: "Create a New Action via OpenAPI URL",
-        desc: "Go to the 'Configure' tab, scroll down to 'Actions', and click 'Create new action'. Click 'Import from URL' and enter:",
-        details: [
-          "Import URL: http://127.0.0.1:8000/.well-known/openapi.json",
-          "(Or if using a public tunnel like ngrok: https://<tunnel-id>.ngrok-free.app/.well-known/openapi.json)",
-        ],
-      },
-      {
-        step: 3,
-        title: "Add Agent Guardrail Instructions",
-        desc: "In the Instructions box, paste:",
-        promptExample:
-          "You are an autonomous shopping assistant powered by TransactAI. Always use transact_search_catalog to find real items, confirm the price with user spending limits, and provide the official payment URL.",
-      },
-      {
-        step: 4,
-        title: "Test Your Custom GPT",
-        desc: "In the Preview pane, prompt your GPT:",
-        promptExample:
-          "Order 1kg Alphonso mangoes to pincode 560001. Check if it's within my ₹1,000 budget.",
-      },
-    ],
-    toolTrace: {
-      call: `POST /api/v1/discovery/search {"query": "alphonso mangoes", "pincode": "560001"}`,
-      policy: `POST /api/v1/policies/validate {"user_id": "buyer-1", "amount_paise": 35000} -> ALLOWED`,
-      result: `Order created. Payment link generated: http://localhost:8000/pay/ord_mango_332`,
-    },
-  },
 
-  gemini: {
-    id: "gemini",
-    name: "Google Gemini",
-    provider: "Gemini Extensions & GenAI SDK",
-    tag: "Gemini Function Calling SDK",
-    color: "#2563EB", // Google Blue
-    bgLight: "bg-blue-50 border-blue-200 text-blue-900",
-    badgeBg: "bg-blue-50 border-blue-300 text-blue-800",
-    description:
-      "Connect Google Gemini models using Google Generative AI Python/TS SDK function calling or the TransactAI Gemini Extension manifest at /.well-known/gemini-extension.json.",
-    configFilePath: {
-      windows: "http://127.0.0.1:8000/.well-known/gemini-extension.json",
-      mac: "http://127.0.0.1:8000/.well-known/gemini-extension.json",
-    },
-    configCode: `import google.generativeai as genai
+    gemini: {
+      id: "gemini",
+      name: "Google Gemini",
+      provider: "Gemini Extensions & GenAI SDK",
+      tag: "Gemini Function Calling SDK",
+      color: "#2563EB",
+      bgLight: "bg-blue-50 border-blue-200 text-blue-900",
+      badgeBg: "bg-blue-50 border-blue-300 text-blue-800",
+      description:
+        "Connect Google Gemini models using Google Generative AI Python/TS SDK function calling or the TransactAI Gemini Extension manifest at /.well-known/gemini-extension.json.",
+      configFilePath: {
+        windows: `${be}/.well-known/gemini-extension.json`,
+        mac: `${be}/.well-known/gemini-extension.json`,
+      },
+      configCode: `import google.generativeai as genai
 import requests
 
-# 1. Fetch TransactAI Gemini tool declarations
-manifest = requests.get("http://127.0.0.1:8000/.well-known/gemini-extension.json").json()
+# 1. Fetch TransactAI Gemini tool declarations from live backend
+manifest = requests.get("${be}/.well-known/gemini-extension.json").json()
 
 # 2. Configure Gemini 1.5 Pro with TransactAI tools
 model = genai.GenerativeModel(
@@ -229,38 +235,39 @@ model = genai.GenerativeModel(
 chat = model.start_chat(enable_automatic_function_calling=True)
 response = chat.send_message("Find 1 liter farm fresh milk near 560001 and initiate purchase.")
 print(response.text)`,
-    steps: [
-      {
-        step: 1,
-        title: "Access the Gemini Extension Manifest",
-        desc: "TransactAI serves an official Gemini extension manifest at:",
-        details: [
-          "Manifest URL: http://127.0.0.1:8000/.well-known/gemini-extension.json",
-        ],
+      steps: [
+        {
+          step: 1,
+          title: "Access the Gemini Extension Manifest",
+          desc: "TransactAI serves an official Gemini extension manifest at:",
+          details: [
+            `Manifest URL: ${be}/.well-known/gemini-extension.json`,
+          ],
+        },
+        {
+          step: 2,
+          title: "Integrate with Google GenAI SDK",
+          desc: "Use the Python or Node.js @google/genai SDK with function declarations pointing to TransactAI's live production endpoints.",
+        },
+        {
+          step: 3,
+          title: "Run the Automated Commerce Chat Loop",
+          desc: "Enable enable_automatic_function_calling=True. Gemini will automatically invoke TransactAI's endpoints when a user requests grocery or food items.",
+        },
+        {
+          step: 4,
+          title: "Verify Execution in Console",
+          desc: "Watch the merchant dashboard update in real-time as Gemini fulfills the user request.",
+        },
+      ],
+      toolTrace: {
+        call: `Gemini FunctionCall: transact_search_catalog(query='milk', pincode='560001')`,
+        policy: `Policy Validation: ₹65 within daily limit ₹3,000`,
+        result: `Settlement link generated via Razorpay webhook on ${fe}/pay/ord_... Status: Ready for pickup.`,
       },
-      {
-        step: 2,
-        title: "Integrate with Google GenAI SDK",
-        desc: "Use the Python or Node.js `@google/genai` SDK with function declarations pointing to TransactAI's local API endpoints.",
-      },
-      {
-        step: 3,
-        title: "Run the Automated Commerce Chat Loop",
-        desc: "Enable `enable_automatic_function_calling=True`. Gemini will automatically invoke TransactAI's endpoints when a user requests grocery or food items.",
-      },
-      {
-        step: 4,
-        title: "Verify Execution in Console",
-        desc: "Watch the merchant dashboard update in real-time as Gemini fulfills the user request.",
-      },
-    ],
-    toolTrace: {
-      call: `Gemini FunctionCall: transact_search_catalog(query='milk', pincode='560001')`,
-      policy: `Policy Validation: ₹65 within daily limit ₹3,000`,
-      result: `Settlement link generated via Razorpay webhook. Status: Ready for pickup.`,
     },
-  },
-};
+  };
+}
 
 const MCP_TOOLS = [
   {
@@ -319,8 +326,20 @@ export default function DeveloperPage() {
   const { showToast } = useToast();
   const [activeAssistant, setActiveAssistant] = useState<AssistantType>("claude");
   const [copied, setCopied] = useState(false);
+  const [frontendUrl, setFrontendUrl] = useState(DEFAULT_FRONTEND_URL);
+  const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
 
-  const guide = ASSISTANT_GUIDES[activeAssistant];
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.origin) {
+      setFrontendUrl(window.location.origin);
+    }
+  }, []);
+
+  const guides = useMemo(
+    () => getAssistantGuides(frontendUrl, backendUrl),
+    [frontendUrl, backendUrl]
+  );
+  const guide = guides[activeAssistant];
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -346,6 +365,20 @@ export default function DeveloperPage() {
             <p className="text-sm sm:text-base text-[#5F5F5F] leading-relaxed">
               Equip your AI assistant with standard tools to search local merchant catalogs, enforce mathematical spending guardrails, and execute Razorpay settlements with zero hallucinations.
             </p>
+
+            {/* Live Endpoint Status Pill */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs font-mono">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[#6B7280]">Backend API:</span>
+                <span className="font-semibold text-emerald-900">{backendUrl}</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FFF4E6] border border-[#FFD9A8] text-[#171717] shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#FF7A18]" />
+                <span className="text-[#8A8A8A]">Hosted Checkout:</span>
+                <span className="font-semibold text-[#171717]">{frontendUrl}</span>
+              </div>
+            </div>
 
             {/* Prominent 3 Connection Selectors */}
             <div className="pt-3">
