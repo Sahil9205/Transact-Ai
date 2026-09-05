@@ -160,6 +160,44 @@ MCP_TOOLS_DEFINITIONS: list[dict[str, Any]] = [
             "required": ["product_id"],
         },
     },
+    {
+        "name": "transact_register_merchant",
+        "description": "Onboard and register a new merchant or commerce provider onto the Transact AI network. Ask the merchant for their store name, location, pincode, business category, and contact info.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Store or brand name (e.g. 'Sharma Sweets', 'Aggarwal Dairy')",
+                },
+                "location": {
+                    "type": "string",
+                    "description": "Physical area or street address (e.g. 'Connaught Place, New Delhi')",
+                },
+                "pincode": {
+                    "type": "string",
+                    "description": "6-digit store pincode (e.g. '110001')",
+                },
+                "business_type": {
+                    "type": "string",
+                    "description": "Business category (e.g. 'sweet_shop', 'grocery_store', 'restaurant', 'pharmacy', 'dark_store')",
+                },
+                "contact_email": {
+                    "type": "string",
+                    "description": "Store contact email",
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "description": "Store contact phone or WhatsApp",
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Store specialty or bio",
+                },
+            },
+            "required": ["name", "location", "pincode"],
+        },
+    },
 ]
 
 
@@ -356,3 +394,43 @@ class MCPCommerceTools:
             quantity=quantity,
         )
         return decision.model_dump(mode="json")
+
+    @staticmethod
+    async def register_merchant(
+        session: AsyncSession,
+        name: str,
+        location: str,
+        pincode: str,
+        business_type: str = "general",
+        contact_email: str | None = None,
+        contact_phone: str | None = None,
+        description: str | None = None,
+    ) -> dict[str, Any]:
+        """Tool handler for transact_register_merchant."""
+        from app.domain.enums import ProviderType
+        from app.domain.schemas import ProviderCreateSchema
+        from app.services.merchant_service import MerchantService
+
+        schema = ProviderCreateSchema(
+            name=name,
+            type=ProviderType.LOCAL_MERCHANT,
+            location=location,
+            pincode=pincode,
+            business_type=business_type,
+            contact_email=contact_email,
+            contact_phone=contact_phone,
+            description=description,
+        )
+        merchant = await MerchantService.register_merchant(session, schema)
+        return {
+            "status": "success",
+            "provider_id": merchant.provider_id,
+            "name": merchant.name,
+            "pincode": merchant.pincode,
+            "location": merchant.location,
+            "business_type": merchant.business_type,
+            "api_key": merchant.api_key,
+            "dashboard_url": f"/merchant/dashboard/{merchant.provider_id}",
+            "manifest_url": f"/api/v1/merchants/{merchant.provider_id}/manifest.json",
+            "message": f"Merchant '{merchant.name}' registered successfully! Your store is now live on the Transact AI network. Use your dashboard to add products.",
+        }

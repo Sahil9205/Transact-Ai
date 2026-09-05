@@ -138,6 +138,17 @@ class MCPServer:
                 quantity=args.get("quantity", 1),
                 user_id=args.get("user_id", "buyer_default"),
             )
+        elif tool_name == "transact_register_merchant":
+            return await MCPCommerceTools.register_merchant(
+                session=session,
+                name=args.get("name", ""),
+                location=args.get("location", ""),
+                pincode=args.get("pincode", ""),
+                business_type=args.get("business_type", "general"),
+                contact_email=args.get("contact_email"),
+                contact_phone=args.get("contact_phone"),
+                description=args.get("description"),
+            )
         else:
             raise ValueError(f"Unknown MCP tool: '{tool_name}'")
 
