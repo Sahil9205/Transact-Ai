@@ -15,6 +15,12 @@ router = APIRouter(prefix="/merchants", tags=["Merchants"])
 
 
 @router.post(
+    "",
+    response_model=ProviderSchema,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+@router.post(
     "/",
     response_model=ProviderSchema,
     status_code=status.HTTP_201_CREATED,
@@ -29,6 +35,11 @@ async def register_merchant(
     return await MerchantService.register_merchant(session, data)
 
 
+@router.get(
+    "",
+    response_model=list[ProviderSchema],
+    include_in_schema=False,
+)
 @router.get(
     "/",
     response_model=list[ProviderSchema],

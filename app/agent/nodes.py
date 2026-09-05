@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agent.state import CommerceAgentState, OrderProposal
 from app.core.logging import get_logger
-from app.db.repository import AuditRepository
+from app.db.repository import AuditRepository, MerchantRepository
 from app.domain.enums import AuditEventType
 from app.services.discovery_service import DiscoveryService
 from app.services.gatekeeper_service import GatekeeperService
