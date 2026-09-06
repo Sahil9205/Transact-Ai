@@ -14,8 +14,24 @@
 
 **TransactAI** is an open-source, production-grade autonomous agent commerce protocol. It bridges frontier conversational AI models (**Anthropic Claude Desktop**, **OpenAI ChatGPT**, and **Google Gemini**) with real-world merchant commerce, inventory verification, spending policy enforcement, and cryptographic **Razorpay** payment settlements.
 
-[Live Web App](https://frontend-six-steel-85.vercel.app) • [Production API](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Visual Architecture Hub](https://frontend-six-steel-85.vercel.app/developer/architecture) • [Architecture Blueprints (MD)](docs/architecture_flowcharts.md)
+[Live Web App](https://frontend-six-steel-85.vercel.app) • [🎬 Video Demo](https://youtu.be/OVOHpyKSvtA) • [Production API](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Visual Architecture Hub](https://frontend-six-steel-85.vercel.app/developer/architecture) • [Architecture Blueprints (MD)](docs/architecture_flowcharts.md)
 
+</div>
+
+---
+
+## 🎬 Live Demo: Claude Desktop MCP in Action
+
+Experience the complete autonomous commerce loop: from natural language item discovery and atomic spending guardrails to cryptographic Razorpay checkout settlement inside **Anthropic Claude Desktop**:
+
+<div align="center">
+  <a href="https://youtu.be/OVOHpyKSvtA" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.youtube.com/vi/OVOHpyKSvtA/maxresdefault.jpg" alt="TransactAI Live Demo with Anthropic Claude Desktop MCP" width="100%" style="max-width: 800px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid #333;" />
+  </a>
+  <br/><br/>
+  <a href="https://youtu.be/OVOHpyKSvtA" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/YouTube-Watch%20Live%20Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch on YouTube" />
+  </a>
 </div>
 
 ---

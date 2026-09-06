@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   ShoppingBag,
   ExternalLink,
+  Play,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -108,6 +109,70 @@ export default function HomePage() {
               <Lock className="w-4 h-4 text-emerald-600" />
               <span>Razorpay 256-bit Encrypted Settlement</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 1.5 LIVE DEMO: Video Walkthrough with Claude Desktop MCP */}
+      <section className="py-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="bg-[#18181B] border border-neutral-800 rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden relative text-white">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#FF203D]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[#FF7A18]/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-8 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FF203D]/10 border border-[#FF203D]/30 text-xs font-mono font-bold text-[#FF203D]">
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Live System Walkthrough</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              Watch TransactAI in Action with Anthropic Claude
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+              Experience the end-to-end multi-turn commerce loop: from natural language discovery and deterministic inventory verification to instant hosted Razorpay checkout.
+            </p>
+          </div>
+
+          {/* Responsive 16:9 Video Container */}
+          <div className="relative z-10 rounded-2xl overflow-hidden border border-neutral-800 bg-black shadow-2xl aspect-video max-w-4xl mx-auto">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/OVOHpyKSvtA?rel=0"
+              title="TransactAI Live Demo with Anthropic Claude Desktop MCP"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-full border-0"
+            />
+          </div>
+
+          {/* Video Highlights / Trust Badges */}
+          <div className="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-4 text-neutral-300">
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-[#FF7A18]" />
+                <span>&lt;85ms Vector Discovery</span>
+              </span>
+              <span className="hidden sm:inline text-neutral-700">•</span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Deterministic Pre-Flight Gate</span>
+              </span>
+              <span className="hidden sm:inline text-neutral-700">•</span>
+              <span className="flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-sky-400" />
+                <span>Razorpay HMAC-SHA256</span>
+              </span>
+            </div>
+
+            <a
+              href="https://youtu.be/OVOHpyKSvtA"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-[#FF7A18] hover:text-[#FF203D] transition-colors font-bold"
+            >
+              <span>Open on YouTube</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
       </section>
