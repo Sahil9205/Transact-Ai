@@ -222,6 +222,7 @@ def create_app() -> FastAPI:
         """Serve clean, light-mode interactive merchant dashboard."""
         from app.services.merchant_service import MerchantService
         from app.services.frontend_service import FrontendService
+        from app.core.exceptions import NotFoundError
         try:
             stats = await MerchantService.get_dashboard_stats(session, merchant_id)
             all_merchants = await MerchantService.list_merchants(session)
@@ -232,10 +233,16 @@ def create_app() -> FastAPI:
                 all_merchants=merchants_list,
             )
             return HTMLResponse(content=html)
-        except Exception as e:
+        except NotFoundError as e:
             return HTMLResponse(
                 content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant not found</h2><p style='color:#64748b;'>{str(e)}</p><a href='/merchant/register'>Register New Merchant</a></div>",
                 status_code=404,
+            )
+        except Exception as e:
+            logger.error("Error rendering merchant dashboard", merchant_id=merchant_id, error=str(e), exc_info=True)
+            return HTMLResponse(
+                content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant Dashboard Error</h2><p style='color:#ef4444;'>{str(e)}</p><a href='/merchant'>Return to Merchants</a></div>",
+                status_code=500,
             )
 
     @app_instance.get("/merchant", response_class=HTMLResponse, include_in_schema=False)

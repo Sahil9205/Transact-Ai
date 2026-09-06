@@ -132,18 +132,17 @@ async def get_merchant_dashboard_stats(
 ):
     """Retrieve real-time dashboard analytics for a merchant."""
     stats = await MerchantService.get_dashboard_stats(session, merchant_id)
-    # Convert ORM Order objects in recent_orders to dicts for clean JSON serialization
     recent_orders = [
         {
-            "order_id": o.order_id,
-            "product_id": o.product_id,
-            "quantity": o.quantity,
-            "total_amount_inr": round(o.total_amount / 100, 2),
-            "status": o.status,
-            "platform": o.platform or "unknown",
-            "pincode": o.pincode,
-            "delivery_address": o.delivery_address,
-            "created_at": o.created_at.isoformat() if o.created_at else None,
+            "order_id": o["order_id"] if isinstance(o, dict) else o.order_id,
+            "product_id": o["product_id"] if isinstance(o, dict) else o.product_id,
+            "quantity": o["quantity"] if isinstance(o, dict) else o.quantity,
+            "total_amount_inr": (o.get("total_amount_inr", round(o.get("total_amount", 0) / 100, 2))) if isinstance(o, dict) else round(o.total_amount / 100, 2),
+            "status": o["status"] if isinstance(o, dict) else o.status,
+            "platform": (o.get("platform") if isinstance(o, dict) else getattr(o, "platform", "unknown")) or "unknown",
+            "pincode": o.get("pincode") if isinstance(o, dict) else getattr(o, "pincode", None),
+            "delivery_address": o.get("delivery_address") if isinstance(o, dict) else getattr(o, "delivery_address", None),
+            "created_at": o.get("created_at") if isinstance(o, dict) else (o.created_at.isoformat() if o.created_at else None),
         }
         for o in stats["recent_orders"]
     ]

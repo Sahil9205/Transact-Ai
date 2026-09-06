@@ -67,15 +67,22 @@ class FrontendService:
             orders_rows = '<tr><td colspan="5" class="px-6 py-12 text-center text-xs font-medium text-[#5F5F5F]">No incoming orders yet. New customer orders placed via AI assistants will appear here in real-time.</td></tr>'
         else:
             for ord in recent_orders:
-                o_id = getattr(ord, "order_id", ord.get("order_id", ""))
-                raw_amt = getattr(ord, "total_amount", ord.get("total_amount", 0))
-                o_amt = raw_amt / 100
-                o_status = getattr(ord, "status", ord.get("status", "pending"))
-                o_address = getattr(ord, "delivery_address", ord.get("delivery_address", "N/A")) or "N/A"
-                o_pincode = getattr(ord, "pincode", ord.get("pincode", "N/A")) or "N/A"
+                if isinstance(ord, dict):
+                    o_id = str(ord.get("order_id", ""))
+                    raw_amt = ord.get("total_amount", 0)
+                    o_status = str(ord.get("status") or "pending")
+                    o_address = ord.get("delivery_address") or "N/A"
+                    o_pincode = ord.get("pincode") or "N/A"
+                else:
+                    o_id = str(getattr(ord, "order_id", ""))
+                    raw_amt = getattr(ord, "total_amount", 0)
+                    o_status = str(getattr(ord, "status", None) or "pending")
+                    o_address = getattr(ord, "delivery_address", None) or "N/A"
+                    o_pincode = getattr(ord, "pincode", None) or "N/A"
 
+                o_amt = (raw_amt or 0) / 100
                 status_badge = "bg-[#FFF4E6] text-[#FF7A18] border-[#F0DED0]"
-                status_label = str(o_status).replace('_', ' ')
+                status_label = o_status.replace('_', ' ')
                 action_btn = f"""<button onclick="updateOrderStatus('{o_id}', 'ready_for_pickup')" class="px-3 py-1.5 bg-[#FFE8C7] hover:bg-[#FFD9A8] text-[#FF7A18] border border-[#FFD9A8] rounded-xl font-bold text-xs transition-colors cursor-pointer">Mark Ready</button>"""
 
                 if o_status in ["completed", "order_created"]:
@@ -107,17 +114,27 @@ class FrontendService:
 
         operational_status = str(merchant_data.get("operational_status") or "open")
         products_json = json.dumps(stats.get("products", []))
-        orders_json = json.dumps([
-            {
-                "order_id": getattr(o, "order_id", o.get("order_id", "") if isinstance(o, dict) else ""),
-                "total_amount": getattr(o, "total_amount", o.get("total_amount", 0) if isinstance(o, dict) else 0),
-                "status": getattr(o, "status", o.get("status", "pending") if isinstance(o, dict) else "pending"),
-                "platform": getattr(o, "platform", o.get("platform", "unknown") if isinstance(o, dict) else "unknown") or "unknown",
-                "delivery_address": getattr(o, "delivery_address", o.get("delivery_address", "N/A") if isinstance(o, dict) else "N/A") or "N/A",
-                "pincode": getattr(o, "pincode", o.get("pincode", "N/A") if isinstance(o, dict) else "N/A") or "N/A",
-            }
-            for o in recent_orders
-        ])
+        serialized_orders = []
+        for o in recent_orders:
+            if isinstance(o, dict):
+                serialized_orders.append({
+                    "order_id": o.get("order_id", ""),
+                    "total_amount": o.get("total_amount", 0),
+                    "status": o.get("status", "pending"),
+                    "platform": o.get("platform") or "unknown",
+                    "delivery_address": o.get("delivery_address") or "N/A",
+                    "pincode": o.get("pincode") or "N/A",
+                })
+            else:
+                serialized_orders.append({
+                    "order_id": getattr(o, "order_id", ""),
+                    "total_amount": getattr(o, "total_amount", 0),
+                    "status": getattr(o, "status", "pending"),
+                    "platform": getattr(o, "platform", None) or "unknown",
+                    "delivery_address": getattr(o, "delivery_address", None) or "N/A",
+                    "pincode": getattr(o, "pincode", None) or "N/A",
+                })
+        orders_json = json.dumps(serialized_orders)
 
         return (
             template

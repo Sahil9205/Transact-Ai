@@ -135,6 +135,23 @@ class MerchantService:
             }
             for p in products
         ]
+        recent_orders_data = [
+            {
+                "order_id": o.order_id,
+                "product_id": o.product_id,
+                "quantity": o.quantity,
+                "total_amount": o.total_amount,
+                "total_amount_inr": round(o.total_amount / 100, 2),
+                "status": o.status,
+                "created_at": o.created_at.isoformat() if hasattr(o.created_at, "isoformat") else str(o.created_at) if o.created_at else None,
+                "customer_phone": getattr(o, "customer_phone", None),
+                "delivery_address": getattr(o, "delivery_address", None),
+                "pincode": getattr(o, "pincode", None),
+                "platform": getattr(o, "platform", "web") or "web",
+                "transaction_id": getattr(o, "transaction_id", None),
+            }
+            for o in all_orders[:25]
+        ]
             
         return {
             "merchant": merchant_model_to_schema(merchant),
@@ -142,7 +159,7 @@ class MerchantService:
             "total_orders": total_orders,
             "total_revenue_inr": round(total_revenue_paise / 100, 2),
             "platform_breakdown": platforms,
-            "recent_orders": all_orders[:25],
+            "recent_orders": recent_orders_data,
             "products": products_data,
         }
 
