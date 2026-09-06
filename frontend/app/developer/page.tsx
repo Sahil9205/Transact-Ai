@@ -75,19 +75,23 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
   return {
     claude: {
       id: "claude",
-      name: "Claude Desktop",
-      provider: "Anthropic MCP",
+      name: "Anthropic Claude (Desktop & Web)",
+      provider: "Model Context Protocol (MCP)",
       tag: "Native Model Context Protocol",
       color: "#D97706",
       bgLight: "bg-amber-50 border-amber-200 text-amber-900",
       badgeBg: "bg-[#FFF4E6] border-[#FFD9A8] text-[#FF7A18]",
       description:
-        "AI decides. TransactAI transacts. Connect Claude Desktop directly to TransactAI's MCP execution engine. Claude acts as the conversational reasoning and comparison layer, while TransactAI provides deterministic catalog verification, spending guardrails, and Razorpay checkout settlements.",
+        "AI decides. TransactAI transacts. Connect Anthropic Claude (Desktop App via local stdio or Claude.ai Web via remote cloud MCP) directly to TransactAI's autonomous commerce execution engine. Claude acts as the conversational reasoning and comparison layer, while TransactAI provides deterministic catalog verification, spending guardrails, and Razorpay checkout settlements.",
       configFilePath: {
         windows: `%APPDATA%\\Claude\\claude_desktop_config.json`,
         mac: `~/Library/Application Support/Claude/claude_desktop_config.json`,
       },
-      configCode: `{
+      configCode: `// ===============================================
+// OPTION A: Claude Desktop (Local stdio MCP)
+// Config File: %APPDATA%\\Claude\\claude_desktop_config.json
+// ===============================================
+{
   "mcpServers": {
     "transactai": {
       "command": "python",
@@ -100,30 +104,41 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
       }
     }
   }
-}`,
+}
+
+// ===============================================
+// OPTION B: Claude.ai Web (Remote Cloud Connector)
+// URL: ${be}/mcp
+// ===============================================`,
       steps: [
         {
           step: 1,
-          title: "Locate Your Claude Desktop Config File",
-          desc: "Open your Claude Desktop configuration file on your machine:",
+          title: "Choose Connection Mode: Desktop (Local) or Claude.ai (Web)",
+          desc: "TransactAI supports both local stdio execution and remote cloud connections:",
+          details: [
+            "Option A (Claude Desktop): Native stdio via local Python environment.",
+            `Option B (Claude.ai Web): Customize ➡️ Connectors ➡️ Add Custom Connector using URL: ${be}/mcp`,
+          ],
+        },
+        {
+          step: 2,
+          title: "Configure Claude Desktop or Add Web Connector",
+          desc: `For Claude Desktop, add the JSON config to your claude_desktop_config.json. For Claude.ai Web, enter connector URL ${be}/mcp. TRANSACTAI_BASE_URL (${fe}) ensures hosted Razorpay payment links open smoothly.`,
           details: [
             "Windows: Win+R → %APPDATA%\\Claude\\claude_desktop_config.json",
             "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
           ],
         },
         {
-          step: 2,
-          title: "Add TransactAI MCP Server Definition",
-          desc: `Paste the JSON configuration below into your mcpServers block. Notice TRANSACTAI_BASE_URL points to your live hosted frontend (${fe}) so checkout links work seamlessly.`,
-        },
-        {
           step: 3,
-          title: "Restart Claude Desktop",
-          desc: "Completely quit Claude Desktop (check system tray) and reopen it. You will see a small hammer/tools icon indicating TransactAI tools are active.",
+          title: "Set Claude Progressive Shopping Instructions",
+          desc: "In your Claude Project or Custom Instructions, paste this 4-stage shopping protocol:",
+          promptExample:
+            "Follow the 4-stage TransactAI shopping protocol: 1. Discovery: Search catalog for broad requests without asking for address. 2. Selection: Ask for delivery address & 6-digit pincode when item is picked. 3. Pre-flight Gate: Call verify_order_preflight to verify live stock and spending limits. Ask for phone number (for rider coordination if delivery, or store pickup SMS if pickup). 4. Checkout: Call create_payment_order and provide the Razorpay hosted link.",
         },
         {
           step: 4,
-          title: "Test with a Real Prompt",
+          title: "Test with a Real Commerce Prompt",
           desc: "Ask Claude in natural language:",
           promptExample:
             "Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600. Verify my daily spending policy limit, and if approved, prepare an order summary for my confirmation.",
@@ -379,6 +394,35 @@ export default function DeveloperPage() {
                 <span className="font-semibold text-[#171717]">{frontendUrl}</span>
               </div>
             </div>
+
+            {/* System Architecture Flowcharts Banner */}
+            <Link
+              href="/developer/architecture"
+              className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-[#18181B] via-[#202024] to-[#18181B] text-white border border-neutral-800 shadow-lg hover:border-[#FF203D]/50 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-[#FF203D]/20 border border-[#FF203D]/40 flex items-center justify-center text-[#FF203D] shrink-0">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-sm text-white group-hover:text-[#FF7A18] transition-colors">
+                      System Architecture Flowcharts &amp; Engineering Blueprints
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-[#FF203D] text-white">
+                      10 Diagrams
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    Interactive dark-mode Mermaid visualizations of &lt;85ms vector discovery, LangGraph state machines &amp; Razorpay crypto settlements.
+                  </p>
+                </div>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 group-hover:bg-white/20 text-xs font-bold text-white shrink-0 group-hover:translate-x-1 transition-all">
+                <span>Explore Blueprints</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </div>
+            </Link>
 
             {/* Prominent 3 Connection Selectors */}
             <div className="pt-3">

@@ -14,7 +14,7 @@
 
 **TransactAI** is an open-source, production-grade autonomous agent commerce protocol. It bridges frontier conversational AI models (**Anthropic Claude Desktop**, **OpenAI ChatGPT**, and **Google Gemini**) with real-world merchant commerce, inventory verification, spending policy enforcement, and cryptographic **Razorpay** payment settlements.
 
-[Live Web App](https://frontend-six-steel-85.vercel.app) • [Production API](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Architecture ADRs](docs/architecture_decisions.md)
+[Live Web App](https://frontend-six-steel-85.vercel.app) • [Production API](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Visual Architecture Hub](https://frontend-six-steel-85.vercel.app/developer/architecture) • [Architecture Blueprints (MD)](docs/architecture_flowcharts.md)
 
 </div>
 
@@ -69,6 +69,11 @@ Today's frontier LLMs excel at chatting, comparing options, and understanding nu
                     │    Next.js 14 Web App • Live Webhook Order Processing   │
                     └─────────────────────────────────────────────────────────┘
 ```
+
+> 🏛️ **10 Interactive Architecture Flowcharts & System Blueprints**:
+> Explore the full collection of production Mermaid diagrams—covering multi-host protocol ingestion, <85ms vector discovery, LangGraph state machine, and Razorpay HMAC-SHA256 cryptographic settlements:
+> - **Interactive Web Viewer**: [TransactAI Architecture Blueprints Hub](https://frontend-six-steel-85.vercel.app/developer/architecture)
+> - **GitHub Markdown Source**: [`docs/architecture_flowcharts.md`](docs/architecture_flowcharts.md)
 
 ---
 
@@ -146,17 +151,24 @@ In autonomous agent systems, multi-node agent graphs compound latency on every t
 
 TransactAI natively connects into all three major conversational AI ecosystems:
 
-### 1. Anthropic Claude Desktop (Model Context Protocol)
-Connect TransactAI to Claude Desktop via standard MCP stdio:
+### 1. Anthropic Claude (Model Context Protocol — Desktop & Web)
 
-Add to your `claude_desktop_config.json`:
+TransactAI connects natively to Anthropic Claude via the **Model Context Protocol (MCP)**. Claude acts as the conversational reasoning and comparison layer, while TransactAI deterministically verifies warehouse stock, enforces spending policies, and executes Razorpay settlements.
+
+#### 💻 Option A: Claude Desktop (Local stdio)
+Connect Claude Desktop on your computer to TransactAI's local MCP server:
+
+1. Open your Claude Desktop config file:
+   - **Windows**: `Win + R` $\rightarrow$ `%APPDATA%\Claude\claude_desktop_config.json`
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+2. Add the `transactai` server entry to `mcpServers`:
 ```json
 {
   "mcpServers": {
     "transactai": {
-      "command": "C:\\path\\to\\razorpay\\python.exe",
+      "command": "python",
       "args": ["-m", "app.mcp.server"],
-      "cwd": "C:\\path\\to\\Razorpay",
       "env": {
         "TRANSACTAI_BASE_URL": "https://frontend-six-steel-85.vercel.app"
       }
@@ -164,7 +176,33 @@ Add to your `claude_desktop_config.json`:
   }
 }
 ```
-*Read the full [Claude MCP Integration Guide](docs/claude_plugin_guide.md).*
+3. Restart Claude Desktop. Look for the **🔨 Hammer / Tools icon** in the prompt box showing active tools:
+   - `transact_search_catalog` — Semantic hybrid product search (<85ms)
+   - `transact_verify_order_preflight` — Authoritative price & stock gatekeeper
+   - `transact_check_policy` — Deterministic buyer spending limit enforcement
+   - `transact_create_order_payment` — Atomic Razorpay hosted checkout generation
+   - `transact_register_merchant` — Self-service merchant store registration
+
+#### ☁️ Option B: Claude.ai Web & Mobile (Remote Cloud Connector)
+Connect directly to the production server deployed on Railway without local setup:
+1. Open [Claude.ai](https://claude.ai) in your browser.
+2. Go to **Customize** $\rightarrow$ **Connectors** $\rightarrow$ **Add custom connector**.
+3. Fill in:
+   - **Name**: `TransactAI Commerce`
+   - **Connector URL**: `https://transact-ai-production.up.railway.app/mcp`
+4. Click **Add**.
+
+#### 🧠 Claude Progressive Shopping System Prompt
+In your Claude Project or Custom Instructions, paste:
+```text
+You have access to TransactAI via Model Context Protocol (MCP). Follow this progressive disclosure protocol:
+1. Discovery: If user asks generally (e.g. "I want sweets"), call 'transact_search_catalog(query="sweets")'. Do NOT ask for address yet.
+2. Selection: When user picks an item, confirm warmly and ask for delivery address and 6-digit pincode.
+3. Pre-flight Gate: Call 'transact_verify_order_preflight' to verify live stock and buyer limits. Present the Order Summary Card. Ask for Phone Number (for delivery rider coordination if delivery, or store pickup SMS alerts if pickup) and final confirmation.
+4. Checkout: On explicit confirmation, call 'transact_create_order_payment' with address, pincode, and phone. Provide the hosted Razorpay link: https://frontend-six-steel-85.vercel.app/pay/{order_id}.
+```
+
+📖 *Read the full [Claude MCP Integration Guide](docs/claude_plugin_guide.md) for step-by-step troubleshooting and developer walkthroughs.*
 
 ---
 
