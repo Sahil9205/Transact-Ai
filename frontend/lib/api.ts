@@ -96,6 +96,26 @@ export const api = {
     });
   },
 
+  async updateProduct(
+    productId: string,
+    payload: {
+      name?: string;
+      description?: string;
+      price_amount?: number;
+      pricing_type?: string;
+      unit?: string;
+      min_quantity?: number;
+      increment_step?: number;
+      quantity?: number;
+      availability_status?: string;
+    }
+  ): Promise<any> {
+    return apiFetch<any>(`/api/v1/products/${productId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+
   // Order API
   async getOrder(orderId: string): Promise<Order> {
     return apiFetch<Order>(`/api/v1/orders/${orderId}`);
