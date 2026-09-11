@@ -139,6 +139,7 @@ async def get_merchant_dashboard_stats(
         {
             "order_id": o["order_id"] if isinstance(o, dict) else o.order_id,
             "product_id": o["product_id"] if isinstance(o, dict) else o.product_id,
+            "product_name": o.get("product_name") if isinstance(o, dict) else getattr(o, "product_name", "Item"),
             "quantity": o["quantity"] if isinstance(o, dict) else o.quantity,
             "total_amount_inr": (o.get("total_amount_inr", round(o.get("total_amount", 0) / 100, 2))) if isinstance(o, dict) else round(o.total_amount / 100, 2),
             "status": o["status"] if isinstance(o, dict) else o.status,

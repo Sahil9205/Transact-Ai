@@ -135,10 +135,19 @@ class MerchantService:
             }
             for p in products
         ]
+        prod_map = {p.product_id: p.name for p in products}
+        missing_pids = {o.product_id for o in all_orders[:25] if o.product_id not in prod_map}
+        if missing_pids:
+            missing_stmt = select(ProductModel).where(ProductModel.product_id.in_(missing_pids))
+            res_missing = await session.execute(missing_stmt)
+            for mp in res_missing.scalars().all():
+                prod_map[mp.product_id] = mp.name
+
         recent_orders_data = [
             {
                 "order_id": o.order_id,
                 "product_id": o.product_id,
+                "product_name": prod_map.get(o.product_id, "Item"),
                 "quantity": o.quantity,
                 "total_amount": o.total_amount,
                 "total_amount_inr": round(o.total_amount / 100, 2),
