@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = "mock_secret_key_123456"
     RAZORPAY_WEBHOOK_SECRET: str = "mock_webhook_secret_123456"
 
+    # Merchant Authentication & Security (RFC 7519 JWT)
+    JWT_SECRET_KEY: str = "transact_ai_merchant_super_secret_jwt_key_2026"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days for physical vendors
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
     @property
