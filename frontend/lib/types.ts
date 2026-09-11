@@ -5,6 +5,8 @@ export type FulfillmentType = "pickup" | "delivery";
 
 export interface Merchant {
   provider_id: string;
+  merchant_id?: string;
+  role?: string;
   name: string;
   type: ProviderType;
   description?: string | null;
@@ -69,7 +71,9 @@ export interface Order {
   order_id: string;
   user_id: string;
   merchant_id: string;
+  merchant_name?: string | null;
   product_id: string;
+  product_name?: string | null;
   quantity: number;
   total_amount: number; // in paise
   total_amount_inr?: number;

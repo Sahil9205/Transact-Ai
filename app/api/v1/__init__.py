@@ -14,10 +14,12 @@ from app.api.v1.agent import router as agent_router
 from app.api.v1.payments import router as payments_router
 from app.api.v1.orders import router as orders_router
 from app.api.v1.audit import router as audit_router
+from app.api.v1.auth import router as auth_router
 from app.api.v1.recovery import router as recovery_router
 from app.api.v1.hosts import router as hosts_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router.include_router(auth_router)
 api_v1_router.include_router(merchants_router)
 api_v1_router.include_router(products_router)
 api_v1_router.include_router(manifests_router)

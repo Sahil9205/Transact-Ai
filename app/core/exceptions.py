@@ -60,3 +60,9 @@ class StaleDataError(CommerceAgentError):
 class AuthorizationError(CommerceAgentError):
     """Exception raised for authorization failures."""
     code = "AUTHORIZATION_ERROR"
+
+
+class UnauthorizedError(CommerceAgentError):
+    """Exception raised for unauthenticated or invalid credential requests."""
+    code = "UNAUTHORIZED"
+

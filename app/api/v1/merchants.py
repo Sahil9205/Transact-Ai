@@ -8,8 +8,11 @@ from app.domain.schemas import (
     ProviderCreateSchema,
     ProviderSchema,
     ProviderUpdateSchema,
+    StockPingConfirmRequest,
+    StockPingResponse,
 )
 from app.services.merchant_service import MerchantService
+from app.services.stock_ping_service import StockPingService
 
 router = APIRouter(prefix="/merchants", tags=["Merchants"])
 
@@ -136,6 +139,7 @@ async def get_merchant_dashboard_stats(
         {
             "order_id": o["order_id"] if isinstance(o, dict) else o.order_id,
             "product_id": o["product_id"] if isinstance(o, dict) else o.product_id,
+            "product_name": o.get("product_name") if isinstance(o, dict) else getattr(o, "product_name", "Item"),
             "quantity": o["quantity"] if isinstance(o, dict) else o.quantity,
             "total_amount_inr": (o.get("total_amount_inr", round(o.get("total_amount", 0) / 100, 2))) if isinstance(o, dict) else round(o.total_amount / 100, 2),
             "status": o["status"] if isinstance(o, dict) else o.status,
@@ -187,5 +191,63 @@ async def toggle_product_availability(
     """Update availability status of a product."""
     new_status = payload.get("availability_status", "in_stock")
     return await MerchantService.set_product_availability(session, product_id, new_status)
+
+
+@router.get(
+    "/{merchant_id}/pings",
+    response_model=list[StockPingResponse],
+    summary="List stock verification alerts for merchant",
+    description="Retrieves live customer verification pings for stale catalog items requiring merchant confirmation.",
+)
+async def list_merchant_pings_endpoint(
+    merchant_id: str,
+    status: str | None = None,
+    session: AsyncSession = Depends(get_db),
+) -> list[StockPingResponse]:
+    """List pending and historical stock verification alerts for this vendor."""
+    return await StockPingService.list_merchant_pings(session, merchant_id, status=status)
+
+
+@router.post(
+    "/{merchant_id}/pings/{ping_id}/confirm",
+    response_model=StockPingResponse,
+    summary="Confirm item is fresh and in-stock",
+    description="Vendor confirms stock availability. Automatically resets 6-hour freshness timer and unpauses buyer checkouts.",
+)
+async def confirm_stock_ping_endpoint(
+    merchant_id: str,
+    ping_id: str,
+    payload: StockPingConfirmRequest,
+    session: AsyncSession = Depends(get_db),
+) -> StockPingResponse:
+    """Merchant confirms item availability and freshness."""
+    return await StockPingService.confirm_ping(
+        session=session,
+        merchant_id=merchant_id,
+        ping_id=ping_id,
+        available=payload.available,
+        new_quantity=payload.new_quantity,
+        notes=payload.notes,
+    )
+
+
+@router.post(
+    "/{merchant_id}/stock/heartbeat",
+    summary="1-Tap Daily Store Pulse (All Stock Fresh)",
+    description="Refreshes the 6-hour freshness timer for all active store products in 1 click and auto-resolves pending pings.",
+)
+async def store_pulse_heartbeat_endpoint(
+    merchant_id: str,
+    session: AsyncSession = Depends(get_db),
+) -> dict:
+    """1-tap store pulse: re-verifies all catalog items as fresh today."""
+    count = await StockPingService.store_pulse(session, merchant_id)
+    return {
+        "status": "success",
+        "merchant_id": merchant_id,
+        "refreshed_products_count": count,
+        "message": f"Successfully verified {count} products as fresh and in-stock.",
+    }
+
 
 
