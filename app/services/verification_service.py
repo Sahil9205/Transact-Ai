@@ -24,6 +24,9 @@ class VerificationResult(BaseModel):
     requested_quantity: int
     total_amount_paise: int
     freshness_tier: FreshnessTier
+    is_stale_paused: bool = False
+    ping_id: str | None = None
+
 
 
 class VerificationService:
@@ -75,10 +78,25 @@ class VerificationService:
                 f"insufficient_stock (requested {requested_quantity}, available {product_schema.availability.quantity})"
             )
 
-        # 3. Check Data Freshness Tier
+        # 3. Check Data Freshness Tier & 6-Hour Stale Stock Guardrail
         freshness = product_schema.verification.freshness_tier
+        is_stale_paused = False
+        ping_id: str | None = None
         if freshness == FreshnessTier.STALE:
+            from app.services.stock_ping_service import StockPingService
+            ping = await StockPingService.create_or_get_pending_ping(
+                session=session,
+                merchant_id=product_schema.provider_id,
+                product_id=product_id,
+                user_id=None,
+                requested_quantity=requested_quantity,
+            )
+            is_stale_paused = True
+            ping_id = ping.ping_id
             failure_reasons.append("data_is_stale (last verified > 6 hours ago)")
+            failure_reasons.append(
+                f"stale_stock_paused (stock not updated for > 6 hours; ping {ping.ping_id} dispatched to merchant)"
+            )
 
         # 4. Check User Budget Ceiling
         if user_max_price_paise is not None and total_amount > user_max_price_paise:
@@ -107,7 +125,7 @@ class VerificationService:
                 product_id=product_id,
                 provider_id=product_schema.provider_id,
                 amount=total_amount,
-                result="FAILED",
+                result="PAUSED_STALE_STOCK" if is_stale_paused else "FAILED",
                 reason="; ".join(failure_reasons),
             )
             logger.warning("Verification FAILED", product_id=product_id, reasons=failure_reasons)
@@ -120,4 +138,6 @@ class VerificationService:
             requested_quantity=requested_quantity,
             total_amount_paise=total_amount,
             freshness_tier=freshness,
+            is_stale_paused=is_stale_paused,
+            ping_id=ping_id,
         )

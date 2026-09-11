@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 class GatekeeperDecision(BaseModel):
     """Authoritative decision from the combined pre-flight verification & policy gatekeeper."""
     is_authorized: bool
-    decision: str = Field(description="'ALLOW' or 'BLOCK'")
+    decision: str = Field(description="'ALLOW', 'BLOCK', or 'PAUSED_STALE_STOCK'")
     verified_product: ProductSchema | None = None
     unit_price_inr: float
     total_amount_inr: float
@@ -25,6 +25,10 @@ class GatekeeperDecision(BaseModel):
     blocked_reasons: list[str] = Field(default_factory=list)
     spent_today_inr: float = 0.0
     remaining_daily_budget_inr: float | None = None
+    ping_id: str | None = None
+    is_stale_paused: bool = False
+    merchant_alerted: bool = False
+
 
 
 class GatekeeperService:
@@ -81,9 +85,16 @@ class GatekeeperService:
             else None
         )
 
+        if v_result.is_stale_paused:
+            decision = "PAUSED_STALE_STOCK"
+        elif is_authorized:
+            decision = "ALLOW"
+        else:
+            decision = "BLOCK"
+
         return GatekeeperDecision(
             is_authorized=is_authorized,
-            decision="ALLOW" if is_authorized else "BLOCK",
+            decision=decision,
             verified_product=v_result.product,
             unit_price_inr=v_result.unit_price_paise / 100,
             total_amount_inr=v_result.total_amount_paise / 100,
@@ -93,4 +104,7 @@ class GatekeeperService:
             blocked_reasons=all_blocked_reasons,
             spent_today_inr=spent_today_inr,
             remaining_daily_budget_inr=rem_budget_inr,
+            ping_id=v_result.ping_id,
+            is_stale_paused=v_result.is_stale_paused,
+            merchant_alerted=v_result.is_stale_paused,
         )

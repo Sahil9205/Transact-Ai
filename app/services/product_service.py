@@ -30,15 +30,18 @@ from app.services.vector_service import VectorService
 logger = get_logger(__name__)
 
 
-def compute_freshness_tier(last_verified: datetime | None) -> FreshnessTier:
-    """Computes freshness tier based on the last_verified timestamp."""
-    if not last_verified:
+def compute_freshness_tier(last_verified: datetime | None, last_stock_updated_at: datetime | None = None) -> FreshnessTier:
+    """Computes freshness tier based on the oldest of last_verified and last_stock_updated_at."""
+    candidates = []
+    for t in (last_verified, last_stock_updated_at):
+        if t is not None:
+            candidates.append(t if t.tzinfo is not None else t.replace(tzinfo=timezone.utc))
+
+    if not candidates:
         return FreshnessTier.STALE
 
-    if last_verified.tzinfo is None:
-        last_verified = last_verified.replace(tzinfo=timezone.utc)
-
-    age = datetime.now(timezone.utc) - last_verified
+    ts = min(candidates)
+    age = datetime.now(timezone.utc) - ts
     hours = age.total_seconds() / 3600
     if hours < 1:
         return FreshnessTier.FRESH
@@ -50,6 +53,7 @@ def compute_freshness_tier(last_verified: datetime | None) -> FreshnessTier:
 
 def model_to_schema(product: ProductModel) -> ProductSchema:
     """Helper to convert a flat ProductModel ORM object to canonical ProductSchema."""
+    last_stock_dt = getattr(product, "last_stock_updated_at", None) or getattr(product, "last_verified", None)
     return ProductSchema(
         product_id=product.product_id,
         provider_id=product.merchant_id,
@@ -75,11 +79,16 @@ def model_to_schema(product: ProductModel) -> ProductSchema:
         ),
         location=None,
         pincode=product.pincode,
+        image_url=getattr(product, "image_url", None),
+        manufactured_date=getattr(product, "manufactured_date", None),
+        expiration_date=getattr(product, "expiration_date", None),
+        last_stock_updated_at=last_stock_dt,
         verification=VerificationSchema(
             last_verified=product.last_verified,
-            freshness_tier=compute_freshness_tier(product.last_verified),
+            freshness_tier=compute_freshness_tier(product.last_verified, last_stock_dt),
         ),
     )
+
 
 
 class ProductService:
