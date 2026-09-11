@@ -18,8 +18,10 @@ class MerchantModel(Base):
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
     api_key: Mapped[str] = mapped_column(String(64), unique=True, index=True, default=lambda: f"sk_live_{uuid.uuid4().hex}")
-    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    contact_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(20), nullable=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    role: Mapped[str] = mapped_column(String(30), default="merchant")
     business_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default="general")
     onboarding_status: Mapped[str] = mapped_column(String(30), default="active")
     operational_status: Mapped[str] = mapped_column(String(30), default="open")  # open, paused, closed
@@ -59,6 +61,10 @@ class ProductModel(Base):
     prep_time_minutes: Mapped[int] = mapped_column(Integer, default=0)
     slot_capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
     pincode: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    manufactured_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expiration_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_stock_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     last_verified: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -155,3 +161,26 @@ class AuditEventModel(Base):
     
     def __repr__(self) -> str:
         return f"<AuditEvent {self.event_type} at {self.timestamp}>"
+
+
+class MerchantStockPingModel(Base):
+    __tablename__ = "merchant_stock_pings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ping_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    merchant_id: Mapped[str] = mapped_column(String(36), ForeignKey("merchants.merchant_id"), nullable=False, index=True)
+    product_id: Mapped[str] = mapped_column(String(36), ForeignKey("products.product_id"), nullable=False, index=True)
+    user_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="pending", index=True)  # pending, confirmed, rejected, expired
+    requested_quantity: Mapped[int] = mapped_column(Integer, default=1)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    merchant: Mapped[MerchantModel] = relationship(lazy="selectin")
+    product: Mapped[ProductModel] = relationship(lazy="selectin")
+
+    def __repr__(self) -> str:
+        return f"<MerchantStockPing {self.ping_id} merchant={self.merchant_id} status={self.status}>"
+

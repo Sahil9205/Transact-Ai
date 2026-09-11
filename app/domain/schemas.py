@@ -70,7 +70,12 @@ class ProductSchema(BaseModel):
     fulfillment: FulfillmentSchema
     location: str | None = None
     pincode: str | None = None
+    image_url: str | None = None
+    manufactured_date: datetime | None = None
+    expiration_date: datetime | None = None
+    last_stock_updated_at: datetime | None = None
     verification: VerificationSchema
+
 
 class BuyerIntentSchema(BaseModel):
     """Structured buyer intent parsed from natural language."""
@@ -140,10 +145,15 @@ class ProductCreateSchema(BaseModel):
     prep_time_minutes: int = Field(ge=0, default=0)
     slot_capacity: int | None = None
     pincode: str | None = None
+    image_url: str | None = None
+    manufactured_date: datetime | None = None
+    expiration_date: datetime | None = None
+    last_stock_updated_at: datetime | None = None
 
 class ProductUpdateSchema(BaseModel):
     """Schema for updating product fields. All fields optional."""
     name: str | None = None
+    description: str | None = None
     price_amount: int | None = Field(default=None, ge=0)
     pricing_type: PricingType | None = None
     unit: str | None = None
@@ -153,3 +163,67 @@ class ProductUpdateSchema(BaseModel):
     availability_status: AvailabilityStatus | None = None
     prep_time_minutes: int | None = Field(default=None, ge=0)
     slot_capacity: int | None = Field(default=None, ge=0)
+    image_url: str | None = None
+    manufactured_date: datetime | None = None
+    expiration_date: datetime | None = None
+    last_stock_updated_at: datetime | None = None
+
+# Merchant Authentication Schemas
+class MerchantRegisterRequest(BaseModel):
+    """Schema for vendor onboarding/registration with credentials."""
+    name: str
+    type: ProviderType = ProviderType.LOCAL_MERCHANT
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    password: str = Field(min_length=6, description="Merchant account password")
+    business_type: str | None = "kirana"
+    location: str | None = None
+    pincode: str | None = None
+    description: str | None = None
+
+class MerchantLoginRequest(BaseModel):
+    """Schema for vendor login via phone or email."""
+    login_id: str = Field(..., description="Email or phone number")
+    password: str = Field(..., description="Merchant account password")
+
+class MerchantProfileResponse(BaseModel):
+    """Schema for authenticated vendor profile representation."""
+    model_config = ConfigDict(from_attributes=True)
+    merchant_id: str
+    name: str
+    type: str
+    contact_email: str | None = None
+    contact_phone: str | None = None
+    business_type: str | None = None
+    location: str | None = None
+    pincode: str | None = None
+    operational_status: str = "open"
+    role: str = "merchant"
+
+class MerchantAuthResponse(BaseModel):
+    """Schema for successful authentication response with JWT."""
+    access_token: str
+    token_type: str = "bearer"
+    merchant: MerchantProfileResponse
+
+# Stock Staleness & Merchant Ping Schemas
+class StockPingResponse(BaseModel):
+    """Schema for a live stock verification inquiry ping."""
+    model_config = ConfigDict(from_attributes=True)
+    ping_id: str
+    merchant_id: str
+    product_id: str
+    product_name: str | None = None
+    user_id: str | None = None
+    status: str
+    requested_quantity: int = 1
+    notes: str | None = None
+    created_at: datetime
+    resolved_at: datetime | None = None
+
+class StockPingConfirmRequest(BaseModel):
+    """Schema for merchant stock confirmation action."""
+    available: bool = True
+    new_quantity: int | None = None
+    notes: str | None = None
+

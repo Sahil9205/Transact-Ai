@@ -95,6 +95,8 @@ class DatabaseManager:
                 ("payout_upi_id", "VARCHAR(100)"),
                 ("payout_bank_account", "VARCHAR(50)"),
                 ("payout_ifsc_code", "VARCHAR(20)"),
+                ("password_hash", "VARCHAR(255)"),
+                ("role", "VARCHAR(30) DEFAULT 'merchant'"),
             ]:
                 try:
                     await conn.execute(text(f"ALTER TABLE merchants ADD COLUMN {if_not_exists}{col} {col_type}"))
@@ -106,6 +108,10 @@ class DatabaseManager:
                 ("unit", "VARCHAR(20) DEFAULT 'piece'"),
                 ("min_quantity", "FLOAT DEFAULT 1.0"),
                 ("increment_step", "FLOAT DEFAULT 1.0"),
+                ("image_url", "VARCHAR(500)"),
+                ("manufactured_date", "TIMESTAMP"),
+                ("expiration_date", "TIMESTAMP"),
+                ("last_stock_updated_at", "TIMESTAMP"),
             ]:
                 try:
                     await conn.execute(text(f"ALTER TABLE products ADD COLUMN {if_not_exists}{col} {col_type}"))

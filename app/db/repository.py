@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     MerchantModel, ProductModel, OrderModel, AuditEventModel,
-    UserModel, SpendingPolicyModel, PaymentModel
+    UserModel, SpendingPolicyModel, PaymentModel, MerchantStockPingModel
 )
 from app.domain.schemas import (
     ProviderCreateSchema, ProductCreateSchema, ProductUpdateSchema
@@ -61,6 +61,21 @@ class MerchantRepository:
     @staticmethod
     async def get_by_api_key(session: AsyncSession, api_key: str) -> MerchantModel | None:
         result = await session.execute(select(MerchantModel).where(MerchantModel.api_key == api_key))
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_by_login_id(session: AsyncSession, login_id: str) -> MerchantModel | None:
+        """Finds a merchant by contact_email OR contact_phone."""
+        clean_id = login_id.strip()
+        from sqlalchemy import or_
+        result = await session.execute(
+            select(MerchantModel).where(
+                or_(
+                    MerchantModel.contact_email == clean_id.lower(),
+                    MerchantModel.contact_phone == clean_id,
+                )
+            )
+        )
         return result.scalar_one_or_none()
 
     @staticmethod
@@ -132,6 +147,10 @@ class ProductRepository:
             prep_time_minutes=data.prep_time_minutes,
             slot_capacity=data.slot_capacity,
             pincode=data.pincode,
+            image_url=data.image_url,
+            manufactured_date=data.manufactured_date,
+            expiration_date=data.expiration_date,
+            last_stock_updated_at=data.last_stock_updated_at or datetime.now(timezone.utc),
         )
         session.add(product)
         await session.flush()
@@ -209,6 +228,9 @@ class ProductRepository:
         for key, value in update_data.items():
             setattr(product, key, value)
         product.last_verified = datetime.now(timezone.utc)
+        if "quantity" in update_data or "availability_status" in update_data:
+            if "last_stock_updated_at" not in update_data:
+                product.last_stock_updated_at = datetime.now(timezone.utc)
         await session.flush()
         await session.refresh(product)
         logger.info(f"Updated product {product.product_id}")
@@ -293,3 +315,71 @@ class AuditRepository:
         await session.flush()
         logger.info(f"Logged audit event {event_type}")
         return event
+
+
+class MerchantStockPingRepository:
+    @staticmethod
+    async def create(
+        session: AsyncSession,
+        merchant_id: str,
+        product_id: str,
+        user_id: str | None = None,
+        requested_quantity: int = 1,
+        notes: str | None = None,
+    ) -> MerchantStockPingModel:
+        ping = MerchantStockPingModel(
+            merchant_id=merchant_id,
+            product_id=product_id,
+            user_id=user_id,
+            requested_quantity=requested_quantity,
+            notes=notes,
+            status="pending",
+        )
+        session.add(ping)
+        await session.flush()
+        await session.refresh(ping)
+        logger.info(f"Created stock ping {ping.ping_id} for merchant {merchant_id}")
+        return ping
+
+    @staticmethod
+    async def get_by_ping_id(session: AsyncSession, ping_id: str) -> MerchantStockPingModel:
+        result = await session.execute(
+            select(MerchantStockPingModel).where(MerchantStockPingModel.ping_id == ping_id)
+        )
+        ping = result.scalar_one_or_none()
+        if not ping:
+            raise NotFoundError(message=f"Stock verification ping {ping_id} not found")
+        return ping
+
+    @staticmethod
+    async def list_by_merchant(
+        session: AsyncSession,
+        merchant_id: str,
+        status: str | None = None,
+    ) -> list[MerchantStockPingModel]:
+        stmt = select(MerchantStockPingModel).where(MerchantStockPingModel.merchant_id == merchant_id)
+        if status:
+            stmt = stmt.where(MerchantStockPingModel.status == status)
+        stmt = stmt.order_by(MerchantStockPingModel.created_at.desc())
+        result = await session.execute(stmt)
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_active_pending_ping(
+        session: AsyncSession,
+        merchant_id: str,
+        product_id: str,
+    ) -> MerchantStockPingModel | None:
+        """Finds any active pending ping for merchant + product to avoid duplicate alerts."""
+        stmt = (
+            select(MerchantStockPingModel)
+            .where(
+                MerchantStockPingModel.merchant_id == merchant_id,
+                MerchantStockPingModel.product_id == product_id,
+                MerchantStockPingModel.status == "pending",
+            )
+            .order_by(MerchantStockPingModel.created_at.desc())
+        )
+        result = await session.execute(stmt)
+        return result.scalars().first()
+
