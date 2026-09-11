@@ -4,10 +4,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  const token = typeof window !== "undefined" ? localStorage.getItem("transact_merchant_token") : null;
   const res = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
     },
   });
@@ -148,6 +150,71 @@ export const api = {
     return apiFetch<SpendingPolicy>(`/api/v1/policies/users/${userId}`, {
       method: "POST",
       body: JSON.stringify(payload),
+    });
+  },
+
+  // Merchant Authentication (JWT & PBKDF2)
+  async loginMerchant(payload: { login_id: string; password: string }): Promise<{
+    access_token: string;
+    token_type: string;
+    merchant: Merchant;
+  }> {
+    return apiFetch("/api/v1/auth/merchant/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async registerMerchantAuth(payload: {
+    name: string;
+    type?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    password: string;
+    business_type?: string;
+    location?: string;
+    pincode?: string;
+    description?: string;
+  }): Promise<{
+    access_token: string;
+    token_type: string;
+    merchant: Merchant;
+  }> {
+    return apiFetch("/api/v1/auth/merchant/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getAuthenticatedMerchant(): Promise<Merchant> {
+    return apiFetch("/api/v1/auth/merchant/me");
+  },
+
+  // 6-Hour Stock Staleness & Real-time Merchant Pings
+  async getMerchantPings(merchantId: string, status?: string): Promise<any[]> {
+    const q = status ? `?status=${status}` : "";
+    return apiFetch<any[]>(`/api/v1/merchants/${merchantId}/pings${q}`);
+  },
+
+  async confirmStockPing(
+    merchantId: string,
+    pingId: string,
+    payload: { available?: boolean; new_quantity?: number; notes?: string }
+  ): Promise<any> {
+    return apiFetch<any>(`/api/v1/merchants/${merchantId}/pings/${pingId}/confirm`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async storePulseHeartbeat(merchantId: string): Promise<{
+    status: string;
+    merchant_id: string;
+    refreshed_products_count: number;
+    message: string;
+  }> {
+    return apiFetch(`/api/v1/merchants/${merchantId}/stock/heartbeat`, {
+      method: "POST",
     });
   },
 };

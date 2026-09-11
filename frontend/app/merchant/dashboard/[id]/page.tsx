@@ -18,7 +18,10 @@ import {
   Layers,
   Bell,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  LogOut,
+  Radio,
+  Zap
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Merchant, Order, Product, DashboardStats } from "@/lib/types";
@@ -46,6 +49,24 @@ export default function MerchantDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [catalogSearch, setCatalogSearch] = useState<string>("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [pendingPings, setPendingPings] = useState<any[]>([]);
+  const [confirmingPingId, setConfirmingPingId] = useState<string | null>(null);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<any>(null);
+
+  // Check logged-in user on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("transact_merchant_user");
+      if (stored) {
+        try {
+          setLoggedInUser(JSON.parse(stored));
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, []);
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -67,9 +88,10 @@ export default function MerchantDashboardPage() {
     if (!merchantId) return;
     try {
       setLoading(true);
-      const [statsData, ordersData] = await Promise.all([
+      const [statsData, ordersData, pingsData] = await Promise.all([
         api.getDashboardStats(merchantId).catch(() => null),
         api.listMerchantOrders(merchantId).catch(() => []),
+        api.getMerchantPings(merchantId, "pending").catch(() => []),
       ]);
 
       if (statsData) {
@@ -87,6 +109,8 @@ export default function MerchantDashboardPage() {
       } else if (statsData?.recent_orders) {
         setOrders(statsData.recent_orders);
       }
+
+      setPendingPings(pingsData || []);
     } catch (err: any) {
       console.error("Dashboard fetch error:", err);
       showToast("Unable to load store data. Please retry.", "error");
@@ -98,6 +122,46 @@ export default function MerchantDashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auth Logout
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("transact_merchant_token");
+      localStorage.removeItem("transact_merchant_user");
+    }
+    showToast("Logged out successfully.", "success");
+    router.push("/merchant/login");
+  };
+
+  // Confirm stock verification ping
+  const handleConfirmPing = async (pingId: string) => {
+    try {
+      setConfirmingPingId(pingId);
+      await api.confirmStockPing(merchantId, pingId, { available: true });
+      showToast("Stock verified! Freshness timer reset for 6 hours & checkout unblocked.", "success");
+      setPendingPings((prev) => prev.filter((p) => p.ping_id !== pingId));
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to confirm stock ping", "error");
+    } finally {
+      setConfirmingPingId(null);
+    }
+  };
+
+  // 1-Tap Daily Store Pulse
+  const handleStorePulse = async () => {
+    try {
+      setIsPulsing(true);
+      const res = await api.storePulseHeartbeat(merchantId);
+      showToast(res.message || "All store catalog items verified fresh today!", "success");
+      setPendingPings([]);
+      fetchData();
+    } catch (err: any) {
+      showToast(err.message || "Failed to execute Store Pulse", "error");
+    } finally {
+      setIsPulsing(false);
+    }
+  };
 
   // Operational status toggle (Open ↔ Paused)
   const toggleStoreStatus = async () => {
@@ -329,7 +393,28 @@ export default function MerchantDashboardPage() {
               className="h-10 inline-flex items-center gap-2 px-4 sm:px-5 rounded-xl bg-[#FF203D] hover:bg-[#E71937] text-white text-xs font-extrabold transition-all shadow-sm cursor-pointer active:scale-95 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Menu Item</span>
+              <span>Add Item</span>
+            </button>
+
+            {/* 1-Tap Daily Store Pulse (All Stock Fresh) */}
+            <button
+              onClick={handleStorePulse}
+              disabled={isPulsing}
+              title="Confirm all catalog items fresh today (resets 6h timer)"
+              className="h-10 inline-flex items-center gap-1.5 px-3.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-extrabold transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              <Zap className={cn("w-3.5 h-3.5 text-amber-600", isPulsing && "animate-spin")} />
+              <span className="hidden sm:inline">{isPulsing ? "Pulsing..." : "Store Pulse"}</span>
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              title="Logout from Store Console"
+              className="h-10 inline-flex items-center gap-1.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 whitespace-nowrap"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
 
             {/* Refresh Button */}
@@ -346,6 +431,71 @@ export default function MerchantDashboardPage() {
 
       {/* Main Container */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Multi-Tenant Store Isolation Notice */}
+        {loggedInUser && loggedInUser.merchant_id !== merchantId && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-center justify-between gap-4 text-amber-900 text-xs shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+              <span>
+                <strong>Store Notice:</strong> You are logged in as <strong>{loggedInUser.name}</strong>, but viewing <strong>{merchant?.name}</strong>.
+              </span>
+            </div>
+            <Link
+              href={`/merchant/dashboard/${loggedInUser.merchant_id}`}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg shrink-0 transition-colors"
+            >
+              Go to My Store
+            </Link>
+          </div>
+        )}
+
+        {/* Live Customer Stock Verification Inquiries Banner (6-Hour Staleness Guardrail Alert) */}
+        {pendingPings.length > 0 && (
+          <div className="bg-gradient-to-r from-[#FFF0EB] to-[#FFF5EC] border-2 border-[#FF7A18]/40 rounded-3xl p-5 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 text-[#FF203D] font-extrabold text-sm tracking-tight">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                </span>
+                <span>Active Customer Stock Inquiries ({pendingPings.length})</span>
+                <span className="text-[11px] font-bold bg-[#FF203D]/10 text-[#FF203D] px-2 py-0.5 rounded-full border border-[#FF203D]/20">
+                  6-Hour Guardrail Triggered
+                </span>
+              </div>
+              <span className="text-xs text-[#737373]">
+                AI checkout is currently paused for these items until vendor confirms stock.
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {pendingPings.map((ping) => (
+                <div
+                  key={ping.ping_id}
+                  className="bg-white rounded-2xl p-3.5 border border-[#F0DED0] flex items-center justify-between gap-3 shadow-xs"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-extrabold text-sm text-[#171717]">{ping.product_name}</span>
+                    <span className="text-xs text-[#5F5F5F] flex items-center gap-2 mt-0.5">
+                      <span>Requested: {ping.requested_quantity} units</span>
+                      <span>&bull;</span>
+                      <span className="text-amber-600 font-bold">Stock Unverified &gt; 6h</span>
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleConfirmPing(ping.ping_id)}
+                    disabled={confirmingPingId === ping.ping_id}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95 shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>{confirmingPingId === ping.ping_id ? "Confirming..." : "Confirm In Stock"}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* KPI Bento Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {/* Revenue */}

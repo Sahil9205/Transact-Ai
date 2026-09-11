@@ -5,6 +5,8 @@ export type FulfillmentType = "pickup" | "delivery";
 
 export interface Merchant {
   provider_id: string;
+  merchant_id?: string;
+  role?: string;
   name: string;
   type: ProviderType;
   description?: string | null;
