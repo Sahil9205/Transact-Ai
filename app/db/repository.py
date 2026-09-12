@@ -65,7 +65,7 @@ class MerchantRepository:
 
     @staticmethod
     async def get_by_login_id(session: AsyncSession, login_id: str) -> MerchantModel | None:
-        """Finds a merchant by contact_email OR contact_phone."""
+        """Finds a merchant by contact_email, contact_phone, merchant_id, or store name."""
         clean_id = login_id.strip()
         from sqlalchemy import or_
         result = await session.execute(
@@ -73,10 +73,12 @@ class MerchantRepository:
                 or_(
                     MerchantModel.contact_email == clean_id.lower(),
                     MerchantModel.contact_phone == clean_id,
+                    MerchantModel.merchant_id == clean_id,
+                    MerchantModel.name.ilike(f"%{clean_id}%"),
                 )
             )
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     @staticmethod
     async def list_active(session: AsyncSession) -> list[MerchantModel]:

@@ -444,13 +444,12 @@ export default function MerchantDashboardPage() {
               </h1>
               <div className="text-xs text-[#5F5F5F] flex items-center gap-2 mt-0.5 font-medium">
                 <span>{merchant?.location || "Local Storefront"}</span>
-                <span className="text-[#E8CDBB]">&bull;</span>
-                <Link
-                  href="/merchant"
-                  className="text-[#FF7A18] hover:text-[#FF203D] font-bold transition-colors inline-flex items-center gap-1"
-                >
-                  Switch Store <ArrowRight className="w-3 h-3" />
-                </Link>
+                {merchant?.pincode && (
+                  <>
+                    <span className="text-[#E8CDBB]">&bull;</span>
+                    <span className="font-mono">PIN: {merchant.pincode}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -878,17 +877,15 @@ export default function MerchantDashboardPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#FFF9F2] border-b border-[#F0DED0] text-[11px] uppercase tracking-wider text-[#5F5F5F] font-bold sticky top-0 z-10 backdrop-blur-sm">
-                    <th className="px-4 py-3">Item / Category</th>
-                    <th className="px-4 py-3">Price &amp; Unit</th>
-                    <th className="px-4 py-3 text-center">Stock</th>
-                    <th className="px-4 py-3 text-center">Edit</th>
-                    <th className="px-4 py-3 text-right">Status</th>
+                    <th className="px-4 py-3">Item &amp; Pricing</th>
+                    <th className="px-3 py-3 text-center">Stock</th>
+                    <th className="px-4 py-3 text-right">Availability &amp; Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F0DED0] text-xs">
                   {filteredCatalog.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-10 text-center text-[#5F5F5F]">
+                      <td colSpan={3} className="px-4 py-10 text-center text-[#5F5F5F]">
                         <Package className="w-7 h-7 text-[#FFD9A8] mx-auto mb-2 opacity-60" />
                         <p className="font-semibold text-xs text-[#171717]">No items found</p>
                       </td>
@@ -907,25 +904,30 @@ export default function MerchantDashboardPage() {
                           key={item.product_id}
                           className="hover:bg-[#FFF4E6]/40 transition-colors"
                         >
+                          {/* Col 1: Item & Price */}
                           <td className="px-4 py-3.5">
-                            <div className="font-bold text-xs text-[#171717]">{item.name}</div>
-                            <div className="text-[10px] text-[#5F5F5F] uppercase tracking-wider font-semibold">
-                              {item.category || "General"}
+                            <div className="font-extrabold text-xs text-[#171717] leading-snug">
+                              {item.name}
                             </div>
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <span className="font-mono font-bold text-xs text-[#171717]">
-                              ₹{price} / {unit}
-                            </span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="text-[10px] text-[#5F5F5F] uppercase tracking-wider font-bold bg-[#FFF4E6] px-1.5 py-0.5 rounded border border-[#FFD9A8]/60">
+                                {item.category || "General"}
+                              </span>
+                              <span className="text-[#D1C7BD]">&bull;</span>
+                              <span className="font-mono font-black text-xs text-[#FF203D]">
+                                ₹{price} <span className="text-[10px] text-[#5F5F5F] font-medium">/{unit}</span>
+                              </span>
+                            </div>
                             {isWeight && (
-                              <div className="text-[10px] text-[#FF7A18] font-mono">
-                                Min: {item.min_quantity || 0.25}
-                                {unit}
+                              <div className="text-[10px] text-[#FF7A18] font-mono mt-0.5">
+                                Min: {item.min_quantity || 0.25} {unit}
                               </div>
                             )}
                           </td>
-                          <td className="px-4 py-3.5 text-center">
-                            <div className="inline-flex items-center gap-1.5 bg-[#FFF9F2] border border-[#F0DED0] px-2 py-1 rounded-lg font-mono text-xs">
+
+                          {/* Col 2: Stock Counter */}
+                          <td className="px-3 py-3.5 text-center">
+                            <div className="inline-flex items-center gap-1 bg-[#FFF9F2] border border-[#F0DED0] px-1.5 py-1 rounded-lg font-mono text-xs shadow-2xs">
                               <button
                                 type="button"
                                 onClick={() => handleAdjustQuantity(item.product_id, -1)}
@@ -934,7 +936,7 @@ export default function MerchantDashboardPage() {
                               >
                                 −
                               </button>
-                              <span className="text-[#171717] font-bold w-6 text-center font-mono">
+                              <span className="text-[#171717] font-bold w-6 text-center font-mono text-xs">
                                 {item.quantity ?? 0}
                               </span>
                               <button
@@ -947,57 +949,61 @@ export default function MerchantDashboardPage() {
                               </button>
                             </div>
                           </td>
-                          <td className="px-4 py-3.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => openEditModal(item)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FFF4E6] hover:bg-[#FFE8C7] border border-[#FFD9A8] text-[#FF7A18] hover:text-[#FF203D] font-bold text-[11px] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
-                              title="Edit item price, unit, or stock count"
-                            >
-                              <Pencil className="w-3 h-3" />
-                              <span>Edit</span>
-                            </button>
-                          </td>
+
+                          {/* Col 3: Availability Toggle + Edit Button */}
                           <td className="px-4 py-3.5 text-right">
                             <div className="inline-flex items-center justify-end gap-2.5">
-                              <span
-                                className={cn(
-                                  "text-[11px] font-bold whitespace-nowrap",
-                                  inStock ? "text-emerald-700" : "text-rose-600"
-                                )}
-                              >
-                                {inStock ? "In Stock" : "Out of Stock"}
-                              </span>
+                              {/* Edit Modal Trigger */}
                               <button
                                 type="button"
-                                role="switch"
-                                aria-checked={inStock}
-                                onClick={() =>
-                                  handleToggleProductAvailability(
-                                    item.product_id,
-                                    item.availability_status
-                                  )
-                                }
-                                className={cn(
-                                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ease-in-out shadow-inner focus:outline-hidden",
-                                  inStock
-                                    ? "bg-emerald-500 hover:bg-emerald-600"
-                                    : "bg-rose-500 hover:bg-rose-600"
-                                )}
-                                title={
-                                  inStock
-                                    ? "Click to mark Out of Stock"
-                                    : "Click to mark In Stock"
-                                }
+                                onClick={() => openEditModal(item)}
+                                className="p-1.5 rounded-lg bg-[#FFF4E6] hover:bg-[#FFE8C7] border border-[#FFD9A8] text-[#FF7A18] hover:text-[#FF203D] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+                                title="Edit item price, unit, or stock count"
                               >
-                                <span
-                                  aria-hidden="true"
-                                  className={cn(
-                                    "pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                                    inStock ? "translate-x-4" : "translate-x-0"
-                                  )}
-                                />
+                                <Pencil className="w-3.5 h-3.5" />
                               </button>
+
+                              {/* Sliding Toggle Switch with Label */}
+                              <div className="inline-flex items-center gap-1.5">
+                                <span
+                                  className={cn(
+                                    "text-[10px] font-bold whitespace-nowrap",
+                                    inStock ? "text-emerald-700" : "text-rose-600"
+                                  )}
+                                >
+                                  {inStock ? "In Stock" : "Out"}
+                                </span>
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={inStock}
+                                  onClick={() =>
+                                    handleToggleProductAvailability(
+                                      item.product_id,
+                                      item.availability_status
+                                    )
+                                  }
+                                  className={cn(
+                                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ease-in-out shadow-inner focus:outline-hidden",
+                                    inStock
+                                      ? "bg-emerald-500 hover:bg-emerald-600"
+                                      : "bg-rose-500 hover:bg-rose-600"
+                                  )}
+                                  title={
+                                    inStock
+                                      ? "Click to mark Out of Stock"
+                                      : "Click to mark In Stock"
+                                  }
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={cn(
+                                      "pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                                      inStock ? "translate-x-4" : "translate-x-0"
+                                    )}
+                                  />
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </tr>

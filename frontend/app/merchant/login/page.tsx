@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,6 +15,8 @@ import {
   Building2,
   MapPin,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
@@ -29,6 +31,47 @@ export default function MerchantLoginPage() {
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
+
+  // Password visibility state with 5-second auto-mask timer
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordTimeLeft, setPasswordTimeLeft] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const togglePasswordVisibility = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    if (!showPassword) {
+      setShowPassword(true);
+      setPasswordTimeLeft(5);
+
+      intervalRef.current = setInterval(() => {
+        setPasswordTimeLeft((prev) => {
+          if (prev <= 1) {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      timerRef.current = setTimeout(() => {
+        setShowPassword(false);
+        setPasswordTimeLeft(0);
+      }, 5000);
+    } else {
+      setShowPassword(false);
+      setPasswordTimeLeft(0);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   // Login form state
   const [loginId, setLoginId] = useState("");
@@ -186,19 +229,39 @@ export default function MerchantLoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-1.5">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                    Password
+                  </label>
+                  {showPassword && passwordTimeLeft > 0 && (
+                    <span className="text-[10px] font-mono font-bold text-[#FF7A18] bg-[#FFF4E6] px-2 py-0.5 rounded-full border border-[#FFD9A8] animate-pulse">
+                      Auto-hides in {passwordTimeLeft}s
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full pl-10"
+                    className="w-full pl-10 pr-10 font-mono"
                   />
                   <Lock className="w-4 h-4 text-[#A3A3A3] absolute left-3.5 top-3.5" />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#8A8A8A] hover:text-[#171717] cursor-pointer transition-colors"
+                    title={showPassword ? "Hide password" : "Show password (auto-hides after 5s)"}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-[#FF7A18]" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -253,17 +316,40 @@ export default function MerchantLoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider mb-1">
-                  Password (min 6 characters) *
-                </label>
-                <Input
-                  type="password"
-                  placeholder="Create secure store password"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-[#171717] uppercase tracking-wider">
+                    Password (min 6 characters) *
+                  </label>
+                  {showPassword && passwordTimeLeft > 0 && (
+                    <span className="text-[10px] font-mono font-bold text-[#FF7A18] bg-[#FFF4E6] px-2 py-0.5 rounded-full border border-[#FFD9A8] animate-pulse">
+                      Auto-hides in {passwordTimeLeft}s
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create secure store password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full pr-10 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#8A8A8A] hover:text-[#171717] cursor-pointer transition-colors"
+                    title={showPassword ? "Hide password" : "Show password (auto-hides after 5s)"}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-[#FF7A18]" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
