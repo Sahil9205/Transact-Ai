@@ -87,10 +87,20 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
         windows: `%APPDATA%\\Claude\\claude_desktop_config.json`,
         mac: `~/Library/Application Support/Claude/claude_desktop_config.json`,
       },
-      configCode: `// ===============================================
-// OPTION A: Claude Desktop (Local stdio MCP)
-// Config File: %APPDATA%\\Claude\\claude_desktop_config.json
-// ===============================================
+      configCode: `// ========================================================
+// ⚡ OPTION 1 (RECOMMENDED): Claude Custom Connector (Remote Cloud)
+// 1. Open Claude.ai -> Settings -> Connectors -> Add Custom Connector
+// 2. Connector Name: TransactAI Autonomous Commerce
+// 3. Connector URL : ${be}/mcp
+// ========================================================
+Connector Name: TransactAI Autonomous Commerce
+Connector URL : ${be}/mcp
+Fallback SSE  : ${be}/mcp/sse
+
+// ========================================================
+// 💻 OPTION 2: Claude Desktop App (Local stdio MCP)
+// Config File : %APPDATA%\\Claude\\claude_desktop_config.json
+// ========================================================
 {
   "mcpServers": {
     "transactai": {
@@ -104,42 +114,43 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
       }
     }
   }
-}
-
-// ===============================================
-// OPTION B: Claude.ai Web (Remote Cloud Connector)
-// URL: ${be}/mcp
-// ===============================================`,
+}`,
       steps: [
         {
           step: 1,
-          title: "Choose Connection Mode: Desktop (Local) or Claude.ai (Web)",
-          desc: "TransactAI supports both local stdio execution and remote cloud connections:",
+          title: "Open Claude Settings & Navigate to Connectors",
+          desc: "In Claude.ai (Web) or Claude Desktop app, click your user profile avatar in the bottom-left corner ➔ Select 'Settings' ➔ Navigate to the 'Connectors' (or 'Feature Previews / Integrations') tab ➔ Click '+ Add Custom Connector'.",
           details: [
-            "Option A (Claude Desktop): Native stdio via local Python environment.",
-            `Option B (Claude.ai Web): Customize ➡️ Connectors ➡️ Add Custom Connector using URL: ${be}/mcp`,
+            "Web / Mobile: Claude.ai ➔ Settings ➔ Connectors ➔ Add Custom Connector",
+            "Desktop App: Claude Desktop ➔ Settings ➔ Developer / Connectors",
           ],
         },
         {
           step: 2,
-          title: "Configure Claude Desktop or Add Web Connector",
-          desc: `For Claude Desktop, add the JSON config to your claude_desktop_config.json. For Claude.ai Web, enter connector URL ${be}/mcp. TRANSACTAI_BASE_URL (${fe}) ensures hosted Razorpay payment links open smoothly.`,
+          title: "Enter TransactAI Custom Connector URL",
+          desc: "Fill in the connector credentials. TransactAI provides production-grade Model Context Protocol tool streaming with zero local setup needed:",
           details: [
-            "Windows: Win+R → %APPDATA%\\Claude\\claude_desktop_config.json",
-            "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
+            "Connector Name: TransactAI Autonomous Commerce",
+            `Connector URL : ${be}/mcp`,
+            `(Fallback SSE) : ${be}/mcp/sse`,
           ],
         },
         {
           step: 3,
-          title: "Set Claude Progressive Shopping Instructions",
-          desc: "In your Claude Project or Custom Instructions, paste this 4-stage shopping protocol:",
-          promptExample:
-            "Follow the 4-stage TransactAI shopping protocol: 1. Discovery: Search catalog for broad requests without asking for address. 2. Selection: Ask for delivery address & 6-digit pincode when item is picked. 3. Pre-flight Gate: Call verify_order_preflight to verify live stock and spending limits. Ask for phone number (for rider coordination if delivery, or store pickup SMS if pickup). 4. Checkout: Call create_payment_order and provide the Razorpay hosted link.",
+          title: "Verify Connected Autonomous Commerce Tools",
+          desc: "Click 'Save / Connect'. Claude will instantly connect to TransactAI and discover 5 active commerce tools:",
+          details: [
+            "🔍 transact_search_catalog — Semantic vector search over live merchant catalogs (<85ms)",
+            "🛡️ transact_verify_order_preflight — 6-hr staleness & live stock parity gatekeeper",
+            "💳 transact_check_policy — Enforces buyer transaction limits & daily allowances",
+            "⚡ transact_create_order_payment — Atomic Razorpay payment link generation",
+            "🏪 transact_register_merchant — Instant merchant self-service onboarding",
+          ],
         },
         {
           step: 4,
-          title: "Test with a Real Commerce Prompt",
-          desc: "Ask Claude in natural language:",
+          title: "Execute Your First Natural Language Purchase",
+          desc: "Start a fresh chat in Claude. Notice the active tools (🔨 hammer icon). Ask Claude naturally to trigger autonomous shopping:",
           promptExample:
             "Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600. Verify my daily spending policy limit, and if approved, prepare an order summary for my confirmation.",
         },
@@ -516,6 +527,67 @@ export default function DeveloperPage() {
               )}
             </button>
           </div>
+
+          {/* Claude Custom Connector Quick Connect Banner */}
+          {activeAssistant === "claude" && (
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#FFF4E6] to-[#FFE8C7]/50 border border-[#FFD9A8] shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#D97706] text-white flex items-center justify-center font-black text-sm shadow-sm shrink-0">
+                    MCP
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-[#171717] flex items-center gap-2">
+                      <span>Claude Custom Connector URL</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Live Streamable
+                      </span>
+                    </h3>
+                    <p className="text-xs text-[#5F5F5F]">
+                      Direct 1-Click integration for Claude.ai Web &amp; Claude Desktop Custom Connectors
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(`${backendUrl}/mcp`)}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-50 border border-[#FFD9A8] text-xs font-extrabold text-[#171717] transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-[#FF7A18]" />
+                    <span>Copy Connector URL</span>
+                  </button>
+                  <a
+                    href="https://claude.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-extrabold transition-all shadow-xs active:scale-95 whitespace-nowrap"
+                  >
+                    <span>Open Claude.ai</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Endpoint Pill & Tools Chips */}
+              <div className="pt-2 border-t border-[#FFD9A8]/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 font-mono bg-white/90 px-3 py-1.5 rounded-xl border border-[#FFD9A8] text-[#171717]">
+                  <span className="text-[#8A8A8A] select-none">URL:</span>
+                  <span className="font-bold select-all text-[#D97706]">{backendUrl}/mcp</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+                  <span className="text-[#8A8A8A] font-sans font-semibold">Active Tools:</span>
+                  {["search_catalog", "verify_preflight", "check_policy", "create_payment_order", "register_merchant"].map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded-md bg-white text-[#171717] border border-[#F0DED0] font-medium">
+                      transact_{t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Steps & Code Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

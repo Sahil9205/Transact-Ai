@@ -171,8 +171,21 @@ TransactAI natively connects into all three major conversational AI ecosystems:
 
 TransactAI connects natively to Anthropic Claude via the **Model Context Protocol (MCP)**. Claude acts as the conversational reasoning and comparison layer, while TransactAI deterministically verifies warehouse stock, enforces spending policies, and executes Razorpay settlements.
 
-#### 💻 Option A: Claude Desktop (Local stdio)
-Connect Claude Desktop on your computer to TransactAI's local MCP server:
+#### 🔌 Quick Setup: Add TransactAI Custom Connector in Claude (4-Step Process)
+
+Connect Claude directly to the live TransactAI production engine with zero local environment setup:
+
+| Step | Action | Details & Copy-Paste Value |
+| :--- | :--- | :--- |
+| **Step 1** | **Open Connectors in Claude** | Open [Claude.ai](https://claude.ai) (Web) or Claude Desktop $\rightarrow$ Click **Settings** $\rightarrow$ Navigate to **Connectors** (or Integrations) $\rightarrow$ Click **"Add Custom Connector"**. |
+| **Step 2** | **Enter Connector URL** | **Name**: `TransactAI Autonomous Commerce`<br>**URL**: `https://transact-ai-production.up.railway.app/mcp`<br>*(Fallback SSE: `https://transact-ai-production.up.railway.app/mcp/sse`)* |
+| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 5 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_search_catalog` — Instant sub-85ms semantic hybrid vector search<br>• `transact_verify_order_preflight` — 6-hr staleness & live stock parity gatekeeper<br>• `transact_check_policy` — Mathematical spending limit validator<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator<br>• `transact_register_merchant` — Self-service merchant onboarding |
+| **Step 4** | **Prompt & Transact** | Open a new chat in Claude and ask in natural language:<br>`"Search for fresh Kaju Katli in Indiranagar (560001) under ₹600. Verify my spending limit, and prepare an order summary for my confirmation."` |
+
+---
+
+#### 💻 Power Users: Local Claude Desktop App (Local stdio MCP)
+If you prefer running a local Python stdio MCP server on your computer:
 
 1. Open your Claude Desktop config file:
    - **Windows**: `Win + R` $\rightarrow$ `%APPDATA%\Claude\claude_desktop_config.json`
@@ -192,21 +205,7 @@ Connect Claude Desktop on your computer to TransactAI's local MCP server:
   }
 }
 ```
-3. Restart Claude Desktop. Look for the **🔨 Hammer / Tools icon** in the prompt box showing active tools:
-   - `transact_search_catalog` — Semantic hybrid product search (<85ms)
-   - `transact_verify_order_preflight` — Authoritative price & stock gatekeeper
-   - `transact_check_policy` — Deterministic buyer spending limit enforcement
-   - `transact_create_order_payment` — Atomic Razorpay hosted checkout generation
-   - `transact_register_merchant` — Self-service merchant store registration
-
-#### ☁️ Option B: Claude.ai Web & Mobile (Remote Cloud Connector)
-Connect directly to the production server deployed on Railway without local setup:
-1. Open [Claude.ai](https://claude.ai) in your browser.
-2. Go to **Customize** $\rightarrow$ **Connectors** $\rightarrow$ **Add custom connector**.
-3. Fill in:
-   - **Name**: `TransactAI Commerce`
-   - **Connector URL**: `https://transact-ai-production.up.railway.app/mcp`
-4. Click **Add**.
+3. Restart Claude Desktop. The 5 tools will appear under the tools hammer icon.
 
 #### 🧠 Claude Progressive Shopping System Prompt
 In your Claude Project or Custom Instructions, paste:
