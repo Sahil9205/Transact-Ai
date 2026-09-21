@@ -242,6 +242,57 @@ class ProductRepository:
         logger.info(f"Updated product {product.product_id}")
         return product
 
+    @staticmethod
+    async def atomic_decrement_stock(session: AsyncSession, product_id: str, quantity: int) -> bool:
+        """Atomically decrement product inventory if sufficient stock exists.
+        Returns True if decremented, False if insufficient stock."""
+        from sqlalchemy import update
+        stmt = (
+            update(ProductModel)
+            .where(
+                ProductModel.product_id == product_id,
+                ProductModel.quantity >= quantity,
+            )
+            .values(
+                quantity=ProductModel.quantity - quantity,
+                last_stock_updated_at=datetime.now(UTC),
+            )
+        )
+        result = await session.execute(stmt)
+        await session.flush()
+        if result.rowcount > 0:
+            zero_stmt = (
+                update(ProductModel)
+                .where(
+                    ProductModel.product_id == product_id,
+                    ProductModel.quantity <= 0,
+                )
+                .values(availability_status="out_of_stock")
+            )
+            await session.execute(zero_stmt)
+            await session.flush()
+            logger.info("Atomically decremented stock", product_id=product_id, quantity=quantity)
+            return True
+        logger.warning("Failed atomic stock decrement: insufficient stock", product_id=product_id, requested=quantity)
+        return False
+
+    @staticmethod
+    async def atomic_increment_stock(session: AsyncSession, product_id: str, quantity: int) -> None:
+        """Atomically increment product inventory (restock or order cancellation)."""
+        from sqlalchemy import update
+        stmt = (
+            update(ProductModel)
+            .where(ProductModel.product_id == product_id)
+            .values(
+                quantity=ProductModel.quantity + quantity,
+                availability_status="in_stock",
+                last_stock_updated_at=datetime.now(UTC),
+            )
+        )
+        await session.execute(stmt)
+        await session.flush()
+        logger.info("Atomically incremented stock", product_id=product_id, quantity=quantity)
+
 
 class OrderRepository:
     @staticmethod
@@ -256,6 +307,7 @@ class OrderRepository:
         pincode: str | None = None,
         delivery_address: str | None = None,
         platform: str | None = None,
+        idempotency_key: str | None = None,
     ) -> OrderModel:
         order = OrderModel(
             user_id=user_id,
@@ -267,12 +319,23 @@ class OrderRepository:
             pincode=pincode,
             delivery_address=delivery_address,
             platform=platform or "api",
+            idempotency_key=idempotency_key,
         )
         session.add(order)
         await session.flush()
         await session.refresh(order)
         logger.info(f"Created order {order.order_id} via {order.platform}")
         return order
+
+    @staticmethod
+    async def get_by_idempotency_key(session: AsyncSession, idempotency_key: str) -> OrderModel | None:
+        """Find an order by its idempotency key if previously created."""
+        if not idempotency_key:
+            return None
+        result = await session.execute(
+            select(OrderModel).where(OrderModel.idempotency_key == idempotency_key)
+        )
+        return result.scalar_one_or_none()
     
     @staticmethod
     async def get_by_order_id(session: AsyncSession, order_id: str) -> OrderModel:

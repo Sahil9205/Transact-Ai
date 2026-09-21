@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import pytest
+
 from app.db.models import MerchantModel, ProductModel
-from app.domain.enums import ProviderType, ProductCategory
+from app.domain.enums import ProductCategory, ProviderType
 
 pytestmark = pytest.mark.asyncio
 

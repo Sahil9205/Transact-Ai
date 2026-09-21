@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+
 import pytest
 from httpx import AsyncClient
 
@@ -31,7 +32,7 @@ async def test_e2e_happy_path_scenario(client: AsyncClient) -> None:
             "pincode": "110001",
         },
     )
-    product_id = p_res.json()["product_id"]
+    assert "product_id" in p_res.json()
 
     user_id = "e2e_shopper_1"
 

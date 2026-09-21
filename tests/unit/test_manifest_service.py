@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.enums import AvailabilityStatus, FulfillmentType, ProductCategory, ProviderType
 from app.domain.schemas import ProductCreateSchema, ProviderCreateSchema
+from app.services.manifest_service import ManifestService
 from app.services.merchant_service import MerchantService
 from app.services.product_service import ProductService
-from app.services.manifest_service import ManifestService
 
 
 @pytest.mark.asyncio

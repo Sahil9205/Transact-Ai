@@ -1,12 +1,29 @@
 from __future__ import annotations
-import pytest
+
 from datetime import datetime, timezone
+
+import pytest
 from pydantic import ValidationError
-from app.domain.enums import ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType, FreshnessTier
-from app.domain.schemas import (
-    ProviderSchema, ProductSchema, BuyerIntentSchema, SpendingPolicySchema,
-    ProductCreateSchema, PricingSchema, AvailabilitySchema, FulfillmentSchema, VerificationSchema
+
+from app.domain.enums import (
+    AvailabilityStatus,
+    FreshnessTier,
+    FulfillmentType,
+    ProductCategory,
+    ProviderType,
 )
+from app.domain.schemas import (
+    AvailabilitySchema,
+    BuyerIntentSchema,
+    FulfillmentSchema,
+    PricingSchema,
+    ProductCreateSchema,
+    ProductSchema,
+    ProviderSchema,
+    SpendingPolicySchema,
+    VerificationSchema,
+)
+
 
 def test_product_schema_creation():
     product = ProductSchema(

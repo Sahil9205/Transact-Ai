@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import MerchantModel, ProductModel
+from app.db.models import MerchantModel
 from app.db.repository import ProductRepository
 from app.domain.enums import AvailabilityStatus, ProductCategory, ProviderType
-from app.domain.schemas import ProductCreateSchema, StockPingConfirmRequest
+from app.domain.schemas import ProductCreateSchema
 from app.services.gatekeeper_service import GatekeeperService
 from app.services.stock_ping_service import StockPingService
 

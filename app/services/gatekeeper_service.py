@@ -27,7 +27,7 @@ class GatekeeperDecision(BaseModel):
     ping_id: str | None = None
     is_stale_paused: bool = False
     merchant_alerted: bool = False
-
+    preflight_token: str | None = Field(default=None, description="Cryptographically signed single-use preflight token")
 
 
 class GatekeeperService:
@@ -91,6 +91,15 @@ class GatekeeperService:
         else:
             decision = "BLOCK"
 
+        preflight_token = None
+        if is_authorized:
+            preflight_token = GatekeeperService.generate_preflight_token(
+                user_id=user_id,
+                product_id=product_id,
+                quantity=quantity,
+                amount_paise=v_result.total_amount_paise,
+            )
+
         return GatekeeperDecision(
             is_authorized=is_authorized,
             decision=decision,
@@ -106,4 +115,90 @@ class GatekeeperService:
             ping_id=v_result.ping_id,
             is_stale_paused=v_result.is_stale_paused,
             merchant_alerted=v_result.is_stale_paused,
+            preflight_token=preflight_token,
         )
+
+    @staticmethod
+    def generate_preflight_token(
+        user_id: str,
+        product_id: str,
+        quantity: int,
+        amount_paise: int,
+        ttl_seconds: int = 900,
+    ) -> str:
+        """Generates a cryptographically signed HMAC-SHA256 single-use preflight authorization token."""
+        import base64
+        import hashlib
+        import hmac
+        import json
+        import time
+        import uuid
+
+        from app.core.config import get_settings
+
+        settings = get_settings()
+        secret = settings.JWT_SECRET_KEY or settings.RAZORPAY_KEY_SECRET
+
+        payload = {
+            "user_id": user_id,
+            "product_id": product_id,
+            "quantity": quantity,
+            "amount_paise": amount_paise,
+            "exp": int(time.time()) + ttl_seconds,
+            "nonce": uuid.uuid4().hex[:12],
+        }
+        raw_json = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        b64_payload = base64.urlsafe_b64encode(raw_json).decode("utf-8")
+        sig = hmac.new(secret.encode("utf-8"), b64_payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        return f"{b64_payload}.{sig}"
+
+    @staticmethod
+    def verify_preflight_token(
+        token: str,
+        user_id: str,
+        product_id: str,
+        quantity: int,
+    ) -> tuple[bool, str | None]:
+        """Validates that a preflight token has a valid cryptographic signature,
+        has not expired, and matches the requested transaction parameters.
+        Returns (is_valid, error_reason)."""
+        import base64
+        import hashlib
+        import hmac
+        import json
+        import time
+
+        from app.core.config import get_settings
+
+        if not token or "." not in token:
+            return False, "Malformed preflight token format"
+
+        b64_payload, sig = token.split(".", 1)
+        settings = get_settings()
+        secret = settings.JWT_SECRET_KEY or settings.RAZORPAY_KEY_SECRET
+
+        expected_sig = hmac.new(secret.encode("utf-8"), b64_payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected_sig, sig):
+            return False, "Invalid cryptographic preflight signature (tampered)"
+
+        try:
+            payload_bytes = base64.urlsafe_b64decode(b64_payload.encode("utf-8"))
+            data = json.loads(payload_bytes.decode("utf-8"))
+        except Exception:
+            return False, "Failed to decode preflight token payload"
+
+        now = int(time.time())
+        if data.get("exp", 0) < now:
+            return False, f"Preflight token has expired (expired {now - data.get('exp', 0)}s ago)"
+
+        if data.get("user_id") != user_id:
+            return False, f"Token user mismatch (expected {user_id}, got {data.get('user_id')})"
+
+        if data.get("product_id") != product_id:
+            return False, f"Token product mismatch (expected {product_id}, got {data.get('product_id')})"
+
+        if data.get("quantity") != quantity:
+            return False, f"Token quantity mismatch (expected {quantity}, got {data.get('quantity')})"
+
+        return True, None
+

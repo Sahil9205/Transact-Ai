@@ -1,10 +1,18 @@
 from __future__ import annotations
+
 import enum
+
 from app.domain.enums import (
-    ProviderType, ProductCategory, AvailabilityStatus,
-    FulfillmentType, OrderStatus, PaymentStatus,
-    FreshnessTier, AuditEventType
+    AuditEventType,
+    AvailabilityStatus,
+    FreshnessTier,
+    FulfillmentType,
+    OrderStatus,
+    PaymentStatus,
+    ProductCategory,
+    ProviderType,
 )
+
 
 def test_enums_are_strings():
     for enum_class in [ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType, OrderStatus, PaymentStatus, FreshnessTier, AuditEventType]:

@@ -132,6 +132,14 @@ MCP_TOOLS_DEFINITIONS: list[dict[str, Any]] = [
                     "type": "string",
                     "description": "Optional buyer user ID (default: 'buyer_default')",
                 },
+                "preflight_token": {
+                    "type": "string",
+                    "description": "Optional cryptographically signed single-use preflight token from transact_verify_order_preflight",
+                },
+                "idempotency_key": {
+                    "type": "string",
+                    "description": "Optional unique client token to guarantee idempotent checkout execution",
+                },
             },
             "required": ["product_id", "pincode"],
         },
@@ -345,6 +353,8 @@ class MCPCommerceTools:
         quantity: int = 1,
         platform: str | None = None,
         user_id: str = "buyer_default",
+        preflight_token: str | None = None,
+        idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         """Tool handler for transact_create_order_payment."""
         from app.core.platform import resolve_originating_platform
@@ -358,6 +368,8 @@ class MCPCommerceTools:
             pincode=pincode,
             delivery_address=delivery_address,
             platform=resolved_platform,
+            idempotency_key=idempotency_key,
+            preflight_token=preflight_token,
         )
         return {
             "order_id": res.order_id,

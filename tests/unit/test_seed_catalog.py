@@ -3,9 +3,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.seed import SEED_PROVIDERS, seed_database
+from app.db.seed import seed_database
 from app.services.merchant_service import MerchantService
-from app.services.product_service import ProductService
 
 
 @pytest.mark.asyncio

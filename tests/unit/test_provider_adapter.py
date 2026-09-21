@@ -1,10 +1,19 @@
 from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
-from app.providers.local.adapter import LocalMerchantAdapter
-from app.db.models import MerchantModel, ProductModel
-from app.domain.enums import ProviderType, ProductCategory, AvailabilityStatus, FreshnessTier, FulfillmentType
+
 from app.core.exceptions import NotFoundError
+from app.db.models import MerchantModel, ProductModel
+from app.domain.enums import (
+    AvailabilityStatus,
+    FreshnessTier,
+    FulfillmentType,
+    ProductCategory,
+    ProviderType,
+)
+from app.providers.local.adapter import LocalMerchantAdapter
 
 pytestmark = pytest.mark.asyncio
 

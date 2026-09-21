@@ -69,6 +69,7 @@ class DatabaseManager:
                 ("delivery_address", "TEXT"),
                 ("platform", "VARCHAR(50) DEFAULT 'unknown'"),
                 ("transaction_id", "VARCHAR(255)"),
+                ("idempotency_key", "VARCHAR(128)"),
             ]:
                 try:
                     await conn.execute(text(f"ALTER TABLE orders ADD COLUMN {if_not_exists}{col} {col_type}"))

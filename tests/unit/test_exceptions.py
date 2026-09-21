@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 from app.core.exceptions import (
+    AuthorizationError,
     CommerceAgentError,
     ConfigurationError,
-    ValidationError,
     NotFoundError,
-    PolicyViolationError,
     PaymentError,
+    PolicyViolationError,
     StaleDataError,
-    AuthorizationError,
+    ValidationError,
 )
+
 
 def test_base_exception_attributes() -> None:
     """Test the attributes of the base exception."""

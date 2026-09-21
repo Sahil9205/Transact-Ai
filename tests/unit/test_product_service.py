@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundError
 from app.domain.enums import (
     AvailabilityStatus,
     FulfillmentType,
@@ -17,7 +18,6 @@ from app.domain.schemas import (
 from app.services.merchant_service import MerchantService
 from app.services.product_service import ProductService
 from app.services.vector_service import VectorService
-from app.core.exceptions import NotFoundError
 
 
 @pytest.mark.asyncio

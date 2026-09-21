@@ -3,10 +3,10 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundError
 from app.domain.enums import ProviderType
 from app.domain.schemas import ProviderCreateSchema
 from app.services.merchant_service import MerchantService
-from app.core.exceptions import NotFoundError
 
 
 @pytest.mark.asyncio

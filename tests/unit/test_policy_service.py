@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import OrderModel
-from app.domain.enums import OrderStatus, PaymentStatus, ProductCategory
+from app.domain.enums import OrderStatus, ProductCategory
 from app.services.policy_service import PolicyService
 
 

@@ -6,7 +6,7 @@
 > **Notice:** Demo application. Razorpay test mode. Built for the Razorpay Buildathon. Not affiliated with Razorpay.
 
 [![CI](https://github.com/Sahil9205/Transact-Ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Sahil9205/Transact-Ai/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-82%25%20(88%2F88%20passed)-brightgreen.svg)](#)
+[![Coverage](https://img.shields.io/badge/Coverage-82%25%20(94%2F94%20passed)-brightgreen.svg)](#)
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -360,7 +360,7 @@ python scripts/demo.py
 ```bash
 pytest tests/unit/ -v
 ```
-> **88 passed in ~46s** (82% test coverage across all architectural invariants).
+> **94 passed in ~44s** (82% test coverage across all architectural invariants).
 
 ---
 
@@ -407,6 +407,9 @@ Transact-Ai/
 
 ## 🔒 Security & Enforced Safeguards
 - **Cryptographic Signature Verification**: Every Razorpay webhook and payment return payload is cryptographically validated using constant-time `HMAC-SHA256` hashing (`app/services/payment_service.py`).
+- **Preflight Cryptographic HMAC Token**: Pre-flight verification generates an ephemeral HMAC-SHA256 token binding product ID, quantity, and merchant ID with a 15-minute TTL to prevent checkout tampering (`app/services/gatekeeper_service.py`).
+- **Atomic Concurrency-Safe Stock Decrement**: Inventory is decremented atomically via conditional SQL updates (`quantity = quantity - :qty WHERE quantity >= :qty`), preventing race conditions and overselling during concurrent checkouts (`app/db/repository.py`).
+- **Order Idempotency Keys**: Payment order creation accepts client idempotency keys, guaranteeing at-most-once order instantiation and preventing duplicate charges (`app/services/payment_service.py`).
 - **Merchant RFC 7519 JWT Authentication**: Vendor login protected via PBKDF2 password hashing and HS256 JWT tokens with 7-day expiration (`app/services/auth_service.py`).
 - **Multi-Tenant Store Isolation**: Database queries enforce strict tenant boundaries so merchants can only access their own inventory, orders, and sales metrics (`app/db/repository.py`).
 - **6-Hour Inventory Staleness Guardrail**: Products unverified for >6 hours trigger automated stale-tier classification and interactive merchant verification pings (`app/services/stock_ping_service.py`).

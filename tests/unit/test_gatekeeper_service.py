@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.enums import AvailabilityStatus, FulfillmentType, ProductCategory, ProviderType
+from app.domain.enums import AvailabilityStatus, ProductCategory, ProviderType
 from app.domain.schemas import ProductCreateSchema, ProviderCreateSchema
 from app.services.gatekeeper_service import GatekeeperService
 from app.services.merchant_service import MerchantService
@@ -97,3 +97,87 @@ async def test_gatekeeper_authorization_blocked_by_policy(db_session: AsyncSessi
     assert decision.verification_passed is True
     assert decision.policy_passed is False
     assert any("per_transaction_limit_exceeded" in r for r in decision.blocked_reasons)
+
+
+@pytest.mark.asyncio
+async def test_gatekeeper_preflight_token_generation_and_validation(db_session: AsyncSession) -> None:
+    """Test that preflight token is generated on authorization and verifies properly."""
+    user_id = "user-token-1"
+    product_id = "prod-token-1"
+    qty = 2
+    amount_paise = 90000
+
+    token = GatekeeperService.generate_preflight_token(
+        user_id=user_id,
+        product_id=product_id,
+        quantity=qty,
+        amount_paise=amount_paise,
+    )
+
+    assert isinstance(token, str)
+    assert "." in token
+
+    # Valid token verification
+    is_valid, err = GatekeeperService.verify_preflight_token(
+        token=token,
+        user_id=user_id,
+        product_id=product_id,
+        quantity=qty,
+    )
+    assert is_valid is True
+    assert err is None
+
+
+@pytest.mark.asyncio
+async def test_gatekeeper_preflight_token_tampered_fails(db_session: AsyncSession) -> None:
+    """Test that tampered preflight tokens fail verification."""
+    token = GatekeeperService.generate_preflight_token(
+        user_id="user-tamper",
+        product_id="prod-tamper",
+        quantity=1,
+        amount_paise=50000,
+    )
+
+    # 1. Tampered payload
+    tampered_token = "bW9ja19mYWtl_payload." + token.split(".")[1]
+    is_valid, err = GatekeeperService.verify_preflight_token(
+        token=tampered_token,
+        user_id="user-tamper",
+        product_id="prod-tamper",
+        quantity=1,
+    )
+    assert is_valid is False
+    assert "Invalid cryptographic preflight signature" in str(err)
+
+    # 2. Parameter mismatch
+    is_valid_user, err_user = GatekeeperService.verify_preflight_token(
+        token=token,
+        user_id="different-user",
+        product_id="prod-tamper",
+        quantity=1,
+    )
+    assert is_valid_user is False
+    assert "Token user mismatch" in str(err_user)
+
+
+@pytest.mark.asyncio
+async def test_gatekeeper_preflight_token_expired_fails(db_session: AsyncSession) -> None:
+    """Test that an expired preflight token fails verification."""
+    # Generate token with negative TTL (already expired)
+    token = GatekeeperService.generate_preflight_token(
+        user_id="user-exp",
+        product_id="prod-exp",
+        quantity=1,
+        amount_paise=50000,
+        ttl_seconds=-10,
+    )
+
+    is_valid, err = GatekeeperService.verify_preflight_token(
+        token=token,
+        user_id="user-exp",
+        product_id="prod-exp",
+        quantity=1,
+    )
+    assert is_valid is False
+    assert "Preflight token has expired" in str(err)
+

@@ -37,6 +37,7 @@ class PaymentOrderResponse(BaseModel):
     pincode: str | None = None
     delivery_address: str | None = None
     platform: str | None = None
+    idempotency_key: str | None = None
 
 
 class PaymentVerificationResult(BaseModel):
@@ -83,6 +84,8 @@ class PaymentService:
         pincode: str | None = None,
         delivery_address: str | None = None,
         platform: str | None = None,
+        idempotency_key: str | None = None,
+        preflight_token: str | None = None,
     ) -> PaymentOrderResponse:
         """Creates an order in the database and initializes a Razorpay checkout session."""
         settings = get_settings()
@@ -93,7 +96,63 @@ class PaymentService:
             quantity=quantity,
             pincode=pincode,
             platform=platform,
+            idempotency_key=idempotency_key,
         )
+
+        # 0a. Check idempotency: Return existing order if identical idempotency_key was used
+        if idempotency_key:
+            existing_order = await OrderRepository.get_by_idempotency_key(session, idempotency_key)
+            if existing_order:
+                stmt = select(PaymentModel).where(PaymentModel.order_id == existing_order.order_id)
+                res = await session.execute(stmt)
+                existing_payment = res.scalar_one_or_none()
+                product = await ProductRepository.get_by_product_id(session, existing_order.product_id)
+                rzp_order_id = existing_payment.provider_ref if existing_payment else f"order_rzp_{existing_order.order_id[:14]}"
+
+                import os
+                custom_base = os.environ.get("TRANSACTAI_BASE_URL") or os.environ.get("FRONTEND_URL") or os.environ.get("PUBLIC_APP_URL")
+                railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+                if custom_base:
+                    base_url = custom_base.rstrip("/")
+                elif railway_domain:
+                    base_url = f"https://{railway_domain}"
+                elif settings.APP_ENV == "production":
+                    base_url = "https://transact-ai-production.up.railway.app"
+                else:
+                    base_url = "http://localhost:8000"
+                payment_link = f"{base_url}/pay/{existing_order.order_id}"
+
+                logger.info("Returning existing idempotent order", order_id=existing_order.order_id, idempotency_key=idempotency_key)
+                return PaymentOrderResponse(
+                    order_id=existing_order.order_id,
+                    razorpay_order_id=rzp_order_id,
+                    amount_inr=existing_order.total_amount / 100,
+                    amount_paise=existing_order.total_amount,
+                    currency=existing_order.currency,
+                    status=existing_order.status,
+                    razorpay_key_id=settings.RAZORPAY_KEY_ID,
+                    payment_link_url=payment_link,
+                    product_id=existing_order.product_id,
+                    product_name=product.name,
+                    merchant_id=product.merchant_id,
+                    quantity=existing_order.quantity,
+                    pincode=existing_order.pincode,
+                    delivery_address=existing_order.delivery_address,
+                    platform=existing_order.platform,
+                    idempotency_key=idempotency_key,
+                )
+
+        # 0b. Preflight token cryptographic check if supplied
+        if preflight_token:
+            from app.services.gatekeeper_service import GatekeeperService
+            is_valid, err_msg = GatekeeperService.verify_preflight_token(
+                token=preflight_token,
+                user_id=user_id,
+                product_id=product_id,
+                quantity=quantity,
+            )
+            if not is_valid:
+                raise PaymentVerificationError(message=f"Preflight verification failed: {err_msg}")
 
         # 1. Authoritative Product & Pricing Check
         product = await ProductRepository.get_by_product_id(session, product_id)
@@ -113,6 +172,7 @@ class PaymentService:
             pincode=pincode,
             delivery_address=delivery_address,
             platform=platform,
+            idempotency_key=idempotency_key,
         )
         order.status = OrderStatus.PAYMENT_PENDING.value
         await session.flush()
@@ -204,6 +264,7 @@ class PaymentService:
             pincode=order.pincode,
             delivery_address=order.delivery_address,
             platform=order.platform,
+            idempotency_key=idempotency_key,
         )
 
     @staticmethod
@@ -250,12 +311,27 @@ class PaymentService:
         order = await OrderRepository.get_by_order_id(session, payment.order_id)
 
         if is_valid:
+            already_settled = (payment.status == PaymentStatus.SUCCESS.value)
             payment.status = PaymentStatus.SUCCESS.value
             payment.transaction_id = razorpay_payment_id
             if order:
                 order.status = OrderStatus.ORDER_CREATED.value
                 order.transaction_id = razorpay_payment_id
             await session.commit()
+
+            # Atomically decrement inventory stock on verified payment if not already settled
+            if not already_settled and order:
+                stock_decremented = await ProductRepository.atomic_decrement_stock(
+                    session=session,
+                    product_id=order.product_id,
+                    quantity=order.quantity,
+                )
+                if not stock_decremented:
+                    logger.warning(
+                        "Could not atomically decrement stock at settlement time",
+                        product_id=order.product_id,
+                        quantity=order.quantity,
+                    )
 
             # Log PAYMENT_SUCCESS audit event
             await AuditRepository.log_event(
@@ -368,6 +444,7 @@ class PaymentService:
         order = await OrderRepository.get_by_order_id(session, payment.order_id)
 
         if event_name in ["payment.captured", "order.paid"]:
+            already_settled = (payment.status == PaymentStatus.SUCCESS.value)
             payment.status = PaymentStatus.SUCCESS.value
             rzp_pay_id = payload_payment.get("id")
             if rzp_pay_id:
@@ -377,6 +454,14 @@ class PaymentService:
             if order:
                 order.status = OrderStatus.ORDER_CREATED.value
             await session.commit()
+
+            # Atomically decrement inventory stock on webhook payment capture if not already settled
+            if not already_settled and order:
+                await ProductRepository.atomic_decrement_stock(
+                    session=session,
+                    product_id=order.product_id,
+                    quantity=order.quantity,
+                )
 
             await AuditRepository.log_event(
                 session=session,

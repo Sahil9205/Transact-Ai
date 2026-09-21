@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import pytest
+
 from app.core.config import Settings
+
 
 def test_default_settings() -> None:
     """Test that Settings loads with correct default values."""

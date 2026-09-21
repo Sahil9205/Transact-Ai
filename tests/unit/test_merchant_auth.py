@@ -3,11 +3,11 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import UnauthorizedError, ValidationError
+from app.domain.enums import ProviderType
 from app.domain.schemas import (
     MerchantLoginRequest,
     MerchantRegisterRequest,
 )
-from app.domain.enums import ProviderType
 from app.services.auth_service import (
     AuthService,
     create_access_token,

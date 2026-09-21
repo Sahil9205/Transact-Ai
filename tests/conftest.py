@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-import pytest
-from httpx import AsyncClient, ASGITransport
 from typing import AsyncGenerator
 
-from app.core.config import Settings, get_settings
-from app.main import create_app
+import pytest
 from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from app.core.config import Settings, get_settings
+from app.db.database import Base
+from app.main import create_app
+
 
 @pytest.fixture
 def test_settings() -> Settings:
@@ -29,9 +33,6 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from app.db.database import Base
-from app.db.models import MerchantModel, ProductModel, OrderModel, AuditEventModel
 
 @pytest.fixture
 async def db_session():

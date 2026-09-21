@@ -122,6 +122,7 @@ class OrderModel(Base):
     delivery_address: Mapped[str | None] = mapped_column(Text, nullable=True)
     platform: Mapped[str | None] = mapped_column(String(50), nullable=True, default="unknown")
     transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
     

@@ -29,6 +29,8 @@ class CreatePaymentOrderRequest(BaseModel):
     delivery_address: str | None = Field(default=None, description="Delivery address provided by user")
     platform: str | None = Field(default=None, description="Calling client platform (e.g. 'claude', 'chatgpt')")
     notes: dict[str, Any] | None = Field(default=None, description="Optional metadata key-values")
+    idempotency_key: str | None = Field(default=None, description="Unique client key to guarantee idempotent execution")
+    preflight_token: str | None = Field(default=None, description="Cryptographically signed preflight token from gatekeeper")
 
 
 class VerifySignatureRequest(BaseModel):
@@ -75,6 +77,11 @@ async def create_payment_order_endpoint(
         explicit_platform=payload.platform,
         headers=request.headers,
     )
+    idempotency_key = (
+        payload.idempotency_key
+        or request.headers.get("idempotency-key")
+        or request.headers.get("x-idempotency-key")
+    )
     return await PaymentService.create_payment_order(
         session=session,
         user_id=payload.user_id,
@@ -84,6 +91,8 @@ async def create_payment_order_endpoint(
         delivery_address=payload.delivery_address,
         platform=detected_platform,
         notes=payload.notes,
+        idempotency_key=idempotency_key,
+        preflight_token=payload.preflight_token,
     )
 
 

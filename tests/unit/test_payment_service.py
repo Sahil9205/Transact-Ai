@@ -3,12 +3,18 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.exceptions import PaymentVerificationError
-from app.domain.enums import AvailabilityStatus, FulfillmentType, OrderStatus, PaymentStatus, ProductCategory, ProviderType
+from app.domain.enums import (
+    AvailabilityStatus,
+    OrderStatus,
+    ProductCategory,
+    ProviderType,
+)
 from app.domain.schemas import ProductCreateSchema, ProviderCreateSchema
 from app.services.merchant_service import MerchantService
 from app.services.payment_service import PaymentService
@@ -171,3 +177,159 @@ async def test_webhook_processing_and_idempotency(db_session: AsyncSession) -> N
     )
     assert hook_res_2.processed is True
     assert hook_res_2.idempotency_skipped is True
+
+
+@pytest.mark.asyncio
+async def test_payment_order_atomic_stock_decrement_on_settlement(db_session: AsyncSession) -> None:
+    """Test that inventory is atomically decremented upon payment settlement and not double-decremented."""
+    from app.db.repository import ProductRepository
+
+    merchant = await MerchantService.register_merchant(
+        db_session,
+        ProviderCreateSchema(name="Fresh Halwai", type=ProviderType.LOCAL_MERCHANT),
+    )
+    product = await ProductService.add_product(
+        session=db_session,
+        merchant_id=merchant.provider_id,
+        data=ProductCreateSchema(
+            name="Besan Laddu",
+            category=ProductCategory.SWEETS,
+            price_amount=30000,  # ₹300
+            quantity=15,
+            availability_status=AvailabilityStatus.IN_STOCK,
+        ),
+    )
+
+    # 1. Create order for 3 units
+    order_res = await PaymentService.create_payment_order(
+        session=db_session,
+        user_id="stock-buyer-1",
+        product_id=product.product_id,
+        quantity=3,
+    )
+
+    # Stock is still 15 before payment
+    p_before = await ProductRepository.get_by_product_id(db_session, product.product_id)
+    assert p_before.quantity == 15
+
+    # 2. Settle payment
+    settlement = await PaymentService.verify_payment_signature(
+        session=db_session,
+        razorpay_order_id=order_res.razorpay_order_id,
+        razorpay_payment_id="pay_test_stock_123",
+        razorpay_signature="sig_mock_verified",
+    )
+    assert settlement.is_valid is True
+
+    # Stock is atomically decremented to 12
+    p_after = await ProductRepository.get_by_product_id(db_session, product.product_id)
+    assert p_after.quantity == 12
+
+    # 3. Duplicate settlement does not decrement stock again
+    settlement_dup = await PaymentService.verify_payment_signature(
+        session=db_session,
+        razorpay_order_id=order_res.razorpay_order_id,
+        razorpay_payment_id="pay_test_stock_123",
+        razorpay_signature="sig_mock_verified",
+    )
+    assert settlement_dup.is_valid is True
+    p_dup = await ProductRepository.get_by_product_id(db_session, product.product_id)
+    assert p_dup.quantity == 12
+
+
+@pytest.mark.asyncio
+async def test_payment_order_idempotency_key(db_session: AsyncSession) -> None:
+    """Test that repeated requests with the same idempotency_key return the identical order without duplication."""
+    merchant = await MerchantService.register_merchant(
+        db_session,
+        ProviderCreateSchema(name="Sharma Dairy", type=ProviderType.LOCAL_MERCHANT),
+    )
+    product = await ProductService.add_product(
+        session=db_session,
+        merchant_id=merchant.provider_id,
+        data=ProductCreateSchema(
+            name="Paneer Fresh 500g",
+            category=ProductCategory.GROCERIES,
+            price_amount=20000,
+            quantity=30,
+        ),
+    )
+
+    idem_key = "unique-order-idem-key-888"
+    user_id = "buyer-idem-1"
+
+    # First call creates order
+    res_1 = await PaymentService.create_payment_order(
+        session=db_session,
+        user_id=user_id,
+        product_id=product.product_id,
+        quantity=1,
+        idempotency_key=idem_key,
+    )
+
+    # Second call returns the existing order
+    res_2 = await PaymentService.create_payment_order(
+        session=db_session,
+        user_id=user_id,
+        product_id=product.product_id,
+        quantity=1,
+        idempotency_key=idem_key,
+    )
+
+    assert res_1.order_id == res_2.order_id
+    assert res_1.razorpay_order_id == res_2.razorpay_order_id
+    assert res_1.amount_paise == res_2.amount_paise
+
+
+@pytest.mark.asyncio
+async def test_payment_order_with_preflight_token(db_session: AsyncSession) -> None:
+    """Test that valid preflight tokens pass and tampered tokens raise PaymentVerificationError."""
+    from app.services.gatekeeper_service import GatekeeperService
+
+    merchant = await MerchantService.register_merchant(
+        db_session,
+        ProviderCreateSchema(name="Royal Mithai", type=ProviderType.LOCAL_MERCHANT),
+    )
+    product = await ProductService.add_product(
+        session=db_session,
+        merchant_id=merchant.provider_id,
+        data=ProductCreateSchema(
+            name="Motichoor Laddu",
+            category=ProductCategory.SWEETS,
+            price_amount=25000,
+            quantity=20,
+        ),
+    )
+
+    user_id = "preflight-buyer-1"
+    qty = 2
+
+    # 1. Valid token
+    valid_token = GatekeeperService.generate_preflight_token(
+        user_id=user_id,
+        product_id=product.product_id,
+        quantity=qty,
+        amount_paise=50000,
+    )
+
+    order_res = await PaymentService.create_payment_order(
+        session=db_session,
+        user_id=user_id,
+        product_id=product.product_id,
+        quantity=qty,
+        preflight_token=valid_token,
+    )
+    assert order_res.quantity == qty
+    assert order_res.amount_paise == 50000
+
+    # 2. Tampered token fails
+    tampered_token = valid_token + "_tampered"
+    with pytest.raises(PaymentVerificationError):
+        await PaymentService.create_payment_order(
+            session=db_session,
+            user_id=user_id,
+            product_id=product.product_id,
+            quantity=qty,
+            preflight_token=tampered_token,
+        )
+

@@ -1,9 +1,16 @@
 from __future__ import annotations
+
 import pytest
-from app.db.repository import MerchantRepository, ProductRepository, AuditRepository
-from app.domain.schemas import ProviderCreateSchema, ProductCreateSchema, ProductUpdateSchema
-from app.domain.enums import ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType, AuditEventType
+
 from app.core.exceptions import NotFoundError
+from app.db.repository import AuditRepository, MerchantRepository, ProductRepository
+from app.domain.enums import (
+    AuditEventType,
+    AvailabilityStatus,
+    ProductCategory,
+    ProviderType,
+)
+from app.domain.schemas import ProductCreateSchema, ProductUpdateSchema, ProviderCreateSchema
 
 pytestmark = pytest.mark.asyncio
 

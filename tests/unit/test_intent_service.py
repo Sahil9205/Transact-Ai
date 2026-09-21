@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pytest
 from app.domain.enums import ProductCategory
 from app.services.intent_service import IntentService
 
