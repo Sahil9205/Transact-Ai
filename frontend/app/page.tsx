@@ -99,15 +99,15 @@ export default function HomePage() {
           <div className="mt-14 pt-8 border-t border-[#F0DED0]/80 max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-8 text-xs font-semibold text-[#8A8A8A]">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Zero Rogue Spending Guarantee</span>
+              <span>Deterministic Spending Policy Gate</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>100% Real-Time Stock Parity</span>
+              <span>6-Hour Inventory Staleness Guardrail</span>
             </div>
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4 text-emerald-600" />
-              <span>Razorpay 256-bit Encrypted Settlement</span>
+              <span>Razorpay HMAC-SHA256 Webhook Verification</span>
             </div>
           </div>
         </div>
@@ -224,20 +224,20 @@ export default function HomePage() {
               ✓
             </div>
             <h3 className="text-xl font-black text-emerald-950">
-              The TransactAI Deterministic Guarantee
+              The TransactAI Deterministic Safeguards
             </h3>
             <ul className="space-y-3 text-xs text-[#5F5F5F] leading-relaxed">
               <li className="flex items-start gap-2.5">
                 <span className="font-bold text-emerald-600 shrink-0">&bull;</span>
-                <span><strong className="text-[#171717]">Mathematical Policy Engine:</strong> Hard daily limit and per-transaction bounds enforced at database level before link generation.</span>
+                <span><strong className="text-[#171717]">Mathematical Policy Engine:</strong> Hard daily limit and per-transaction bounds enforced at database level before link generation (<code className="text-[#FF203D]">policy_service.py</code>).</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="font-bold text-emerald-600 shrink-0">&bull;</span>
-                <span><strong className="text-[#171717]">Live Qdrant Vector Catalogs:</strong> Embeddings match user desires exclusively to items validated as in-stock by local stores.</span>
+                <span><strong className="text-[#171717]">Live Vector Catalogs:</strong> Embeddings match user desires against catalog items validated as in-stock by local stores (<code className="text-[#FF203D]">vector_service.py</code>).</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="font-bold text-emerald-600 shrink-0">&bull;</span>
-                <span><strong className="text-[#171717]">Automated Razorpay Payouts:</strong> 100% compliant settlements straight to verified merchant bank accounts with webhook idempotency.</span>
+                <span><strong className="text-[#171717]">Direct Razorpay Test Settlements:</strong> Test mode order links with cryptographic HMAC-SHA256 signature verification (<code className="text-[#FF203D]">payment_service.py</code>).</span>
               </li>
             </ul>
           </div>
@@ -388,14 +388,15 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="lg:col-span-6 bg-[#171717] rounded-2xl p-5 font-mono text-xs text-[#FFF9F2] overflow-x-auto shadow-inner">
-                <div className="text-[#FF7A18] font-bold mb-2"># MCP Tool Schema</div>
+                <div className="text-[#FF7A18] font-bold mb-2"># MCP Tool Schema (Model Context Protocol)</div>
                 <pre>
 {`{
-  "name": "search_products",
+  "name": "transact_search_catalog",
   "description": "Semantic catalog search over local merchants",
   "parameters": {
     "query": "string (required)",
-    "pincode": "string (6-digit)"
+    "pincode": "string (6-digit)",
+    "max_price_inr": "number"
   }
 }`}
                 </pre>
@@ -407,36 +408,36 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-6 space-y-4">
                 <Badge variant="outline" className="text-[10px] text-[#FF7A18] border-[#FFD9A8] bg-[#FFF4E6]">
-                  Orchestration Scale
+                  Concept Specification
                 </Badge>
                 <h3 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
                   Connect LLMs to National Quick Commerce Networks
                 </h3>
                 <p className="text-xs sm:text-sm text-[#5F5F5F] leading-relaxed">
-                  Route orders across Blinkit, Zepto, Amazon, Flipkart, ONDC, and private supplier networks with unified multi-tenant governance and consolidated settlement.
+                  Conceptual architecture for routing orders across Blinkit, Zepto, Amazon, Flipkart, ONDC, and private supplier networks with unified multi-tenant governance.
                 </p>
                 <div className="pt-2">
                   <Link href="/enterprise">
                     <Button className="text-xs font-extrabold">
-                      <span>Explore Enterprise Infrastructure &rarr;</span>
+                      <span>Explore Enterprise Architecture &rarr;</span>
                     </Button>
                   </Link>
                 </div>
               </div>
               <div className="lg:col-span-6 bg-[#FFF9F2] border border-[#F0DED0] rounded-2xl p-6 space-y-3">
-                <div className="text-xs font-bold text-[#171717]">Enterprise Guardrail Guarantees</div>
+                <div className="text-xs font-bold text-[#171717]">Enterprise Architectural Blueprint</div>
                 <ul className="space-y-2 text-xs text-[#5F5F5F]">
                   <li className="p-3 bg-white rounded-xl border border-[#F0DED0] flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Multi-tenant tenant isolation and hierarchical quotas</span>
+                    <span>Multi-tenant merchant isolation with scoped queries (<code className="text-[#FF203D]">app/db/repository.py</code>)</span>
                   </li>
                   <li className="p-3 bg-white rounded-xl border border-[#F0DED0] flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Immutable append-only cryptographic audit ledger</span>
+                    <span>Structured database audit ledger with trace IDs (<code className="text-[#FF203D]">app/services/audit_service.py</code>)</span>
                   </li>
                   <li className="p-3 bg-white rounded-xl border border-[#F0DED0] flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>High-throughput sub-100ms vector search latency</span>
+                    <span>In-memory vector discovery via FastEmbed + NumPy cosine similarity (<code className="text-[#FF203D]">app/services/vector_service.py</code>)</span>
                   </li>
                 </ul>
               </div>
@@ -511,18 +512,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <PatternDivider className="max-w-4xl mx-auto my-6" />
-
       {/* 5. CALL TO ACTION */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-br from-white via-[#FFF4E6] to-[#FFE8C7] border border-[#FFD9A8] rounded-3xl p-8 sm:p-14 text-center relative overflow-hidden shadow-lg">
           <MandalaAccent className="absolute -top-24 -left-24 w-80 h-80 text-[#FF7A18] opacity-[0.26] pointer-events-none" />
           <MandalaAccent className="absolute -bottom-24 -right-24 w-80 h-80 text-[#FF203D] opacity-[0.26] pointer-events-none" />
 
-
           <div className="max-w-3xl mx-auto space-y-6 relative z-10">
             <h2 className="text-3xl sm:text-5xl font-black text-[#171717] tracking-tight">
-              Ready to Join the Agentic Commerce Revolution?
+              Ready to Explore Autonomous Commerce?
             </h2>
             <p className="text-sm sm:text-base text-[#5F5F5F] leading-relaxed max-w-2xl mx-auto font-medium">
               Whether you are a merchant expanding to AI buyers, a developer creating the next autonomous assistant, or an enterprise scaling operations.

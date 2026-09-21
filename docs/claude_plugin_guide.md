@@ -53,19 +53,31 @@ On macOS:
 
 ---
 
-## ☁️ Option B: Remote Cloud Connector (Claude.ai Web & Mobile)
+## ☁️ Option B: Remote Cloud Connector (Claude.ai Web & Desktop)
 
-Use this method to connect to your live Railway-deployed server directly:
+Connect directly to the live Railway production MCP server with zero local environment setup:
 
-1. Open [Claude.ai](https://claude.ai) in your browser.
-2. Go to **Customize** ➡️ **Connectors** ➡️ **Add custom connector**.
-3. Details:
-   - **Connector Name**: `TransactAI Commerce`
-   - **Connector URL**:
-     ```text
-     https://transact-ai-production.up.railway.app/mcp
-     ```
-4. Click **Add**.
+### Step 1: Open Connectors in Claude
+1. Open [Claude.ai](https://claude.ai) in your browser or launch Claude Desktop.
+2. Click your user avatar in the bottom-left corner ➔ **Settings** ➔ Navigate to **Connectors** (or **Feature Previews / Integrations**).
+3. Click **"Add Custom Connector"**.
+
+### Step 2: Enter TransactAI Production Details
+- **Connector Name**: `TransactAI Autonomous Commerce`
+- **Connector URL**: `https://transact-ai-production.up.railway.app/mcp`
+- *(Optional Fallback SSE)*: `https://transact-ai-production.up.railway.app/mcp/sse`
+
+### Step 3: Click Add & Verify Active Tools
+Click **Add**. Claude establishes an active SSE stream and immediately registers the 5 commerce tools (look for the **🔨 Hammer Icon**):
+- `transact_search_catalog`
+- `transact_verify_order_preflight`
+- `transact_check_policy`
+- `transact_create_order_payment`
+- `transact_register_merchant`
+
+### Step 4: Test Autonomous Shopping in Natural Language
+Start a new chat with Claude and ask:
+> *"Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600. Check my daily spending limit, and if approved, prepare an order summary for my confirmation."*
 
 ---
 

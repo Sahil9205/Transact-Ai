@@ -55,19 +55,20 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs font-medium text-[#5F5F5F]">
               <li><Link href="/developer" className="hover:text-[#FF203D] transition-colors">Developer Portal</Link></li>
               <li><Link href="/developer#mcp" className="hover:text-[#FF203D] transition-colors">Claude MCP Tools</Link></li>
-              <li><Link href="/developer#chatgpt" className="hover:text-[#FF203D] transition-colors">ChatGPT Plugin API</Link></li>
+              <li><Link href="/developer#chatgpt" className="hover:text-[#FF203D] transition-colors">ChatGPT Actions</Link></li>
               <li><Link href="/developer#gemini" className="hover:text-[#FF203D] transition-colors">Gemini Extensions</Link></li>
+              <li><Link href="/developer/architecture" className="hover:text-[#FF203D] transition-colors">Architecture Flowcharts</Link></li>
             </ul>
           </div>
 
           {/* Col 3: Integrations & Trust */}
           <div className="space-y-3">
-            <div className="text-xs font-black uppercase tracking-wider text-[#171717]">Trust &amp; Payouts</div>
+            <div className="text-xs font-black uppercase tracking-wider text-[#171717]">Trust &amp; Verification</div>
             <ul className="space-y-2 text-xs font-medium text-[#5F5F5F]">
-              <li><Link href="/#trust" className="hover:text-[#FF203D] transition-colors">Execution Pipeline</Link></li>
-              <li><Link href="/#recovery" className="hover:text-[#FF203D] transition-colors">Failure Recovery</Link></li>
-              <li><span className="text-[#5F5F5F]">256-bit Encrypted</span></li>
-              <li><Link href="/enterprise" className="hover:text-[#FF203D] transition-colors">Talk to TransactAI</Link></li>
+              <li><Link href="/#pipeline" className="hover:text-[#FF203D] transition-colors">Execution Pipeline</Link></li>
+              <li><Link href="/#why" className="hover:text-[#FF203D] transition-colors">Safety Guardrails</Link></li>
+              <li><span className="text-[#5F5F5F]">HMAC-SHA256 Signatures</span></li>
+              <li><Link href="/enterprise" className="hover:text-[#FF203D] transition-colors">Enterprise Concept</Link></li>
             </ul>
           </div>
 
@@ -75,13 +76,36 @@ export const Footer: React.FC = () => {
 
         {/* Subordinate Footer Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-[#5F5F5F]">
-          <div>
-            &copy; {new Date().getFullYear()} TransactAI Platform Inc. All rights reserved.
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+            <span>
+              Built by{" "}
+              <a
+                href="https://github.com/Sahil9205"
+                target="_blank"
+                rel="noreferrer"
+                className="font-bold text-[#171717] hover:text-[#FF203D] underline"
+              >
+                Sahil Kumar
+              </a>
+            </span>
+            <span className="hidden sm:inline text-[#D1C7BD]">•</span>
+            <a
+              href="https://github.com/Sahil9205/Transact-Ai"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#5F5F5F] hover:text-[#171717] underline"
+            >
+              GitHub Repository
+            </a>
+            <span className="hidden sm:inline text-[#D1C7BD]">•</span>
+            <span className="text-[11px] text-[#8A8A8A]">
+              Demo project • Razorpay test mode
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-[#8A8A8A] tracking-wider uppercase">Infrastructure:</span>
+            <span className="text-[11px] font-bold text-[#8A8A8A] tracking-wider uppercase">Payments:</span>
             <span className="font-bold text-[#171717] bg-white px-3 py-1 rounded-full border border-[#F0DED0] shadow-2xs">
-              Powered by Razorpay
+              Razorpay Test Mode
             </span>
           </div>
         </div>

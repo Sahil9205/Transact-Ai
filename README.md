@@ -1,7 +1,9 @@
 <div align="center">
 
 # 🛍️ TransactAI
-### The Autonomous Agent Commerce Protocol & Multi-Turn Settlement Engine
+### Autonomous Agent Commerce Execution Platform & Multi-Turn Settlement Engine
+
+> **Notice:** Demo application. Razorpay test mode. Built for the Razorpay Buildathon. Not affiliated with Razorpay.
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -9,12 +11,11 @@
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-FF6F00.svg?logo=diagram-next&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![Vector Engine](https://img.shields.io/badge/Vector%20Index-FastEmbed%20+%20NumPy-red.svg)](https://qdrant.tech/)
 [![Payment Gateway](https://img.shields.io/badge/Settlement-Razorpay%20HMAC--SHA256-0C2340.svg?logo=razorpay&logoColor=white)](https://razorpay.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Discovery Latency](https://img.shields.io/badge/Discovery%20Latency-%3C85ms%20(11--36ms%20p95)-success.svg)](#-ultra-low-latency-engine--85ms)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](LICENSE)
 
-**TransactAI** is an open-source, production-grade autonomous agent commerce protocol. It bridges frontier conversational AI models (**Anthropic Claude Desktop**, **OpenAI ChatGPT**, and **Google Gemini**) with real-world merchant commerce, inventory verification, spending policy enforcement, and cryptographic **Razorpay** payment settlements.
+**TransactAI** is an autonomous agent commerce execution platform. It connects frontier conversational AI models (**Anthropic Claude Desktop**, **OpenAI ChatGPT**, and **Google Gemini**) with real-world merchant commerce, inventory verification, spending policy enforcement, and cryptographic **Razorpay** payment settlements.
 
-[Live Web App](https://frontend-six-steel-85.vercel.app) • [🎬 Video Demo](https://youtu.be/OVOHpyKSvtA) • [Production API](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Visual Architecture Hub](https://frontend-six-steel-85.vercel.app/developer/architecture) • [Architecture Blueprints (MD)](docs/architecture_flowcharts.md)
+[Live Web App](https://frontend-six-steel-85.vercel.app) • [🎬 Video Demo](https://youtu.be/OVOHpyKSvtA) • [API Endpoint](https://transact-ai-production.up.railway.app) • [Interactive Swagger](https://transact-ai-production.up.railway.app/docs) • [OpenAPI Spec](https://transact-ai-production.up.railway.app/.well-known/openapi.json) • [Visual Architecture Hub](https://frontend-six-steel-85.vercel.app/developer/architecture) • [Architecture Blueprints (MD)](docs/architecture_flowcharts.md)
 
 </div>
 
@@ -171,8 +172,21 @@ TransactAI natively connects into all three major conversational AI ecosystems:
 
 TransactAI connects natively to Anthropic Claude via the **Model Context Protocol (MCP)**. Claude acts as the conversational reasoning and comparison layer, while TransactAI deterministically verifies warehouse stock, enforces spending policies, and executes Razorpay settlements.
 
-#### 💻 Option A: Claude Desktop (Local stdio)
-Connect Claude Desktop on your computer to TransactAI's local MCP server:
+#### 🔌 Quick Setup: Add TransactAI Custom Connector in Claude (4-Step Process)
+
+Connect Claude directly to the live TransactAI production engine with zero local environment setup:
+
+| Step | Action | Details & Copy-Paste Value |
+| :--- | :--- | :--- |
+| **Step 1** | **Open Connectors in Claude** | Open [Claude.ai](https://claude.ai) (Web) or Claude Desktop $\rightarrow$ Click **Settings** $\rightarrow$ Navigate to **Connectors** (or Integrations) $\rightarrow$ Click **"Add Custom Connector"**. |
+| **Step 2** | **Enter Connector URL** | **Name**: `TransactAI Autonomous Commerce`<br>**URL**: `https://transact-ai-production.up.railway.app/mcp`<br>*(Fallback SSE: `https://transact-ai-production.up.railway.app/mcp/sse`)* |
+| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 5 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_search_catalog` — Instant sub-85ms semantic hybrid vector search<br>• `transact_verify_order_preflight` — 6-hr staleness & live stock parity gatekeeper<br>• `transact_check_policy` — Mathematical spending limit validator<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator<br>• `transact_register_merchant` — Self-service merchant onboarding |
+| **Step 4** | **Prompt & Transact** | Open a new chat in Claude and ask in natural language:<br>`"Search for fresh Kaju Katli in Indiranagar (560001) under ₹600. Verify my spending limit, and prepare an order summary for my confirmation."` |
+
+---
+
+#### 💻 Power Users: Local Claude Desktop App (Local stdio MCP)
+If you prefer running a local Python stdio MCP server on your computer:
 
 1. Open your Claude Desktop config file:
    - **Windows**: `Win + R` $\rightarrow$ `%APPDATA%\Claude\claude_desktop_config.json`
@@ -192,21 +206,7 @@ Connect Claude Desktop on your computer to TransactAI's local MCP server:
   }
 }
 ```
-3. Restart Claude Desktop. Look for the **🔨 Hammer / Tools icon** in the prompt box showing active tools:
-   - `transact_search_catalog` — Semantic hybrid product search (<85ms)
-   - `transact_verify_order_preflight` — Authoritative price & stock gatekeeper
-   - `transact_check_policy` — Deterministic buyer spending limit enforcement
-   - `transact_create_order_payment` — Atomic Razorpay hosted checkout generation
-   - `transact_register_merchant` — Self-service merchant store registration
-
-#### ☁️ Option B: Claude.ai Web & Mobile (Remote Cloud Connector)
-Connect directly to the production server deployed on Railway without local setup:
-1. Open [Claude.ai](https://claude.ai) in your browser.
-2. Go to **Customize** $\rightarrow$ **Connectors** $\rightarrow$ **Add custom connector**.
-3. Fill in:
-   - **Name**: `TransactAI Commerce`
-   - **Connector URL**: `https://transact-ai-production.up.railway.app/mcp`
-4. Click **Add**.
+3. Restart Claude Desktop. The 5 tools will appear under the tools hammer icon.
 
 #### 🧠 Claude Progressive Shopping System Prompt
 In your Claude Project or Custom Instructions, paste:

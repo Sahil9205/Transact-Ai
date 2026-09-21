@@ -2,20 +2,18 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowUpRight, Github } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: "Product", href: "/#product" },
-    { label: "Why", href: "/#why" },
-    { label: "Users", href: "/user/dashboard" },
     { label: "Developers", href: "/developer" },
     { label: "Architecture", href: "/developer/architecture" },
     { label: "Merchants", href: "/merchant" },
-    { label: "Enterprise", href: "/enterprise" },
+    { label: "Buyer Guardrails", href: "/user/dashboard" },
+    { label: "Enterprise", href: "/enterprise", badge: "Concept" },
   ];
 
   return (
@@ -37,20 +35,34 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-7 text-xs font-bold text-[#5F5F5F]">
+        <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-[#5F5F5F]">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className="hover:text-[#171717] transition-colors"
+              className="hover:text-[#171717] transition-colors flex items-center gap-1.5"
             >
-              {link.label}
+              <span>{link.label}</span>
+              {link.badge && (
+                <span className="text-[10px] font-mono font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                  {link.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
 
         {/* Action Controls */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-2.5">
+          <a
+            href="https://github.com/Sahil9205/Transact-Ai"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold text-[#5F5F5F] hover:text-[#171717] flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#F0DED0] bg-[#FFF9F2] hover:bg-[#FFF4E6] transition-colors"
+          >
+            <Github className="w-3.5 h-3.5" />
+            <span>GitHub</span>
+          </a>
           <Link href="/user/login">
             <Button variant="ghost" size="sm" className="font-bold">
               Sign In
@@ -87,13 +99,27 @@ export const Navbar: React.FC = () => {
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-1 hover:text-[#FF203D]"
+                className="py-1 hover:text-[#FF203D] flex items-center justify-between"
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.badge && (
+                  <span className="text-[10px] font-mono font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
           <div className="pt-4 border-t border-[#F0DED0] flex flex-col gap-2.5">
+            <a
+              href="https://github.com/Sahil9205/Transact-Ai"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[#F0DED0] text-xs font-bold text-[#171717]"
+            >
+              <Github className="w-4 h-4" />
+              <span>View on GitHub</span>
+            </a>
             <Link href="/user/login" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="secondary" size="md" className="w-full">
                 Sign In as Buyer

@@ -87,10 +87,20 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
         windows: `%APPDATA%\\Claude\\claude_desktop_config.json`,
         mac: `~/Library/Application Support/Claude/claude_desktop_config.json`,
       },
-      configCode: `// ===============================================
-// OPTION A: Claude Desktop (Local stdio MCP)
-// Config File: %APPDATA%\\Claude\\claude_desktop_config.json
-// ===============================================
+      configCode: `// ========================================================
+// ⚡ OPTION 1 (RECOMMENDED): Claude Custom Connector (Remote Cloud)
+// 1. Open Claude.ai -> Settings -> Connectors -> Add Custom Connector
+// 2. Connector Name: TransactAI Autonomous Commerce
+// 3. Connector URL : ${be}/mcp
+// ========================================================
+Connector Name: TransactAI Autonomous Commerce
+Connector URL : ${be}/mcp
+Fallback SSE  : ${be}/mcp/sse
+
+// ========================================================
+// 💻 OPTION 2: Claude Desktop App (Local stdio MCP)
+// Config File : %APPDATA%\\Claude\\claude_desktop_config.json
+// ========================================================
 {
   "mcpServers": {
     "transactai": {
@@ -104,42 +114,43 @@ function getAssistantGuides(frontendUrl: string, backendUrl: string): Record<Ass
       }
     }
   }
-}
-
-// ===============================================
-// OPTION B: Claude.ai Web (Remote Cloud Connector)
-// URL: ${be}/mcp
-// ===============================================`,
+}`,
       steps: [
         {
           step: 1,
-          title: "Choose Connection Mode: Desktop (Local) or Claude.ai (Web)",
-          desc: "TransactAI supports both local stdio execution and remote cloud connections:",
+          title: "Open Claude Settings & Navigate to Connectors",
+          desc: "In Claude.ai (Web) or Claude Desktop app, click your user profile avatar in the bottom-left corner ➔ Select 'Settings' ➔ Navigate to the 'Connectors' (or 'Feature Previews / Integrations') tab ➔ Click '+ Add Custom Connector'.",
           details: [
-            "Option A (Claude Desktop): Native stdio via local Python environment.",
-            `Option B (Claude.ai Web): Customize ➡️ Connectors ➡️ Add Custom Connector using URL: ${be}/mcp`,
+            "Web / Mobile: Claude.ai ➔ Settings ➔ Connectors ➔ Add Custom Connector",
+            "Desktop App: Claude Desktop ➔ Settings ➔ Developer / Connectors",
           ],
         },
         {
           step: 2,
-          title: "Configure Claude Desktop or Add Web Connector",
-          desc: `For Claude Desktop, add the JSON config to your claude_desktop_config.json. For Claude.ai Web, enter connector URL ${be}/mcp. TRANSACTAI_BASE_URL (${fe}) ensures hosted Razorpay payment links open smoothly.`,
+          title: "Enter TransactAI Custom Connector URL",
+          desc: "Fill in the connector credentials. TransactAI provides production-grade Model Context Protocol tool streaming with zero local setup needed:",
           details: [
-            "Windows: Win+R → %APPDATA%\\Claude\\claude_desktop_config.json",
-            "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
+            "Connector Name: TransactAI Autonomous Commerce",
+            `Connector URL : ${be}/mcp`,
+            `(Fallback SSE) : ${be}/mcp/sse`,
           ],
         },
         {
           step: 3,
-          title: "Set Claude Progressive Shopping Instructions",
-          desc: "In your Claude Project or Custom Instructions, paste this 4-stage shopping protocol:",
-          promptExample:
-            "Follow the 4-stage TransactAI shopping protocol: 1. Discovery: Search catalog for broad requests without asking for address. 2. Selection: Ask for delivery address & 6-digit pincode when item is picked. 3. Pre-flight Gate: Call verify_order_preflight to verify live stock and spending limits. Ask for phone number (for rider coordination if delivery, or store pickup SMS if pickup). 4. Checkout: Call create_payment_order and provide the Razorpay hosted link.",
+          title: "Verify Connected Autonomous Commerce Tools",
+          desc: "Click 'Save / Connect'. Claude will instantly connect to TransactAI and discover 5 active commerce tools:",
+          details: [
+            "🔍 transact_search_catalog — Semantic vector search over live merchant catalogs (<85ms)",
+            "🛡️ transact_verify_order_preflight — 6-hr staleness & live stock parity gatekeeper",
+            "💳 transact_check_policy — Enforces buyer transaction limits & daily allowances",
+            "⚡ transact_create_order_payment — Atomic Razorpay payment link generation",
+            "🏪 transact_register_merchant — Instant merchant self-service onboarding",
+          ],
         },
         {
           step: 4,
-          title: "Test with a Real Commerce Prompt",
-          desc: "Ask Claude in natural language:",
+          title: "Execute Your First Natural Language Purchase",
+          desc: "Start a fresh chat in Claude. Notice the active tools (🔨 hammer icon). Ask Claude naturally to trigger autonomous shopping:",
           promptExample:
             "Search for fresh Kaju Katli in Indiranagar (pincode 560001) under ₹600. Verify my daily spending policy limit, and if approved, prepare an order summary for my confirmation.",
         },
@@ -286,53 +297,85 @@ print(response.text)`,
 
 const MCP_TOOLS = [
   {
+    name: "transact_discover_merchants",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Discover active merchants and commerce providers in the TransactAI network filtered by delivery pincode or category.",
+    parameters: [
+      { name: "pincode", type: "string", required: false, desc: "6-digit delivery pincode (e.g. '110001')" },
+      { name: "category", type: "string", required: false, desc: "Product category (e.g. 'sweets', 'food', 'groceries')" },
+    ],
+  },
+  {
     name: "transact_search_catalog",
-    method: "POST",
-    endpoint: "/api/v1/discovery/search",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
     description:
-      "Performs high-dimensional semantic vector search across local merchant catalogs via Qdrant.",
+      "Performs semantic vector search across connected merchants (Sharma Sweets, Blinkit, Zepto) with budget and pincode constraints.",
     parameters: [
-      { name: "query", type: "string", required: true, desc: "Natural language query e.g. 'fresh cow milk'" },
-      { name: "pincode", type: "string", required: false, desc: "Target 6-digit delivery pincode" },
-      { name: "category", type: "string", required: false, desc: "Filtered product category" },
-      { name: "max_price_inr", type: "number", required: false, desc: "Price ceiling in INR" },
-    ],
-  },
-  {
-    name: "transact_check_policy",
-    method: "POST",
-    endpoint: "/api/v1/policies/validate",
-    description:
-      "Deterministic pre-transaction check ensuring user daily limit and single-order limits are respected.",
-    parameters: [
-      { name: "user_id", type: "string", required: true, desc: "Buyer identifier" },
-      { name: "amount_paise", type: "integer", required: true, desc: "Order value in paise" },
-      { name: "category", type: "string", required: true, desc: "Item category" },
-    ],
-  },
-  {
-    name: "transact_create_payment_order",
-    method: "POST",
-    endpoint: "/api/v1/payments/create-order",
-    description:
-      "Initializes a Razorpay order in test mode from confirmed proposal and generates hosted checkout link.",
-    parameters: [
-      { name: "user_id", type: "string", required: true, desc: "Target user ID" },
-      { name: "product_id", type: "string", required: true, desc: "UUID of product" },
-      { name: "quantity", type: "integer", required: true, desc: "Quantity of items" },
+      { name: "query", type: "string", required: true, desc: "Natural language query (e.g. 'rasgulla', 'samosa')" },
+      { name: "category", type: "string", required: false, desc: "Category filter" },
+      { name: "max_price_inr", type: "number", required: false, desc: "Maximum price ceiling in INR (e.g. 500)" },
       { name: "pincode", type: "string", required: false, desc: "Delivery destination PIN" },
+      { name: "merchant_id", type: "string", required: false, desc: "Restrict search to a specific store UUID" },
     ],
   },
   {
-    name: "transact_verify_payment",
-    method: "POST",
-    endpoint: "/api/v1/payments/verify-signature",
+    name: "transact_get_product",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
     description:
-      "Validates cryptographic HMAC-SHA256 payment signature from client checkout.",
+      "Authoritative real-time details, unit pricing, fulfillment SLA, and data freshness tier for a specific product.",
     parameters: [
-      { name: "razorpay_order_id", type: "string", required: true, desc: "Razorpay order ID" },
-      { name: "razorpay_payment_id", type: "string", required: true, desc: "Razorpay transaction ID" },
-      { name: "razorpay_signature", type: "string", required: true, desc: "Cryptographic HMAC-SHA256 signature" },
+      { name: "product_id", type: "string", required: true, desc: "Unique product UUID" },
+    ],
+  },
+  {
+    name: "transact_check_availability",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Authoritative live inventory stock check and fulfillment readiness before proposing an order to the user.",
+    parameters: [
+      { name: "product_id", type: "string", required: true, desc: "Unique product UUID" },
+    ],
+  },
+  {
+    name: "transact_get_merchant_manifest",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Complete agent-readable merchant manifest including operational status, delivery SLAs, and store policies.",
+    parameters: [
+      { name: "merchant_id", type: "string", required: true, desc: "Unique merchant provider UUID" },
+    ],
+  },
+  {
+    name: "transact_verify_order_preflight",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Deterministic pre-flight verification: checks database stock, price freshness, and daily spending policy limits before order generation.",
+    parameters: [
+      { name: "product_id", type: "string", required: true, desc: "Product UUID to verify" },
+      { name: "quantity", type: "integer", required: false, desc: "Units to purchase (default: 1)" },
+      { name: "user_id", type: "string", required: false, desc: "Buyer user ID for spending policy check" },
+    ],
+  },
+  {
+    name: "transact_create_order_payment",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Creates the confirmed order and generates an instant hosted Razorpay checkout link in test mode.",
+    parameters: [
+      { name: "product_id", type: "string", required: true, desc: "UUID of product to purchase" },
+      { name: "pincode", type: "string", required: true, desc: "6-digit delivery destination PIN" },
+      { name: "delivery_address", type: "string", required: false, desc: "Full delivery street address" },
+      { name: "quantity", type: "integer", required: false, desc: "Quantity (default: 1)" },
+      { name: "platform", type: "string", required: false, desc: "Client platform ('claude', 'chatgpt', 'gemini')" },
+      { name: "user_id", type: "string", required: false, desc: "Buyer user ID" },
     ],
   },
 ];
@@ -370,28 +413,62 @@ export default function DeveloperPage() {
         <MandalaAccent className="absolute -top-24 -right-24 w-96 h-96 text-[#FF7A18] opacity-[0.25] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FFF4E6] border border-[#FFD9A8] text-xs font-bold text-[#FF7A18] uppercase tracking-wider">
-              <Terminal className="w-3.5 h-3.5" />
-              <span>Developer Portal • Connect Your AI Assistant</span>
+            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#18181B] text-white text-xs font-semibold shadow-xs">
+              <Terminal className="w-3.5 h-3.5 text-[#FF7A18]" />
+              <span>Developer Platform</span>
+              <span className="text-neutral-500">•</span>
+              <span className="text-neutral-300 font-mono text-[11px]">Model Context Protocol (MCP)</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[#171717]">
               Connect Claude, ChatGPT &amp; Gemini to Real-World Commerce
             </h1>
             <p className="text-sm sm:text-base text-[#5F5F5F] leading-relaxed">
-              Equip your AI assistant with standard tools to search local merchant catalogs, enforce mathematical spending guardrails, and execute Razorpay settlements with zero hallucinations.
+              Equip your AI assistant with standard tools to search local merchant catalogs, enforce mathematical spending guardrails, and execute Razorpay test checkout flows with deterministic verification.
             </p>
 
-            {/* Live Endpoint Status Pill */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs font-mono">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[#6B7280]">Backend API:</span>
-                <span className="font-semibold text-emerald-900">{backendUrl}</span>
+            {/* Live Environment Console Card */}
+            <div className="rounded-2xl border border-[#E8DCD2] bg-[#FAF6F0]/80 p-3 sm:p-4 space-y-2.5 max-w-2xl shadow-2xs">
+              <div className="flex items-center justify-between text-[11px] pb-2 border-b border-[#E8DCD2]/70">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-800">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  Active Cloud Services (Test Mode)
+                </span>
+                <span className="font-mono text-[10px] text-[#8A8A8A] font-medium">FastAPI + Vercel Next.js</span>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FFF4E6] border border-[#FFD9A8] text-[#171717] shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-[#FF7A18]" />
-                <span className="text-[#8A8A8A]">Hosted Checkout:</span>
-                <span className="font-semibold text-[#171717]">{frontendUrl}</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#E8DCD2] shadow-2xs hover:border-[#FFD9A8] transition-colors">
+                  <div className="flex flex-col min-w-0 mr-2">
+                    <span className="text-[10px] uppercase font-bold text-[#8A8A8A] tracking-wider">MCP API Gateway</span>
+                    <span className="font-mono font-bold text-[#171717] truncate text-[11px] select-all">{backendUrl}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(backendUrl)}
+                    className="p-1.5 rounded-lg hover:bg-[#FFF4E6] text-[#5F5F5F] hover:text-[#FF7A18] transition-colors shrink-0 cursor-pointer"
+                    title="Copy Backend URL"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#E8DCD2] shadow-2xs hover:border-[#FFD9A8] transition-colors">
+                  <div className="flex flex-col min-w-0 mr-2">
+                    <span className="text-[10px] uppercase font-bold text-[#8A8A8A] tracking-wider">Hosted Checkout URL</span>
+                    <span className="font-mono font-bold text-[#171717] truncate text-[11px] select-all">{frontendUrl}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(frontendUrl)}
+                    className="p-1.5 rounded-lg hover:bg-[#FFF4E6] text-[#5F5F5F] hover:text-[#FF7A18] transition-colors shrink-0 cursor-pointer"
+                    title="Copy Checkout URL"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -516,6 +593,67 @@ export default function DeveloperPage() {
               )}
             </button>
           </div>
+
+          {/* Claude Custom Connector Quick Connect Banner */}
+          {activeAssistant === "claude" && (
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#FFF4E6] to-[#FFE8C7]/50 border border-[#FFD9A8] shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#D97706] text-white flex items-center justify-center font-black text-sm shadow-sm shrink-0">
+                    MCP
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-[#171717] flex items-center gap-2">
+                      <span>Claude Custom Connector URL</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Live Streamable
+                      </span>
+                    </h3>
+                    <p className="text-xs text-[#5F5F5F]">
+                      Direct 1-Click integration for Claude.ai Web &amp; Claude Desktop Custom Connectors
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(`${backendUrl}/mcp`)}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-50 border border-[#FFD9A8] text-xs font-extrabold text-[#171717] transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-[#FF7A18]" />
+                    <span>Copy Connector URL</span>
+                  </button>
+                  <a
+                    href="https://claude.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-extrabold transition-all shadow-xs active:scale-95 whitespace-nowrap"
+                  >
+                    <span>Open Claude.ai</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Endpoint Pill & Tools Chips */}
+              <div className="pt-2 border-t border-[#FFD9A8]/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 font-mono bg-white/90 px-3 py-1.5 rounded-xl border border-[#FFD9A8] text-[#171717]">
+                  <span className="text-[#8A8A8A] select-none">URL:</span>
+                  <span className="font-bold select-all text-[#D97706]">{backendUrl}/mcp</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+                  <span className="text-[#8A8A8A] font-sans font-semibold">Active Tools:</span>
+                  {["discover_merchants", "search_catalog", "get_product", "check_availability", "verify_order_preflight", "create_order_payment"].map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded-md bg-white text-[#171717] border border-[#F0DED0] font-medium">
+                      transact_{t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Steps & Code Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

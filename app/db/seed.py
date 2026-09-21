@@ -27,6 +27,8 @@ SEED_PROVIDERS = [
             description="Authentic traditional Indian sweets & snacks established in 1985.",
             location="Connaught Place, New Delhi",
             pincode="110001",
+            contact_email="contact@sharmasweets.in",
+            contact_phone="+919876543210",
         ),
         "products": [
             ProductCreateSchema(
@@ -90,6 +92,8 @@ SEED_PROVIDERS = [
             description="Blinkit 10-minute quick-commerce fulfillment node serving central Delhi.",
             location="Connaught Place Outer Circle, Delhi",
             pincode="110001",
+            contact_email="blinkit@quickcommerce.com",
+            contact_phone="+919876543212",
         ),
         "products": [
             ProductCreateSchema(
@@ -166,6 +170,8 @@ SEED_PROVIDERS = [
             description="Zepto 8-minute delivery quick-commerce dark store node.",
             location="Barakhamba Road, Delhi",
             pincode="110001",
+            contact_email="zepto@quickcommerce.com",
+            contact_phone="+919876543211",
         ),
         "products": [
             ProductCreateSchema(

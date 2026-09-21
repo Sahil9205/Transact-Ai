@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { TestModeBanner } from "./TestModeBanner";
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "";
@@ -11,11 +12,17 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const isCheckout = pathname.startsWith("/pay");
 
   if (isDashboard || isCheckout) {
-    return <>{children}</>;
+    return (
+      <>
+        <TestModeBanner />
+        {children}
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
+      <TestModeBanner />
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
