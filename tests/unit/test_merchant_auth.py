@@ -153,3 +153,39 @@ async def test_multi_tenant_store_isolation(db_session: AsyncSession):
         verify_store_access(merchant_b.merchant_id, merchant_a)
     assert exc_info.value.status_code == 403
     assert "Forbidden" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_seed_merchant_alias_and_self_healing_login(db_session: AsyncSession):
+    """Verify that seeded stores without email can still be logged into via demo handle and self-heal."""
+    from app.db.models import MerchantModel
+
+    # Insert a merchant with no email (simulating historical Railway DB row)
+    legacy_merchant = MerchantModel(
+        name="Sharma Sweets",
+        type="local_merchant",
+        location="Connaught Place, New Delhi",
+        pincode="110001",
+        contact_email=None,
+        contact_phone=None,
+        password_hash=None,
+    )
+    db_session.add(legacy_merchant)
+    await db_session.commit()
+
+    # Login using alias handle contact@sharmasweets.in
+    login_req = MerchantLoginRequest(
+        login_id="contact@sharmasweets.in",
+        password="Merchant@2026",
+    )
+    login_res = await AuthService.login_merchant(db_session, login_req)
+
+    assert login_res.access_token is not None
+    assert login_res.merchant.name == "Sharma Sweets"
+
+    # Verify that contact_email was self-healed in the database
+    from app.db.repository import MerchantRepository
+    updated = await MerchantRepository.get_by_merchant_id(db_session, legacy_merchant.merchant_id)
+    assert updated.contact_email == "contact@sharmasweets.in"
+    assert updated.password_hash is not None
+

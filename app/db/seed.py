@@ -866,23 +866,54 @@ async def seed_database(
     session: AsyncSession,
     vector_service: VectorService | None = None,
 ) -> None:
-    """Seeds the database with initial merchants and products, skipping already seeded ones."""
-    existing_merchants = await MerchantService.list_merchants(session)
-    existing_names = {m.name.lower().strip() for m in existing_merchants}
+    """Seeds the database with initial merchants and products, and backfills missing contact details & credentials."""
+    from sqlalchemy import select
+
+    from app.db.models import MerchantModel
+    from app.services.auth_service import hash_password
+
+    stmt = select(MerchantModel)
+    result = await session.execute(stmt)
+    existing_merchants = list(result.scalars().all())
+    existing_by_name = {m.name.lower().strip(): m for m in existing_merchants}
 
     logger.info("Checking database seed providers...", existing_count=len(existing_merchants))
     seeded_count = 0
+    updated_count = 0
 
     for item in SEED_PROVIDERS:
-        merchant_name = item["merchant"].name.strip()
-        if merchant_name.lower() in existing_names:
+        merchant_data = item["merchant"]
+        merchant_name = merchant_data.name.strip()
+        norm_name = merchant_name.lower()
+
+        if norm_name in existing_by_name:
+            m = existing_by_name[norm_name]
+            updated = False
+            if not m.contact_email and merchant_data.contact_email:
+                m.contact_email = merchant_data.contact_email.lower().strip()
+                updated = True
+            if not m.contact_phone and merchant_data.contact_phone:
+                m.contact_phone = merchant_data.contact_phone.strip()
+                updated = True
+            if not m.password_hash:
+                m.password_hash = hash_password("Merchant@2026")
+                updated = True
+            if updated:
+                session.add(m)
+                updated_count += 1
             continue
 
         merchant_schema = await MerchantService.register_merchant(
             session=session,
-            data=item["merchant"],
+            data=merchant_data,
         )
-        existing_names.add(merchant_name.lower())
+        res_m = await session.execute(select(MerchantModel).where(MerchantModel.merchant_id == merchant_schema.provider_id))
+        new_model = res_m.scalar_one_or_none()
+        if new_model:
+            new_model.password_hash = hash_password("Merchant@2026")
+            session.add(new_model)
+            existing_by_name[norm_name] = new_model
+
         seeded_count += 1
         logger.info(f"Seeded merchant: {merchant_schema.name} ({merchant_schema.provider_id}) in {merchant_schema.pincode}")
 
@@ -896,7 +927,8 @@ async def seed_database(
             logger.info(f"  -> Seeded product: {product_schema.name} at Rs {product_schema.pricing.amount / 100}")
 
     await session.commit()
-    logger.info(f"Database seeding completed. Added {seeded_count} new merchants.")
+    logger.info(f"Database seeding completed. Added {seeded_count} new merchants, updated {updated_count} existing merchants.")
+
 
 
 async def main() -> None:
