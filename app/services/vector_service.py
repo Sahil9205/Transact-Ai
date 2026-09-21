@@ -236,7 +236,7 @@ class VectorService:
                     return results
 
             # Tier 2: Qdrant Client Fallback (Cold start or empty memory cache)
-            must_conditions = []
+            must_conditions: list[Any] = []
             if category:
                 must_conditions.append(
                     rest.FieldCondition(

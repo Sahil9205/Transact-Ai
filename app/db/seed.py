@@ -882,7 +882,7 @@ async def seed_database(
     updated_count = 0
 
     for item in SEED_PROVIDERS:
-        merchant_data = item["merchant"]
+        merchant_data: ProviderCreateSchema = item["merchant"]  # type: ignore[assignment]
         merchant_name = merchant_data.name.strip()
         norm_name = merchant_name.lower()
 
@@ -917,7 +917,8 @@ async def seed_database(
         seeded_count += 1
         logger.info(f"Seeded merchant: {merchant_schema.name} ({merchant_schema.provider_id}) in {merchant_schema.pincode}")
 
-        for product_data in item["products"]:
+        products_list: list[ProductCreateSchema] = item["products"]  # type: ignore[assignment]
+        for product_data in products_list:
             product_schema = await ProductService.add_product(
                 session=session,
                 merchant_id=merchant_schema.provider_id,

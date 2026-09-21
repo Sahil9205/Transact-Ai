@@ -286,7 +286,8 @@ class ProductRepository:
         )
         result = await session.execute(stmt)
         await session.flush()
-        if result.rowcount > 0:
+        rowcount = getattr(result, "rowcount", 0)
+        if rowcount > 0:
             zero_stmt = (
                 update(ProductModel)
                 .where(

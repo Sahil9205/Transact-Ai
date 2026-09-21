@@ -110,7 +110,7 @@ class MerchantService:
         )
         
         # Platform breakdown
-        platforms = {}
+        platforms: dict[str, int] = {}
         # Products list for catalog table
         products_stmt = select(ProductModel).where(ProductModel.merchant_id == merchant_id).order_by(ProductModel.created_at.desc())
         res_prods = await session.execute(products_stmt)

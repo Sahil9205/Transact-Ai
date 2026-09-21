@@ -125,7 +125,7 @@ class PaymentService:
                 logger.info("Returning existing idempotent order", order_id=existing_order.order_id, idempotency_key=idempotency_key)
                 return PaymentOrderResponse(
                     order_id=existing_order.order_id,
-                    razorpay_order_id=rzp_order_id,
+                    razorpay_order_id=rzp_order_id or f"order_rzp_{existing_order.order_id[:14]}",
                     amount_inr=existing_order.total_amount / 100,
                     amount_paise=existing_order.total_amount,
                     currency=existing_order.currency,
@@ -181,7 +181,7 @@ class PaymentService:
         razorpay_order_id = f"order_rzp_{uuid.uuid4().hex[:14]}"
         try:
             import razorpay
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))  # type: ignore[attr-defined]
             # If not mock key, call live Razorpay API
             if not settings.RAZORPAY_KEY_ID.startswith("rzp_test_mock"):
                 rzp_res = client.order.create({

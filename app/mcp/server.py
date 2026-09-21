@@ -24,7 +24,7 @@ class MCPServer:
     """Model Context Protocol (MCP) JSON-RPC Server for Transact AI."""
 
     @staticmethod
-    async def handle_request(session: AsyncSession, request: dict[str, Any]) -> dict[str, Any]:
+    async def handle_request(session: AsyncSession, request: dict[str, Any]) -> dict[str, Any] | None:
         """Processes a standard MCP JSON-RPC 2.0 request."""
         req_id = request.get("id")
         method = request.get("method")
@@ -32,6 +32,7 @@ class MCPServer:
 
         logger.debug("Received MCP request", method=method, req_id=req_id)
 
+        result: dict[str, Any] = {}
         try:
             if method == "initialize":
                 result = {

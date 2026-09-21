@@ -13,7 +13,7 @@ def setup_logging(log_level: str, environment: str, stream: Any = None) -> None:
         stream = sys.stdout
     logging.basicConfig(format="%(message)s", stream=stream, level=log_level.upper(), force=True)
     
-    processors = [
+    processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
