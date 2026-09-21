@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from typing import Any
-from pydantic import BaseModel, Field
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
 from app.domain.schemas import BuyerIntentSchema
 from app.services.audit_service import AuditService

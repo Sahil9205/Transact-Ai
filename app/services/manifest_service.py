@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
-from app.db.models import MerchantModel, ProductModel
+from app.db.models import ProductModel
 from app.db.repository import MerchantRepository, ProductRepository
-from app.domain.enums import FreshnessTier, ProviderType
+from app.domain.enums import ProviderType
 from app.domain.manifest_schemas import (
     AgentToolDescriptorSchema,
     CapabilitySchema,
@@ -117,12 +118,12 @@ class ManifestService:
         ]
 
         # 5. Determine Freshness
-        latest_verified = max((p.last_verified for p in products), default=datetime.now(timezone.utc))
+        latest_verified = max((p.last_verified for p in products), default=datetime.now(UTC))
         freshness = compute_freshness_tier(latest_verified)
 
         return MerchantManifestSchema(
             manifest_version="1.0.0",
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             freshness_tier=freshness,
             provider_id=merchant.merchant_id,
             name=merchant.name,
@@ -176,7 +177,7 @@ class ManifestService:
 
         return GlobalDirectoryManifestSchema(
             manifest_version="1.0.0",
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             total_merchants=len(merchants),
             total_products=total_products_count,
             supported_pincodes=sorted(list(all_pincodes_set)),

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import enum
+
 
 class ProviderType(str, enum.Enum):
     LOCAL_MERCHANT = "local_merchant"

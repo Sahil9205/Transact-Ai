@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.db.database import DatabaseManager, init_database_manager
+from app.db.database import init_database_manager
 from app.domain.enums import (
     AvailabilityStatus,
     FulfillmentType,

@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
-from pydantic import BaseModel, Field
+from datetime import datetime
+
+from pydantic import BaseModel
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthorizationError, NotFoundError, ValidationError
+from app.core.exceptions import AuthorizationError, ValidationError
 from app.core.logging import get_logger
 from app.db.models import MerchantModel, OrderModel, PaymentModel, ProductModel
 from app.db.repository import AuditRepository, OrderRepository
-from app.domain.enums import AuditEventType, OrderStatus, PaymentStatus
+from app.domain.enums import AuditEventType, OrderStatus
 
 logger = get_logger(__name__)
 

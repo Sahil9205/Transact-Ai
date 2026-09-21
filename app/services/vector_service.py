@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
-import numpy as np
 
+import numpy as np
 from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest

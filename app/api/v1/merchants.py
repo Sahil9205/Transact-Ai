@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -65,7 +67,6 @@ async def seed_merchants(
     session: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Seed catalog with initial merchants and products."""
-    from typing import Any
     from app.db.seed import seed_database
     from app.services.vector_service import get_vector_service
     vs = get_vector_service()

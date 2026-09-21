@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
-from pydantic import BaseModel, Field
+from typing import TypedDict
+
+from pydantic import BaseModel
 
 from app.domain.schemas import BuyerIntentSchema
 from app.services.discovery_service import RankedCandidateSchema

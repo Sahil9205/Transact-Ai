@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
+
 from fastapi import APIRouter, Body, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError, ValidationError
+from app.core.exceptions import ValidationError
 from app.core.logging import get_logger
-from app.db.models import MerchantModel, MerchantStockPingModel, ProductModel
+from app.db.models import MerchantStockPingModel, ProductModel
 from app.db.repository import (
     AuditRepository,
     MerchantRepository,
@@ -113,7 +113,7 @@ class StockPingService:
         if ping.merchant_id != merchant_id:
             raise ValidationError("Stock ping does not belong to this merchant")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ping.status = "confirmed" if available else "rejected"
         ping.resolved_at = now
         if notes:
@@ -164,7 +164,7 @@ class StockPingService:
         # Verify merchant exists
         await MerchantRepository.get_by_merchant_id(session, merchant_id)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # 1. Update all products for this merchant
         stmt_prods = select(ProductModel).where(ProductModel.merchant_id == merchant_id)

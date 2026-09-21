@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings, Settings
+from app.core.config import Settings, get_settings
 from app.db.database import get_db
 
 router = APIRouter(prefix="/health", tags=["Health"])
@@ -37,7 +37,7 @@ async def health_check(settings: Settings = Depends(get_settings)) -> HealthResp
         status="ok",
         version=settings.APP_VERSION,
         environment=settings.APP_ENV,
-        timestamp=datetime.now(timezone.utc).isoformat()
+        timestamp=datetime.now(UTC).isoformat()
     )
 
 
@@ -49,7 +49,7 @@ async def readiness_check(session: AsyncSession = Depends(get_db)) -> ReadinessR
         return ReadinessResponse(
             status="ready",
             database="connected",
-            timestamp=datetime.now(timezone.utc).isoformat()
+            timestamp=datetime.now(UTC).isoformat()
         )
     except Exception as e:
         raise HTTPException(

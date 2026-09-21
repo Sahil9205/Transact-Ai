@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,13 +34,13 @@ def compute_freshness_tier(last_verified: datetime | None, last_stock_updated_at
     candidates = []
     for t in (last_verified, last_stock_updated_at):
         if t is not None:
-            candidates.append(t if t.tzinfo is not None else t.replace(tzinfo=timezone.utc))
+            candidates.append(t if t.tzinfo is not None else t.replace(tzinfo=UTC))
 
     if not candidates:
         return FreshnessTier.STALE
 
     ts = min(candidates)
-    age = datetime.now(timezone.utc) - ts
+    age = datetime.now(UTC) - ts
     hours = age.total_seconds() / 3600
     if hours < 1:
         return FreshnessTier.FRESH

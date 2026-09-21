@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
+
 from fastapi import APIRouter, Depends, Header, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.db.models import OrderModel, PaymentModel
+from app.db.models import PaymentModel
 from app.db.repository import OrderRepository
 from app.services.payment_service import (
     PaymentOrderResponse,

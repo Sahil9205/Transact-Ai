@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agent.graph import build_commerce_agent_graph
-from app.agent.state import CommerceAgentState, OrderProposal
+if TYPE_CHECKING:
+    from app.agent.state import CommerceAgentState
+
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.db.repository import AuditRepository
@@ -43,6 +45,8 @@ class AgentService:
         }
 
         # Build and compile graph
+        from app.agent.graph import build_commerce_agent_graph
+
         graph = build_commerce_agent_graph(session=session, vector_service=vector_service)
 
         # Configure LangSmith tracing metadata

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
 from app.domain.schemas import ProductSchema
 from app.services.policy_service import PolicyEvaluationResult, PolicyService
-from app.services.verification_service import VerificationResult, VerificationService
+from app.services.verification_service import VerificationService
 
 logger = get_logger(__name__)
 

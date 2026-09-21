@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
+
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -112,8 +112,8 @@ class PolicyService:
     @staticmethod
     async def calculate_spent_today(session: AsyncSession, user_id: str) -> int:
         """Calculates cumulative spend by user today (excluding cancelled orders)."""
-        now = datetime.now(timezone.utc)
-        today_midnight = datetime(now.year, now.month, now.day, 0, 0, 0, tzinfo=timezone.utc)
+        now = datetime.now(UTC)
+        today_midnight = datetime(now.year, now.month, now.day, 0, 0, 0, tzinfo=UTC)
 
         stmt = select(func.sum(OrderModel.total_amount)).where(
             OrderModel.user_id == user_id,

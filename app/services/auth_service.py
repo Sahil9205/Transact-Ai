@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import json
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import Depends, HTTPException, status
@@ -74,7 +74,7 @@ def _base64url_decode(data_str: str) -> bytes:
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     """Generates an RFC 7519 compliant JSON Web Token signed with HMAC-SHA256."""
     to_encode = data.copy()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if expires_delta:
         expire = now + expires_delta
     else:
@@ -92,7 +92,7 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     header_b64 = _base64url_encode(header_json)
     payload_b64 = _base64url_encode(payload_json)
 
-    signing_input = f"{header_b64}.{payload_b64}".encode("utf-8")
+    signing_input = f"{header_b64}.{payload_b64}".encode()
     signature = hmac.new(
         settings.JWT_SECRET_KEY.encode("utf-8"),
         signing_input,
@@ -111,7 +111,7 @@ def decode_access_token(token: str) -> dict[str, Any]:
             raise UnauthorizedError("Invalid token format")
 
         header_b64, payload_b64, signature_b64 = parts
-        signing_input = f"{header_b64}.{payload_b64}".encode("utf-8")
+        signing_input = f"{header_b64}.{payload_b64}".encode()
 
         expected_sig = hmac.new(
             settings.JWT_SECRET_KEY.encode("utf-8"),
@@ -128,7 +128,7 @@ def decode_access_token(token: str) -> dict[str, Any]:
 
         # Check expiration
         exp = payload.get("exp")
-        if exp and exp < datetime.now(timezone.utc).timestamp():
+        if exp and exp < datetime.now(UTC).timestamp():
             raise UnauthorizedError("Token has expired")
 
         return payload

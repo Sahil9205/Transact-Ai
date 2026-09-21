@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

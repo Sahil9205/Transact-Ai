@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agent.state import CommerceAgentState, OrderProposal
@@ -10,7 +11,7 @@ from app.domain.enums import AuditEventType
 from app.services.discovery_service import DiscoveryService
 from app.services.gatekeeper_service import GatekeeperService
 from app.services.intent_service import IntentService
-from app.services.recovery_service import AlternativeOptionSchema, RecoveryService
+from app.services.recovery_service import RecoveryService
 from app.services.vector_service import VectorService
 
 logger = get_logger(__name__)

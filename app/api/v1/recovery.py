@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 

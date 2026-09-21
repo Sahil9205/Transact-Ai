@@ -1,6 +1,7 @@
 from __future__ import annotations
-from pathlib import Path
+
 import json
+from pathlib import Path
 from typing import Any
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"

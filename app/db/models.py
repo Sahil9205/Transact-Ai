@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 import uuid
-from datetime import datetime, timezone
-from typing import Any
-from sqlalchemy import String, Integer, Float, Boolean, DateTime, JSON, Text, ForeignKey
+from datetime import UTC, datetime
+
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 
 
@@ -30,8 +32,8 @@ class MerchantModel(Base):
     payout_bank_account: Mapped[str | None] = mapped_column(String(50), nullable=True)
     payout_ifsc_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
     
     # Relationships
     products: Mapped[list[ProductModel]] = relationship(back_populates="merchant", lazy="selectin")
@@ -64,10 +66,10 @@ class ProductModel(Base):
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     manufactured_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     expiration_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    last_stock_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    last_verified: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    last_stock_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    last_verified: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
     
     # Relationships
     merchant: Mapped[MerchantModel] = relationship(back_populates="products", lazy="selectin")
@@ -83,7 +85,7 @@ class UserModel(Base):
     user_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     
     def __repr__(self) -> str:
         return f"<User {self.name} ({self.user_id})>"
@@ -98,7 +100,7 @@ class SpendingPolicyModel(Base):
     daily_limit: Mapped[int] = mapped_column(Integer, nullable=False)  # paise
     allowed_categories: Mapped[dict | list] = mapped_column(JSON, default=list)  # list of category strings
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     
     def __repr__(self) -> str:
         return f"<SpendingPolicy user={self.user_id} limit={self.daily_limit}>"
@@ -120,8 +122,8 @@ class OrderModel(Base):
     delivery_address: Mapped[str | None] = mapped_column(Text, nullable=True)
     platform: Mapped[str | None] = mapped_column(String(50), nullable=True, default="unknown")
     transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
     
     def __repr__(self) -> str:
         return f"<Order {self.order_id} status={self.status} platform={self.platform}>"
@@ -138,7 +140,7 @@ class PaymentModel(Base):
     status: Mapped[str] = mapped_column(String(50), default="pending")  # PaymentStatus value
     provider_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Razorpay order_id / payment_id
     transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Completed Razorpay payment_id (pay_...)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     
     def __repr__(self) -> str:
         return f"<Payment {self.payment_id} status={self.status}>"
@@ -149,7 +151,7 @@ class AuditEventModel(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     event_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # AuditEventType value
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True)
     user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     provider_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     product_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
@@ -174,7 +176,7 @@ class MerchantStockPingModel(Base):
     status: Mapped[str] = mapped_column(String(30), default="pending", index=True)  # pending, confirmed, rejected, expired
     requested_quantity: Mapped[int] = mapped_column(Integer, default=1)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships

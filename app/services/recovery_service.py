@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
 from app.db.models import MerchantModel, ProductModel
-from app.db.repository import ProductRepository
-from app.domain.enums import AvailabilityStatus, ProductCategory
+from app.domain.enums import AvailabilityStatus
 from app.domain.schemas import BuyerIntentSchema, ProductSchema
 from app.services.product_service import model_to_schema
 from app.services.vector_service import VectorService
@@ -70,7 +68,7 @@ class RecoveryService:
         elif "sla" in errors_str or "time" in errors_str or "deadline" in errors_str:
             return FailureDiagnosis(
                 failure_code="SLA_BREACH",
-                human_explanation=f"Merchant preparation time cannot meet the specified delivery timeline.",
+                human_explanation="Merchant preparation time cannot meet the specified delivery timeline.",
                 remediation_strategy="Fulfillment SLA relaxation to standard delivery or pickup.",
             )
         else:

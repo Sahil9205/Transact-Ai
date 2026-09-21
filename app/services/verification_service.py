@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError, StaleDataError, ValidationError
 from app.core.logging import get_logger
 from app.db.repository import AuditRepository, ProductRepository
 from app.domain.enums import AuditEventType, FreshnessTier

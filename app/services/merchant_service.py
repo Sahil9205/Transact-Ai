@@ -87,8 +87,9 @@ class MerchantService:
     @staticmethod
     async def get_dashboard_stats(session: AsyncSession, merchant_id: str) -> dict:
         """Computes summary metrics and recent orders for merchant portal."""
-        from sqlalchemy import select, func
-        from app.db.models import ProductModel, OrderModel
+        from sqlalchemy import func, select
+
+        from app.db.models import OrderModel, ProductModel
         
         merchant = await MerchantRepository.get_by_merchant_id(session, merchant_id)
         
@@ -182,8 +183,8 @@ class MerchantService:
     async def set_product_availability(session: AsyncSession, product_id: str, status: str) -> dict:
         """Sets product availability status (in_stock, out_of_stock, limited)."""
         from app.db.repository import ProductRepository
-        from app.domain.schemas import ProductUpdateSchema
         from app.domain.enums import AvailabilityStatus
+        from app.domain.schemas import ProductUpdateSchema
         product = await ProductRepository.update(
             session, product_id, ProductUpdateSchema(availability_status=AvailabilityStatus(status))
         )

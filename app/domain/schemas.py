@@ -1,11 +1,19 @@
 from __future__ import annotations
+
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
+
 from app.domain.enums import (
-    ProviderType, ProductCategory, AvailabilityStatus,
-    FulfillmentType, OrderStatus, PaymentStatus,
-    FreshnessTier, AuditEventType, PricingType, StoreOperationalStatus
+    AvailabilityStatus,
+    FreshnessTier,
+    FulfillmentType,
+    PricingType,
+    ProductCategory,
+    ProviderType,
+    StoreOperationalStatus,
 )
+
 
 # Value objects (never standalone DB entities)
 class PricingSchema(BaseModel):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -13,7 +13,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy declarative models."""
-    pass
 
 
 class DatabaseManager:

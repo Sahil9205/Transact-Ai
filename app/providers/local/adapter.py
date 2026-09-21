@@ -1,16 +1,31 @@
 from __future__ import annotations
-from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from datetime import UTC, datetime
+
 from sqlalchemy import select
-from app.providers.base import BaseProviderAdapter
-from app.db.models import MerchantModel, ProductModel
-from app.domain.schemas import (
-    ProviderSchema, ProductSchema, PricingSchema, 
-    AvailabilitySchema, VerificationSchema, FulfillmentSchema
-)
-from app.domain.enums import FreshnessTier, ProviderType, ProductCategory, AvailabilityStatus, FulfillmentType, PricingType
-from app.core.logging import get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions import NotFoundError
+from app.core.logging import get_logger
+from app.db.models import MerchantModel, ProductModel
+from app.domain.enums import (
+    AvailabilityStatus,
+    FreshnessTier,
+    FulfillmentType,
+    PricingType,
+    ProductCategory,
+    ProviderType,
+)
+from app.domain.schemas import (
+    AvailabilitySchema,
+    FulfillmentSchema,
+    PricingSchema,
+    ProductSchema,
+    ProviderSchema,
+    VerificationSchema,
+)
+from app.providers.base import BaseProviderAdapter
+
 
 class LocalMerchantAdapter(BaseProviderAdapter):
     """Adapter for interacting with local merchants in the database."""
@@ -23,9 +38,9 @@ class LocalMerchantAdapter(BaseProviderAdapter):
     def _compute_freshness(self, last_verified: datetime) -> FreshnessTier:
         """Deterministic freshness computation. Code decides, not AI."""
         if last_verified.tzinfo is None:
-            last_verified = last_verified.replace(tzinfo=timezone.utc)
+            last_verified = last_verified.replace(tzinfo=UTC)
             
-        age = datetime.now(timezone.utc) - last_verified
+        age = datetime.now(UTC) - last_verified
         hours = age.total_seconds() / 3600
         if hours < 1:
             return FreshnessTier.FRESH

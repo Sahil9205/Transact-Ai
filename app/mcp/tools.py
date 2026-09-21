@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import json
 from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
-from app.domain.enums import ProductCategory
-from app.domain.schemas import ProductSchema
 from app.services.manifest_service import ManifestService
 from app.services.merchant_service import MerchantService
 from app.services.product_service import ProductService
@@ -349,8 +347,8 @@ class MCPCommerceTools:
         user_id: str = "buyer_default",
     ) -> dict[str, Any]:
         """Tool handler for transact_create_order_payment."""
-        from app.services.payment_service import PaymentService
         from app.core.platform import resolve_originating_platform
+        from app.services.payment_service import PaymentService
         resolved_platform = resolve_originating_platform(explicit_platform=platform)
         res = await PaymentService.create_payment_order(
             session=session,
@@ -409,7 +407,6 @@ class MCPCommerceTools:
         """Tool handler for transact_register_merchant."""
         from app.domain.enums import ProviderType
         from app.domain.schemas import ProviderCreateSchema
-        from app.services.merchant_service import MerchantService
 
         schema = ProviderCreateSchema(
             name=name,

@@ -5,11 +5,12 @@
 
 > **Notice:** Demo application. Razorpay test mode. Built for the Razorpay Buildathon. Not affiliated with Razorpay.
 
+[![CI](https://github.com/Sahil9205/Transact-Ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Sahil9205/Transact-Ai/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-82%25%20(88%2F88%20passed)-brightgreen.svg)](#)
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-FF6F00.svg?logo=diagram-next&logoColor=white)](https://github.com/langchain-ai/langgraph)
-[![Vector Engine](https://img.shields.io/badge/Vector%20Index-FastEmbed%20+%20NumPy-red.svg)](https://qdrant.tech/)
 [![Payment Gateway](https://img.shields.io/badge/Settlement-Razorpay%20HMAC--SHA256-0C2340.svg?logo=razorpay&logoColor=white)](https://razorpay.com/)
 [![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](LICENSE)
 
@@ -357,7 +358,6 @@ TransactAI is thoroughly documented. Explore our technical guides:
 | 🟣 [**Claude Desktop MCP Guide**](docs/claude_plugin_guide.md) | Model Context Protocol stdio & SSE setup for Claude Desktop and Claude.ai. |
 | 🔵 [**Google Gemini Integration Guide**](docs/gemini_plugin_guide.md) | Gemini Gems instructions and Python Function Calling extension examples. |
 | 🚀 [**Production Deployment Guide**](docs/deployment_guide.md) | Docker & Railway production deployment instructions with zero-downtime scaling. |
-| 🗺️ [**Prototype vs Production Roadmap**](docs/prototype_vs_production.md) | Complete enterprise roadmap comparing prototype trade-offs with production implementations. |
 
 ---
 
@@ -387,14 +387,29 @@ Transact-Ai/
 
 ---
 
-## 🔒 Security & Compliance
-- **Cryptographic Signature Verification**: Every Razorpay webhook and payment return payload is cryptographically validated using constant-time `HMAC-SHA256` hashing.
-- **Secret Redaction**: PII, API keys, and authorization headers are automatically masked in structured logs using regex masking filters.
-- **Idempotency Guard**: Webhooks verify duplicate delivery IDs against the transactional database to prevent double-crediting or duplicate fulfillment.
-- **3-Layer Audit Ledger**: Critical business events are written synchronously to the transactional database, formatted as structured JSON logs for SIEM ingestion, and traced via LangSmith spans.
+## 🔒 Security & Enforced Safeguards
+- **Cryptographic Signature Verification**: Every Razorpay webhook and payment return payload is cryptographically validated using constant-time `HMAC-SHA256` hashing (`app/services/payment_service.py`).
+- **Merchant RFC 7519 JWT Authentication**: Vendor login protected via PBKDF2 password hashing and HS256 JWT tokens with 7-day expiration (`app/services/auth_service.py`).
+- **Multi-Tenant Store Isolation**: Database queries enforce strict tenant boundaries so merchants can only access their own inventory, orders, and sales metrics (`app/db/repository.py`).
+- **6-Hour Inventory Staleness Guardrail**: Products unverified for >6 hours trigger automated stale-tier classification and interactive merchant verification pings (`app/services/stock_ping_service.py`).
+- **Secret Redaction**: PII, credentials, and authorization tokens are automatically sanitized in structured structlog entries (`app/core/logging.py`).
+- **Webhook Idempotency**: Duplicate payment webhook events are rejected using database uniqueness constraints (`app/db/models.py`).
+
+---
+
+## ⚠️ Limitations & Trade-Offs
+To maintain transparency under engineering review, the following architectural trade-offs are present in this evaluation version:
+1. **Database Backend**: Defaults to SQLite via `aiosqlite` (`data/commerce.db`) for portable local execution. Production scaling requires migrating to PostgreSQL (`asyncpg`).
+2. **Vector Indexing**: FastEmbed (`bge-small-en-v1.5`) with local in-memory Qdrant / NumPy cosine search across a seeded demo catalog of 14 items across 3 stores (Sharma Sweets, Blinkit, Zepto).
+3. **Razorpay Environment**: Operates exclusively in **Razorpay Test Mode** (`rzp_test_*`). No actual financial debits, bank transfers, or live merchant payouts are executed.
+4. **Endpoint Authentication**: The public Model Context Protocol (`/mcp`) endpoint is open for evaluation friction-reduction; in production, an `MCP_API_KEY` header must gate tool access.
+5. **Single-Region Scope**: Geocoding and delivery SLA checks are optimized for demo pincodes (`110001` Delhi, `560001` Bangalore).
 
 ---
 
 ## 📜 License
-TransactAI is open-source software licensed under the **MIT License**.
-Developed with pride for the Razorpay Buildathon & the future of autonomous agentic commerce.
+TransactAI is source-available software licensed under the **Business Source License 1.1 (BUSL-1.1)**.  
+Copyright &copy; 2026 Sahil Kumar.  
+Converts automatically to the open-source **MIT License** on **January 1, 2030**.  
+See the full terms in the [LICENSE](LICENSE) file.
+For commercial licensing inquiries: [sahil.kr9205@gmail.com](mailto:sahil.kr9205@gmail.com)

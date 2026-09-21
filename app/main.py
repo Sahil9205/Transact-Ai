@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.db.database import get_db
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.health import router as health_router
 from app.api.v1 import api_v1_router
@@ -15,9 +14,11 @@ from app.core.config import get_settings
 from app.core.exceptions import CommerceAgentError
 from app.core.logging import get_logger, setup_logging
 from app.core.security import validate_production_config
-from app.db.database import get_database_manager, init_database_manager
+from app.db.database import get_db, init_database_manager
 from app.db.seed import seed_database
 from app.services.vector_service import VectorService
+
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
@@ -133,6 +134,7 @@ def create_app() -> FastAPI:
     async def get_favicon():
         """Serve TransactAI favicon."""
         from pathlib import Path
+
         from fastapi.responses import Response
         for p in [
             Path(__file__).parent.parent / "frontend" / "public" / "favicon.png",
@@ -147,6 +149,7 @@ def create_app() -> FastAPI:
     async def get_logo_icon():
         """Serve TransactAI logo icon."""
         from pathlib import Path
+
         from fastapi.responses import Response
         for p in [
             Path(__file__).parent.parent / "frontend" / "public" / "logo_icon.png",
@@ -160,6 +163,7 @@ def create_app() -> FastAPI:
     async def get_logo_full():
         """Serve TransactAI full brand logo lockup."""
         from pathlib import Path
+
         from fastapi.responses import Response
         for p in [
             Path(__file__).parent.parent / "frontend" / "public" / "logo_full.png",
@@ -173,8 +177,9 @@ def create_app() -> FastAPI:
     async def checkout_payment_page(order_id: str, session: AsyncSession = Depends(get_db)) -> HTMLResponse:
         """Serve responsive Razorpay payment checkout web page for end users."""
         from sqlalchemy import select
-        from app.db.models import OrderModel, ProductModel, MerchantModel, PaymentModel
+
         from app.core.config import get_settings
+        from app.db.models import MerchantModel, OrderModel, PaymentModel, ProductModel
         from app.services.frontend_service import FrontendService
         
         cfg = get_settings()
@@ -220,9 +225,9 @@ def create_app() -> FastAPI:
     @app_instance.get("/merchant/dashboard/{merchant_id}", response_class=HTMLResponse, include_in_schema=False)
     async def merchant_dashboard_page(merchant_id: str, session: AsyncSession = Depends(get_db)) -> HTMLResponse:
         """Serve clean, light-mode interactive merchant dashboard."""
-        from app.services.merchant_service import MerchantService
-        from app.services.frontend_service import FrontendService
         from app.core.exceptions import NotFoundError
+        from app.services.frontend_service import FrontendService
+        from app.services.merchant_service import MerchantService
         try:
             stats = await MerchantService.get_dashboard_stats(session, merchant_id)
             all_merchants = await MerchantService.list_merchants(session)
@@ -235,13 +240,13 @@ def create_app() -> FastAPI:
             return HTMLResponse(content=html)
         except NotFoundError as e:
             return HTMLResponse(
-                content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant not found</h2><p style='color:#64748b;'>{str(e)}</p><a href='/merchant/register'>Register New Merchant</a></div>",
+                content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant not found</h2><p style='color:#64748b;'>{e!s}</p><a href='/merchant/register'>Register New Merchant</a></div>",
                 status_code=404,
             )
         except Exception as e:
             logger.error("Error rendering merchant dashboard", merchant_id=merchant_id, error=str(e), exc_info=True)
             return HTMLResponse(
-                content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant Dashboard Error</h2><p style='color:#ef4444;'>{str(e)}</p><a href='/merchant'>Return to Merchants</a></div>",
+                content=f"<div style='font-family:sans-serif;text-align:center;padding:50px;'><h2>Merchant Dashboard Error</h2><p style='color:#ef4444;'>{e!s}</p><a href='/merchant'>Return to Merchants</a></div>",
                 status_code=500,
             )
 
@@ -249,8 +254,8 @@ def create_app() -> FastAPI:
     @app_instance.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def merchant_gateway_landing(session: AsyncSession = Depends(get_db)) -> HTMLResponse:
         """Serve merchant partner gateway landing page to choose existing or new store."""
-        from app.services.merchant_service import MerchantService
         from app.services.frontend_service import FrontendService
+        from app.services.merchant_service import MerchantService
         all_merchants = await MerchantService.list_merchants(session)
         merchants_list = [m.model_dump(mode="json") for m in all_merchants]
         html = FrontendService.render_landing_page(merchants_list)

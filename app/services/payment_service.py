@@ -5,17 +5,17 @@ import hmac
 import json
 import uuid
 from typing import Any
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.exceptions import NotFoundError, PaymentVerificationError, ValidationError
+from app.core.exceptions import NotFoundError, PaymentVerificationError
 from app.core.logging import get_logger
-from app.db.models import OrderModel, PaymentModel
+from app.db.models import PaymentModel
 from app.db.repository import AuditRepository, OrderRepository, ProductRepository
 from app.domain.enums import AuditEventType, OrderStatus, PaymentStatus
-from app.services.product_service import model_to_schema
 
 logger = get_logger(__name__)
 
@@ -65,7 +65,7 @@ class PaymentService:
     @staticmethod
     def _generate_razorpay_signature(order_id: str, payment_id: str, secret: str) -> str:
         """Computes HMAC-SHA256 signature for Razorpay verification."""
-        msg = f"{order_id}|{payment_id}".encode("utf-8")
+        msg = f"{order_id}|{payment_id}".encode()
         return hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()
 
     @staticmethod

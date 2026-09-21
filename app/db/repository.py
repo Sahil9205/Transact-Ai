@@ -1,16 +1,20 @@
 from __future__ import annotations
-from datetime import datetime, timezone
+
+from datetime import UTC, datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models import (
-    MerchantModel, ProductModel, OrderModel, AuditEventModel,
-    UserModel, SpendingPolicyModel, PaymentModel, MerchantStockPingModel
-)
-from app.domain.schemas import (
-    ProviderCreateSchema, ProductCreateSchema, ProductUpdateSchema
-)
+
 from app.core.exceptions import NotFoundError
 from app.core.logging import get_logger
+from app.db.models import (
+    AuditEventModel,
+    MerchantModel,
+    MerchantStockPingModel,
+    OrderModel,
+    ProductModel,
+)
+from app.domain.schemas import ProductCreateSchema, ProductUpdateSchema, ProviderCreateSchema
 
 logger = get_logger(__name__)
 
@@ -152,7 +156,7 @@ class ProductRepository:
             image_url=data.image_url,
             manufactured_date=data.manufactured_date,
             expiration_date=data.expiration_date,
-            last_stock_updated_at=data.last_stock_updated_at or datetime.now(timezone.utc),
+            last_stock_updated_at=data.last_stock_updated_at or datetime.now(UTC),
         )
         session.add(product)
         await session.flush()
@@ -229,10 +233,10 @@ class ProductRepository:
             update_data['pricing_type'] = update_data['pricing_type'].value if hasattr(update_data['pricing_type'], 'value') else update_data['pricing_type']
         for key, value in update_data.items():
             setattr(product, key, value)
-        product.last_verified = datetime.now(timezone.utc)
+        product.last_verified = datetime.now(UTC)
         if "quantity" in update_data or "availability_status" in update_data:
             if "last_stock_updated_at" not in update_data:
-                product.last_stock_updated_at = datetime.now(timezone.utc)
+                product.last_stock_updated_at = datetime.now(UTC)
         await session.flush()
         await session.refresh(product)
         logger.info(f"Updated product {product.product_id}")

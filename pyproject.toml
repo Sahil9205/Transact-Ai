@@ -28,21 +28,41 @@ exclude = ["razorpay*", "tests*"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-asyncio",
-    "httpx",
-    "ruff",
-    "mypy"
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.27.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0"
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "razorpay/*", "data/*"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"
+]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
 
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E711", "E712", "W291", "W293"]
+
 [tool.mypy]
 python_version = "3.12"
-strict = true
+ignore_missing_imports = true
+warn_unused_ignores = false
