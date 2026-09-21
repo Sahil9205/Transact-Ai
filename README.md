@@ -103,16 +103,16 @@ Rather than interrogating the buyer upfront for addresses and phone numbers, Tra
 sequenceDiagram
     autonumber
     actor Buyer as User / Buyer
-    participant AI as AI Host (ChatGPT / Claude)
+    participant AI as AI Host (Claude / ChatGPT / Gemini)
     participant Core as TransactAI Engine
     participant DB as Live Inventory & Policy
     participant RZP as Razorpay Gateway
 
     Note over Buyer,AI: Stage 1 — Broad Intent & Exploration
     Buyer->>AI: "Bhai kuch meetha khana hai" / "Need sweets"
-    AI->>Core: search_products(query="sweets")
-    Core->>AI: Popular varieties: Rasgulla (₹220), Kaju Katli (₹450), Gulab Jamun (₹180)
-    AI-->>Buyer: "Craving sweets? Here are our top picks: Rasgulla, Kaju Katli..."
+    AI->>Core: transact_search_catalog(query="sweets")
+    Core->>AI: Top matches: Rasgulla (₹450), Gulab Jamun (₹250), Kaju Katli (₹450)
+    AI-->>Buyer: "Craving sweets? Here are our top picks: Rasgulla, Gulab Jamun..."
 
     Note over Buyer,AI: Stage 2 — Item Selection & Location Gathering
     Buyer->>AI: "1kg Rasgulla pack kar do"
@@ -120,34 +120,49 @@ sequenceDiagram
 
     Note over Buyer,RZP: Stage 3 — Demand Verification & Pre-Flight Gate
     Buyer->>AI: "H-12 Connaught Place, New Delhi 110001"
-    AI->>Core: verify_order_preflight(product_id, qty=1, pincode=110001, max_price=500)
+    AI->>Core: transact_verify_order_preflight(product_id, qty=1, pincode=110001, max_price=500)
     Core->>DB: Check store inventory + delivery radius + buyer daily spending cap
-    DB-->>Core: Verified (Sharma Sweets: 15 units available, within 8km radius)
-    Core-->>AI: Preflight Approved (Total: ₹220)
-    AI-->>Buyer: 🛒 Order Summary: Bikano Rasgulla 1kg (₹220) from Sharma Sweets.<br/>Please share your Phone Number to confirm order placement.
+    DB-->>Core: Verified (Sharma Sweets: in-stock, within 8km radius, within budget)
+    Core-->>AI: Preflight Approved (Total: ₹450)
+    AI-->>Buyer: 🛒 Order Summary: Traditional Rasgulla 1kg (₹450) from Sharma Sweets.<br/>Please share your Phone Number to confirm order placement.
 
     Note over Buyer,RZP: Stage 4 — Explicit Confirmation & Hosted Settlement
     Buyer->>AI: "9876543210, proceed with order"
-    AI->>Core: create_payment_order(product_id, address, pincode, phone)
+    AI->>Core: transact_create_order_payment(product_id, address, pincode, phone)
     Core->>RZP: Create Order & Hosted Payment Session
     RZP-->>Core: order_abc123 + checkout_url
     Core-->>AI: Secure Payment Link
-    AI-->>Buyer: 👉 "Pay ₹220 securely via Razorpay: https://frontend-six-steel-85.vercel.app/pay/order_abc123"
+    AI-->>Buyer: 👉 "Pay ₹450 securely via Razorpay: https://frontend-six-steel-85.vercel.app/pay/order_abc123"
 ```
 
 ---
 
-## 🚀 Ultra-Low Latency Engine (<85ms)
+## 🤖 Frontier AI Host Compatibility
 
-In autonomous agent systems, multi-node agent graphs compound latency on every tool call. TransactAI was engineered specifically to break the sub-100ms barrier:
-
-| Optimization Layer | Before | After | Improvement |
+| AI Assistant Host | Protocol / Connection Method | Status | Capabilities Tested |
 | :--- | :--- | :--- | :--- |
-| **Vector Similarity Match** | 1,220 ms (remote disk roundtrip) | **0.026 ms** (In-memory normalized cosine dot product) | **46,900x faster** |
-| **Query Embedding Generation**| 120 ms (cold inference per call) | **0.001 ms** (LRU semantic cache hits) | **120,000x faster** |
-| **Relational Metadata Queries**| 150 ms (79 sequential N+1 queries) | **1.84 ms** (Atomic SQL `WHERE IN` batch lookup) | **81x faster** |
-| **End-to-End Discovery Pipeline** | **1,370 ms** | **11.23 ms – 36.86 ms** | **97.3% latency reduction** |
-| **Full 5-Node LangGraph Agent** | **1,490 ms** | **70.06 ms** | **Sub-100ms autonomous loop** |
+| **Anthropic Claude Desktop** | Native Model Context Protocol (stdio & SSE `/mcp`) | ✅ **Production Tested** | Multi-turn conversational discovery, stock staleness gatekeeper, buyer budget checks, Razorpay checkout links |
+| **OpenAI ChatGPT** | Custom GPT Actions (OpenAPI 3.0 via `/.well-known/openapi.json`) | ✅ **Supported** | Progressive shopping workflow, schema-driven tool execution, live hosted checkout *(Requires ChatGPT Plus/Team)* |
+| **Google Gemini** | Function Calling Tool Declarations (`/api/v1/hosts/tools?format=gemini`) | ✅ **Tool Schemas Provided** | Standard `functionDeclarations` for Gemini 1.5 / 2.0 Flash & Pro in AI Studio and Python SDK |
+
+---
+
+## 🚀 Latency & Performance Profile
+
+Multi-node agent workflows compound latency on every tool invocation. TransactAI was engineered with an in-memory normalized vector matrix and batch SQL hydrators to break the sub-100ms barrier:
+
+| Pipeline Component | Metric Tested | P50 (ms) | P95 (ms) | P99 (ms) | Mean (ms) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Embedding (Cold)** | FastEmbed 384-dim ONNX inference (`bge-small-en-v1.5`) | **163.74 ms** | 176.91 ms | 177.93 ms | 165.59 ms |
+| **Embedding (Cached)** | In-memory LRU cache retrieval (1024 slots) | **0.001 ms** | 0.001 ms | 0.003 ms | 0.001 ms |
+| **Vector Similarity** | Tier-1 in-memory normalized cosine dot product | **0.20 ms** | 0.36 ms | 0.52 ms | 0.24 ms |
+| **Relational SQL Batch** | SQLAlchemy async metadata lookup (`WHERE IN`) | **6.80 ms** | 7.57 ms | 7.81 ms | 6.75 ms |
+| **Hybrid Discovery** | Concurrent vector + SQL search & ranking | **14.37 ms** | 15.69 ms | 18.38 ms | 14.33 ms |
+| **Full LangGraph Loop** | 5-node deterministic agent state graph | **88.11 ms** | 120.31 ms | 127.45 ms | 91.95 ms |
+
+> 📊 **Reproducibility & Benchmark Artifacts**:
+> All metrics measured directly on the repository via [`scripts/bench_discovery.py`](scripts/bench_discovery.py) across 100 iterations (10 warm-up runs, 49 products).
+> Complete raw JSON benchmark output: [`docs/benchmarks/discovery_benchmark_results.json`](docs/benchmarks/discovery_benchmark_results.json).
 
 ---
 
@@ -181,7 +196,7 @@ Connect Claude directly to the live TransactAI production engine with zero local
 | :--- | :--- | :--- |
 | **Step 1** | **Open Connectors in Claude** | Open [Claude.ai](https://claude.ai) (Web) or Claude Desktop $\rightarrow$ Click **Settings** $\rightarrow$ Navigate to **Connectors** (or Integrations) $\rightarrow$ Click **"Add Custom Connector"**. |
 | **Step 2** | **Enter Connector URL** | **Name**: `TransactAI Autonomous Commerce`<br>**URL**: `https://transact-ai-production.up.railway.app/mcp`<br>*(Fallback SSE: `https://transact-ai-production.up.railway.app/mcp/sse`)* |
-| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 5 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_search_catalog` — Instant sub-85ms semantic hybrid vector search<br>• `transact_verify_order_preflight` — 6-hr staleness & live stock parity gatekeeper<br>• `transact_check_policy` — Mathematical spending limit validator<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator<br>• `transact_register_merchant` — Self-service merchant onboarding |
+| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 7 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_discover_merchants` — Discover active merchants by location or category<br>• `transact_search_catalog` — Sub-15ms semantic hybrid vector search across providers<br>• `transact_get_product` — Retrieve live item details, pricing, and SLA<br>• `transact_check_availability` — Fast pre-check of stock and fulfillment radius<br>• `transact_get_merchant_manifest` — Fetch merchant store profile and metadata<br>• `transact_verify_order_preflight` — 6-hr staleness, live stock, and spending limit gatekeeper<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator |
 | **Step 4** | **Prompt & Transact** | Open a new chat in Claude and ask in natural language:<br>`"Search for fresh Kaju Katli in Indiranagar (560001) under ₹600. Verify my spending limit, and prepare an order summary for my confirmation."` |
 
 ---
@@ -207,7 +222,7 @@ If you prefer running a local Python stdio MCP server on your computer:
   }
 }
 ```
-3. Restart Claude Desktop. The 5 tools will appear under the tools hammer icon.
+3. Restart Claude Desktop. The 7 tools will appear under the tools hammer icon.
 
 #### 🧠 Claude Progressive Shopping System Prompt
 In your Claude Project or Custom Instructions, paste:
@@ -236,7 +251,7 @@ Turn ChatGPT into an autonomous shopping agent with 1-click OpenAPI import:
 ---
 
 ### 3. Google Gemini (Tool Declarations & Gemini Gems)
-Equip Gemini with native tool schemas:
+Equip Gemini with native function declarations:
 ```python
 import google.generativeai as genai
 import httpx
@@ -245,9 +260,12 @@ import httpx
 res = httpx.get("https://transact-ai-production.up.railway.app/api/v1/hosts/tools?format=gemini")
 gemini_tools = res.json()
 
-# 2. Configure model
+# 2. Configure model with tool definitions
 genai.configure(api_key="YOUR_GEMINI_API_KEY")
-model = genai.GenerativeModel(model_name="gemini-1.5-flash", tools=gemini_tools)
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    tools=[{"function_declarations": gemini_tools}],
+)
 ```
 *Read the full [Google Gemini Integration Guide](docs/gemini_plugin_guide.md).*
 
@@ -342,7 +360,7 @@ python scripts/demo.py
 ```bash
 pytest tests/unit/ -v
 ```
-> **82 passed in ~60s** (100% test coverage across all architectural invariants).
+> **88 passed in ~46s** (82% test coverage across all architectural invariants).
 
 ---
 

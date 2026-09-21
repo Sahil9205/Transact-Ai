@@ -34,7 +34,7 @@ If you are using **Google AI Studio** ([aistudio.google.com](https://aistudio.go
 1. Open Google AI Studio $\rightarrow$ Create a **Chat Prompt** (`gemini-1.5-pro` or `gemini-1.5-flash`).
 2. In the right sidebar, enable **Function Calling / Tools**.
 3. Click **Add Tool** $\rightarrow$ Paste the tool schema from:
-   `http://127.0.0.1:8000/api/v1/hosts/tools?format=gemini`
+   `https://transact-ai-production.up.railway.app/api/v1/hosts/tools?format=gemini`
    *(Or import `/.well-known/gemini-extension.json`)*
 
 ### 2. In Python with `google-generativeai`:
@@ -42,16 +42,16 @@ If you are using **Google AI Studio** ([aistudio.google.com](https://aistudio.go
 import google.generativeai as genai
 import httpx
 
-# 1. Fetch Gemini tool declarations from Transact AI
+# 1. Fetch Gemini tool declarations from TransactAI
 with httpx.Client() as client:
-    res = client.get("http://127.0.0.1:8000/api/v1/hosts/tools?format=gemini")
+    res = client.get("https://transact-ai-production.up.railway.app/api/v1/hosts/tools?format=gemini")
     gemini_tools = res.json()
 
-# 2. Configure Gemini Model with Transact AI Tools
+# 2. Configure Gemini Model with TransactAI Tools
 genai.configure(api_key="YOUR_GEMINI_API_KEY")
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
-    tools=gemini_tools,
+    tools=[{"function_declarations": gemini_tools}],
 )
 
 # 3. Chat with Gemini

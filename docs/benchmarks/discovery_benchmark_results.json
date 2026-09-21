@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "timestamp": "2026-09-21T17:43:12.302846+00:00",
+    "git_commit": "ea1dc7664031e5af2d3c9c29ffc9ad0f36771536",
+    "python_version": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "dataset_size_products": 49,
+    "iterations": 100,
+    "warmup_runs": 10
+  },
+  "benchmarks": {
+    "embedding_cold_inference": {
+      "samples": 5,
+      "mean_ms": 165.5869,
+      "min_ms": 154.7327,
+      "p50_ms": 163.7379,
+      "p95_ms": 176.9144,
+      "p99_ms": 177.9326,
+      "max_ms": 178.1872
+    },
+    "embedding_cache_hit": {
+      "samples": 100,
+      "mean_ms": 0.001,
+      "min_ms": 0.0008,
+      "p50_ms": 0.0009,
+      "p95_ms": 0.001,
+      "p99_ms": 0.0029,
+      "max_ms": 0.009
+    },
+    "vector_cosine_similarity": {
+      "samples": 100,
+      "mean_ms": 0.2363,
+      "min_ms": 0.1277,
+      "p50_ms": 0.1974,
+      "p95_ms": 0.3609,
+      "p99_ms": 0.5165,
+      "max_ms": 1.0354
+    },
+    "relational_sql_batch_query": {
+      "samples": 100,
+      "mean_ms": 6.7481,
+      "min_ms": 5.3259,
+      "p50_ms": 6.7966,
+      "p95_ms": 7.5724,
+      "p99_ms": 7.8127,
+      "max_ms": 8.2677
+    },
+    "hybrid_discovery_pipeline": {
+      "samples": 100,
+      "mean_ms": 14.3304,
+      "min_ms": 12.1182,
+      "p50_ms": 14.371,
+      "p95_ms": 15.6911,
+      "p99_ms": 18.3837,
+      "max_ms": 18.4252
+    },
+    "full_langgraph_agent_loop": {
+      "samples": 100,
+      "mean_ms": 91.9524,
+      "min_ms": 77.3846,
+      "p50_ms": 88.1054,
+      "p95_ms": 120.3061,
+      "p99_ms": 127.4507,
+      "max_ms": 145.4935
+    }
+  }
+}
