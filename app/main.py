@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.health import root_health_router
 from app.api.health import router as health_router
 from app.api.v1 import api_v1_router
 from app.core.config import get_settings
@@ -82,6 +83,7 @@ def create_app() -> FastAPI:
     from app.api.v1.mcp import router as mcp_router
     from app.api.v1.products import router as products_router
     app_instance.include_router(health_router)
+    app_instance.include_router(root_health_router)
     app_instance.include_router(mcp_router)
     app_instance.include_router(products_router)
     app_instance.include_router(api_v1_router)

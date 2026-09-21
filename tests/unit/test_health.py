@@ -30,3 +30,22 @@ async def test_root_endpoint(client: AsyncClient) -> None:
     """Test the root endpoint serves landing page or redirects."""
     response = await client.get("/", follow_redirects=False)
     assert response.status_code in (200, 302, 307)
+
+
+async def test_healthz_liveness_probe(client: AsyncClient) -> None:
+    """Test Kubernetes / cloud-native /healthz liveness probe."""
+    response = await client.get("/healthz")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "version" in data
+
+
+async def test_readyz_readiness_probe(client: AsyncClient) -> None:
+    """Test Kubernetes / cloud-native /readyz readiness probe."""
+    response = await client.get("/readyz")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ready"
+    assert data["database"] == "connected"
+

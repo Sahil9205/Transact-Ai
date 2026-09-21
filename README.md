@@ -6,7 +6,7 @@
 > **Notice:** Demo application. Razorpay test mode. Built for the Razorpay Buildathon. Not affiliated with Razorpay.
 
 [![CI](https://github.com/Sahil9205/Transact-Ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Sahil9205/Transact-Ai/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-82%25%20(94%2F94%20passed)-brightgreen.svg)](#)
+[![Coverage](https://img.shields.io/badge/Coverage-82%25%20(96%2F96%20passed)-brightgreen.svg)](#)
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -360,7 +360,7 @@ python scripts/demo.py
 ```bash
 pytest tests/unit/ -v
 ```
-> **94 passed in ~44s** (82% test coverage across all architectural invariants).
+> **96 passed in ~45s** (82% test coverage across all architectural invariants).
 
 ---
 

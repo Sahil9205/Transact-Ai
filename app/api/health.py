@@ -60,3 +60,19 @@ async def readiness_check(session: AsyncSession = Depends(get_db)) -> ReadinessR
                 "error": str(e)
             }
         )
+
+
+root_health_router = APIRouter(tags=["Health"])
+
+
+@root_health_router.get("/healthz", response_model=HealthResponse, summary="Liveness Probe")
+async def liveness_probe(settings: Settings = Depends(get_settings)) -> HealthResponse:
+    """Kubernetes / Cloud-native liveness probe."""
+    return await health_check(settings=settings)
+
+
+@root_health_router.get("/readyz", response_model=ReadinessResponse, summary="Readiness Probe")
+async def readiness_probe(session: AsyncSession = Depends(get_db)) -> ReadinessResponse:
+    """Kubernetes / Cloud-native readiness probe."""
+    return await readiness_check(session=session)
+
