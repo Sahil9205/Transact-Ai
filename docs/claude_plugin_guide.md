@@ -45,10 +45,13 @@ On macOS:
 ### Step 3: Restart Claude Desktop 🎉
 1. Completely quit Claude Desktop (check the system tray) and reopen it.
 2. Look for the **🔨 Hammer / Tools icon** in the prompt box showing active TransactAI tools:
+   - `transact_discover_merchants`
    - `transact_search_catalog`
-   - `transact_check_policy`
-   - `transact_create_order_payment`
+   - `transact_get_product`
+   - `transact_check_availability`
+   - `transact_get_merchant_manifest`
    - `transact_verify_order_preflight`
+   - `transact_create_order_payment`
    - `transact_register_merchant`
 
 ---
@@ -68,10 +71,13 @@ Connect directly to the live Railway production MCP server with zero local envir
 - *(Optional Fallback SSE)*: `https://transact-ai-production.up.railway.app/mcp/sse`
 
 ### Step 3: Click Add & Verify Active Tools
-Click **Add**. Claude establishes an active SSE stream and immediately registers the 5 commerce tools (look for the **🔨 Hammer Icon**):
+Click **Add**. Claude establishes an active SSE stream and immediately registers the 8 commerce tools (look for the **🔨 Hammer Icon**):
+- `transact_discover_merchants`
 - `transact_search_catalog`
+- `transact_get_product`
+- `transact_check_availability`
+- `transact_get_merchant_manifest`
 - `transact_verify_order_preflight`
-- `transact_check_policy`
 - `transact_create_order_payment`
 - `transact_register_merchant`
 

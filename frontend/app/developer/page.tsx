@@ -138,13 +138,16 @@ Fallback SSE  : ${be}/mcp/sse
         {
           step: 3,
           title: "Verify Connected Autonomous Commerce Tools",
-          desc: "Click 'Save / Connect'. Claude will instantly connect to TransactAI and discover 5 active commerce tools:",
+          desc: "Click 'Save / Connect'. Claude will instantly connect to TransactAI and discover 8 active commerce tools:",
           details: [
+            "🏪 transact_discover_merchants — Discover active merchants by location or category",
             "🔍 transact_search_catalog — Semantic vector search over live merchant catalogs (<85ms)",
-            "🛡️ transact_verify_order_preflight — 6-hr staleness & live stock parity gatekeeper",
-            "💳 transact_check_policy — Enforces buyer transaction limits & daily allowances",
+            "📦 transact_get_product — Authoritative real-time details, pricing, and fulfillment SLA",
+            "📊 transact_check_availability — Fast inventory stock parity check before checkout",
+            "📋 transact_get_merchant_manifest — Agent-readable merchant profile, policies & SLAs",
+            "🛡️ transact_verify_order_preflight — 6-hr staleness, live stock & spending policy gatekeeper",
             "⚡ transact_create_order_payment — Atomic Razorpay payment link generation",
-            "🏪 transact_register_merchant — Instant merchant self-service onboarding",
+            "🚀 transact_register_merchant — Instant merchant self-service onboarding",
           ],
         },
         {
@@ -157,7 +160,7 @@ Fallback SSE  : ${be}/mcp/sse
       ],
       toolTrace: {
         call: `transact_search_catalog({"query": "kaju katli", "pincode": "560001", "max_price_inr": 600})`,
-        policy: `transact_check_policy({"user_id": "buyer-1", "amount_paise": 45000}) -> ALLOWED`,
+        policy: `transact_verify_order_preflight({"product_id": "prod_kaju_01", "quantity": 1, "user_id": "buyer-1"}) -> APPROVED`,
         result: `Order initialized. Payment checkout link: ${fe}/pay/ord_9f82ab...`,
       },
     },
@@ -209,7 +212,7 @@ Fallback SSE  : ${be}/mcp/sse
       ],
       toolTrace: {
         call: `POST /api/v1/discovery/search {"query": "alphonso mangoes", "pincode": "560001"}`,
-        policy: `POST /api/v1/policies/validate {"user_id": "buyer-1", "amount_paise": 35000} -> ALLOWED`,
+        policy: `POST /api/v1/verification/preflight {"user_id": "buyer-1", "product_id": "prod_mango_332", "quantity": 1} -> APPROVED`,
         result: `Order created. Payment link generated: ${fe}/pay/ord_mango_332`,
       },
     },
@@ -376,6 +379,22 @@ const MCP_TOOLS = [
       { name: "quantity", type: "integer", required: false, desc: "Quantity (default: 1)" },
       { name: "platform", type: "string", required: false, desc: "Client platform ('claude', 'chatgpt', 'gemini')" },
       { name: "user_id", type: "string", required: false, desc: "Buyer user ID" },
+    ],
+  },
+  {
+    name: "transact_register_merchant",
+    method: "POST / JSON-RPC",
+    endpoint: "/mcp",
+    description:
+      "Onboard and register a new merchant or commerce provider onto the Transact AI network with location, contact info, and business category.",
+    parameters: [
+      { name: "name", type: "string", required: true, desc: "Store or brand name (e.g. 'Sharma Sweets')" },
+      { name: "location", type: "string", required: true, desc: "Physical area or street address" },
+      { name: "pincode", type: "string", required: true, desc: "6-digit store delivery pincode (e.g. '110001')" },
+      { name: "business_type", type: "string", required: false, desc: "Business category ('sweet_shop', 'grocery_store', etc.)" },
+      { name: "contact_email", type: "string", required: false, desc: "Store contact email" },
+      { name: "contact_phone", type: "string", required: false, desc: "Store contact phone or WhatsApp" },
+      { name: "description", type: "string", required: false, desc: "Short specialty or bio of the merchant" },
     ],
   },
 ];

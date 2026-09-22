@@ -196,7 +196,7 @@ Connect Claude directly to the live TransactAI production engine with zero local
 | :--- | :--- | :--- |
 | **Step 1** | **Open Connectors in Claude** | Open [Claude.ai](https://claude.ai) (Web) or Claude Desktop $\rightarrow$ Click **Settings** $\rightarrow$ Navigate to **Connectors** (or Integrations) $\rightarrow$ Click **"Add Custom Connector"**. |
 | **Step 2** | **Enter Connector URL** | **Name**: `TransactAI Autonomous Commerce`<br>**URL**: `https://transact-ai-production.up.railway.app/mcp`<br>*(Fallback SSE: `https://transact-ai-production.up.railway.app/mcp/sse`)* |
-| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 7 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_discover_merchants` — Discover active merchants by location or category<br>• `transact_search_catalog` — Sub-15ms semantic hybrid vector search across providers<br>• `transact_get_product` — Retrieve live item details, pricing, and SLA<br>• `transact_check_availability` — Fast pre-check of stock and fulfillment radius<br>• `transact_get_merchant_manifest` — Fetch merchant store profile and metadata<br>• `transact_verify_order_preflight` — 6-hr staleness, live stock, and spending limit gatekeeper<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator |
+| **Step 3** | **Verify Active Tools** | Click **Add / Save**. Claude automatically discovers 8 real-time commerce execution tools (**🔨 Hammer Icon** turns active):<br>• `transact_discover_merchants` — Discover active merchants by location or category<br>• `transact_search_catalog` — Sub-15ms semantic hybrid vector search across providers<br>• `transact_get_product` — Retrieve live item details, pricing, and SLA<br>• `transact_check_availability` — Fast pre-check of stock and fulfillment radius<br>• `transact_get_merchant_manifest` — Fetch merchant store profile and metadata<br>• `transact_verify_order_preflight` — 6-hr staleness, live stock, and spending limit gatekeeper<br>• `transact_create_order_payment` — Atomic Razorpay checkout generator<br>• `transact_register_merchant` — Instant merchant self-service onboarding |
 | **Step 4** | **Prompt & Transact** | Open a new chat in Claude and ask in natural language:<br>`"Search for fresh Kaju Katli in Indiranagar (560001) under ₹600. Verify my spending limit, and prepare an order summary for my confirmation."` |
 
 ---
@@ -222,7 +222,7 @@ If you prefer running a local Python stdio MCP server on your computer:
   }
 }
 ```
-3. Restart Claude Desktop. The 7 tools will appear under the tools hammer icon.
+3. Restart Claude Desktop. The 8 tools will appear under the tools hammer icon.
 
 #### 🧠 Claude Progressive Shopping System Prompt
 In your Claude Project or Custom Instructions, paste:

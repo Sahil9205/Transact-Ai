@@ -79,9 +79,13 @@ STAGE 4 — ATOMIC ORDER CREATION & PAYMENT LINK:
 3. Click **Import**.
 4. ChatGPT will automatically register TransactAI's commerce tools:
    - `search_products` / `transact_search_catalog`
-   - `verify_order_preflight` / `transact_check_policy`
+   - `verify_order_preflight` / `transact_verify_order_preflight` (checks stock, price freshness & spending limits)
    - `create_payment_order` / `transact_create_order_payment`
-   - `find_smart_alternatives`
+   - `transact_discover_merchants`
+   - `transact_get_product`
+   - `transact_check_availability`
+   - `transact_get_merchant_manifest`
+   - `transact_register_merchant`
 5. In **Privacy Policy**, paste:
    ```text
    https://frontend-six-steel-85.vercel.app/
